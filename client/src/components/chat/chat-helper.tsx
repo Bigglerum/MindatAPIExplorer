@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Minus, X, MessageSquare } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
-import { useAuth } from '@/hooks/use-auth';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,7 +20,6 @@ export default function ChatHelper() {
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const { isAuthenticated } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages when new messages arrive

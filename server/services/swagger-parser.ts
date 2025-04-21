@@ -88,11 +88,11 @@ export async function parseSwaggerDoc(swaggerDoc: OpenAPIDocument): Promise<APIC
           id: storedEndpoint.id,
           path: storedEndpoint.path,
           method: storedEndpoint.method,
-          summary: storedEndpoint.summary,
-          description: storedEndpoint.description,
+          summary: storedEndpoint.summary || undefined,
+          description: storedEndpoint.description || undefined,
           parameters: endpoint.parameters,
           responses: endpoint.responses,
-          categoryId: storedEndpoint.categoryId
+          categoryId: storedEndpoint.categoryId || undefined
         });
       }
       
