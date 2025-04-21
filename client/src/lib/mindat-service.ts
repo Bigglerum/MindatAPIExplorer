@@ -7,7 +7,7 @@ import { apiRequest } from './queryClient';
 export interface MindatMineralSearchParams {
   name?: string;
   formula?: string;
-  elements?: string[];
+  elements?: string[] | string; // API expects comma-separated string
   ima_status?: string;
   limit?: number;
   offset?: number;
@@ -34,9 +34,17 @@ export async function searchMinerals(params: MindatMineralSearchParams) {
     offset: params.offset || 0
   };
 
+  // Convert elements array to string if needed (based on API docs)
+  if (params.elements && Array.isArray(params.elements)) {
+    const elementsStr = params.elements.join(',');
+    // @ts-ignore - We need to override the type because the API expects a string, not an array
+    queryParams.elements = elementsStr;
+  }
+
   try {
+    // According to docs, minerals are accessed via the geomaterials endpoint
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/minerals/search',
+      path: '/geomaterials/',
       method: 'GET',
       parameters: queryParams
     });
@@ -61,8 +69,9 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
   };
 
   try {
+    // According to docs, the localities endpoint doesn't need /search
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/localities/search',
+      path: '/localities/',
       method: 'GET',
       parameters: queryParams
     });
@@ -75,14 +84,36 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
 }
 
 /**
+ * Search for localities in a specific country
+ * @param country Country name (e.g., "China")
+ * @returns Locality results
+ */
+export async function getLocalitiesByCountry(country: string) {
+  try {
+    // Using the documented endpoint for country-specific localities
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/localities_list_country/',
+      method: 'GET',
+      parameters: { country }
+    });
+
+    return await response.json();
+  } catch (error) {
+    console.error(`Error getting localities in ${country}:`, error);
+    throw error;
+  }
+}
+
+/**
  * Get details for a specific mineral by ID
  * @param id Mineral ID
  * @returns Mineral details
  */
 export async function getMineralById(id: number) {
   try {
+    // According to docs, minerals are accessed via the geomaterials endpoint
     const response = await apiRequest('POST', '/api/proxy', {
-      path: `/minerals/${id}`,
+      path: `/geomaterials/${id}/`,
       method: 'GET',
       parameters: {}
     });

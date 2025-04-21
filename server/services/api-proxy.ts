@@ -3,8 +3,8 @@
  * @param path - The API path to request
  * @param method - The HTTP method (GET, POST, etc.)
  * @param parameters - The request parameters (query params or body)
- * @param credentials - Either the API key or Basic Auth encoded credentials
- * @param useBasicAuth - If true, use Basic Auth instead of API key
+ * @param credentials - API key for Token authentication
+ * @param useBasicAuth - No longer used, maintained for backwards compatibility
  * @returns The API response data
  */
 export async function proxyApiRequest(
@@ -15,15 +15,27 @@ export async function proxyApiRequest(
   useBasicAuth: boolean = false
 ): Promise<any> {
   try {
-    // Try several API base URLs
+    // Try several API base URLs based on the updated documentation
     const baseUrls = [
       'https://api.mindat.org',
-      'https://www.mindat.org/api',
-      'https://mindat.org/api'
+      'https://147.135.28.115', // Alternate URL during migration (per documentation)
+      'https://www.mindat.org/api'
     ];
     
-    // Build the URL with base Mindat API endpoint (first try regular api.mindat.org)
-    let url = `${baseUrls[0]}${path.startsWith('/') ? path : `/${path}`}`;
+    // Adjusting path if needed, mapping traditional paths to documented endpoints
+    let adjustedPath = path;
+    
+    // Map our standard paths to the actual API endpoints based on documentation
+    if (path.startsWith('/minerals')) {
+      adjustedPath = path.replace('/minerals', '/geomaterials');
+    } else if (path === '/minerals/search') {
+      adjustedPath = '/geomaterials/';
+    } else if (path.startsWith('/localities') && !path.includes('list')) {
+      adjustedPath = path.replace('/localities', '/localities');
+    }
+    
+    // Build the URL with base Mindat API endpoint
+    let url = `${baseUrls[0]}${adjustedPath.startsWith('/') ? adjustedPath : `/${adjustedPath}`}`;
     const normalizedMethod = method.toUpperCase();
 
     // Set up headers with content type
@@ -33,14 +45,12 @@ export async function proxyApiRequest(
       'User-Agent': 'MindatExplorer/1.0'
     };
     
-    // Add authentication header
+    // Based on the documentation, Mindat API uses Token authentication
+    headers['Authorization'] = `Token ${credentials}`;
+    
+    // For backward compatibility, keep these but they likely won't be used
     if (useBasicAuth) {
-      // Use pre-encoded credentials (passed from routes.ts)
-      headers['Authorization'] = `Basic ${credentials}`;
-    } else {
-      // API key header - try both header formats
-      headers['X-Api-Key'] = credentials;
-      headers['Authorization'] = `Bearer ${credentials}`;
+      console.log('Warning: Basic Auth is not supported by Mindat API, using Token auth instead');
     }
 
     // Prepare request options
