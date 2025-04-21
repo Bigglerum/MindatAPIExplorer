@@ -15,14 +15,22 @@ export async function proxyApiRequest(
   useBasicAuth: boolean = false
 ): Promise<any> {
   try {
-    // Build the URL with base Mindat API endpoint
-    let url = `https://api.mindat.org${path.startsWith('/') ? path : `/${path}`}`;
+    // Try several API base URLs
+    const baseUrls = [
+      'https://api.mindat.org',
+      'https://www.mindat.org/api',
+      'https://mindat.org/api'
+    ];
+    
+    // Build the URL with base Mindat API endpoint (first try regular api.mindat.org)
+    let url = `${baseUrls[0]}${path.startsWith('/') ? path : `/${path}`}`;
     const normalizedMethod = method.toUpperCase();
 
     // Set up headers with content type
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'User-Agent': 'MindatExplorer/1.0'
     };
     
     // Add authentication header
@@ -30,8 +38,9 @@ export async function proxyApiRequest(
       // Use pre-encoded credentials (passed from routes.ts)
       headers['Authorization'] = `Basic ${credentials}`;
     } else {
-      // Legacy API key header (not currently used)
+      // API key header - try both header formats
       headers['X-Api-Key'] = credentials;
+      headers['Authorization'] = `Bearer ${credentials}`;
     }
 
     // Prepare request options
@@ -91,31 +100,62 @@ export async function proxyApiRequest(
       }
     }
 
-    // Make the request
-    const startTime = Date.now();
-    const response = await fetch(url, options);
-    const endTime = Date.now();
-    const duration = endTime - startTime;
-
-    // Check for success
-    if (!response.ok) {
-      const errorText = await response.text();
-      const error: any = new Error(errorText || response.statusText);
-      error.status = response.status;
-      error.statusText = response.statusText;
-      throw error;
-    }
-
-    // Parse and return the response
-    const data = await response.json();
+    // Try each base URL until one works
+    let lastError: any = null;
     
-    return {
-      data,
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries()),
-      duration
-    };
+    for (const baseUrl of baseUrls) {
+      // Update URL with current base URL
+      url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+      
+      try {
+        // Make the request
+        const startTime = Date.now();
+        const response = await fetch(url, options);
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        
+        // Check for success
+        if (!response.ok) {
+          const errorText = await response.text();
+          lastError = new Error(errorText || response.statusText);
+          lastError.status = response.status;
+          lastError.statusText = response.statusText;
+          lastError.url = url;
+          
+          // If it's a 404, try the next URL
+          if (response.status === 404) {
+            console.log(`API endpoint not found at ${url}, trying next base URL...`);
+            continue;
+          }
+          
+          // For other errors, throw immediately
+          throw lastError;
+        }
+        
+        // If we got here, it worked! Parse and return the response
+        const data = await response.json();
+        
+        return {
+          data,
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          duration,
+          baseUrl // Include the base URL that worked
+        };
+      } catch (error: any) {
+        if (error.status !== 404) {
+          // If it's not a 404, rethrow
+          throw error;
+        }
+        
+        // Store this error and try the next URL
+        lastError = error;
+      }
+    }
+    
+    // If we get here, none of the URLs worked
+    throw lastError || new Error('Failed to connect to any Mindat API endpoints');
   } catch (error: any) {
     console.error('API proxy error:', error);
     

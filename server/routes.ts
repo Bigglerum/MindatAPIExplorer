@@ -112,37 +112,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proxy API request
   app.post('/api/proxy', async (req: Request, res: Response) => {
     try {
-      const { path, method, parameters } = req.body;
-      
-      // We now use environment variables for authentication
-      const username = process.env.MINDAT_USERNAME;
-      const password = process.env.MINDAT_PASSWORD;
-      
-      if (!username || !password) {
-        return res.status(401).json({ error: 'Unauthorized: Missing credentials' });
-      }
+      const { path, method, parameters, apiKey } = req.body;
       
       if (!path) {
         return res.status(400).json({ error: 'Path is required' });
       }
       
-      // Create basic auth credentials
-      const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+      let credentials: string;
+      let useBasicAuth: boolean = false;
       
-      // Call the proxy with basic auth
+      // Check which authentication method to use
+      if (apiKey === 'useToken') {
+        // Use API key from environment variables
+        if (process.env.MINDAT_API_KEY) {
+          credentials = process.env.MINDAT_API_KEY;
+          useBasicAuth = false;
+        } else {
+          // Fall back to basic auth if no API key is available
+          const username = process.env.MINDAT_USERNAME;
+          const password = process.env.MINDAT_PASSWORD;
+          
+          if (!username || !password) {
+            return res.status(401).json({ 
+              error: 'Unauthorized: Missing API credentials. Please provide a valid Mindat API key or username/password.' 
+            });
+          }
+          
+          credentials = Buffer.from(`${username}:${password}`).toString('base64');
+          useBasicAuth = true;
+        }
+      } else {
+        // Use username/password from environment variables
+        const username = process.env.MINDAT_USERNAME;
+        const password = process.env.MINDAT_PASSWORD;
+        
+        if (!username || !password) {
+          return res.status(401).json({ 
+            error: 'Unauthorized: Missing credentials. Please provide valid Mindat username and password.' 
+          });
+        }
+        
+        credentials = Buffer.from(`${username}:${password}`).toString('base64');
+        useBasicAuth = true;
+      }
+      
+      // Call the proxy with the selected authentication method
       const response = await proxyApiRequest(
         path, 
         method || 'GET', 
         parameters || {}, 
         credentials,
-        true // Use basic auth
+        useBasicAuth
       );
       
       return res.status(200).json(response);
     } catch (error: any) {
       console.error('Error proxying API request:', error);
-      return res.status(error.status || 500).json({ 
-        error: error.message || 'Failed to execute API request' 
+      
+      // Return a user-friendly error message
+      const errorMessage = error.message || 'Failed to execute API request';
+      const statusCode = error.status || 500;
+      
+      // For connection issues, provide a more helpful message
+      const isConnectionError = 
+        errorMessage.includes('ECONNREFUSED') || 
+        errorMessage.includes('ETIMEDOUT') ||
+        errorMessage.includes('not found') ||
+        statusCode === 404;
+      
+      if (isConnectionError) {
+        return res.status(statusCode).json({
+          error: 'Unable to connect to the Mindat API. The API might be temporarily unavailable or the URL structure may have changed.',
+          details: errorMessage,
+          status: statusCode
+        });
+      }
+      
+      // For authentication issues
+      const isAuthError = statusCode === 401 || statusCode === 403;
+      if (isAuthError) {
+        return res.status(statusCode).json({
+          error: 'Authentication failed. Please check your Mindat API credentials.',
+          details: errorMessage,
+          status: statusCode
+        });
+      }
+      
+      // For other errors
+      return res.status(statusCode).json({ 
+        error: errorMessage,
+        status: statusCode
       });
     }
   });
