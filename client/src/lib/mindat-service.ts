@@ -187,16 +187,24 @@ export async function getLocalityById(id: number) {
  */
 export async function getMineralFormula(name: string): Promise<string | null> {
   try {
+    // Use the 'q' parameter which is the correct search parameter according to the API
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/geomaterials/',
       method: 'GET',
-      parameters: { name, limit: 1 }
+      parameters: { q: name, limit: 5 }
     });
     
     const data = await response.json();
     
     if (data?.data?.results && data.data.results.length > 0) {
-      const mineral = data.data.results[0];
+      // Try to find an exact match first
+      const exactMatch = data.data.results.find((mineral: any) => 
+        mineral.name && mineral.name.toLowerCase() === name.toLowerCase()
+      );
+      
+      // Use the exact match if found, otherwise use the first result
+      const mineral = exactMatch || data.data.results[0];
+      
       // Try various formula fields in order of preference
       return mineral.mindat_formula || mineral.ima_formula || null;
     }
