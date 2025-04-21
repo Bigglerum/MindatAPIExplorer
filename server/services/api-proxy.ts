@@ -18,8 +18,9 @@ export async function proxyApiRequest(
     // Try several API base URLs based on the updated documentation
     const baseUrls = [
       'https://api.mindat.org',
-      'https://147.135.28.115', // Alternate URL during migration (per documentation)
-      'https://www.mindat.org/api'
+      'https://www.mindat.org/api',
+      'https://mindat.org/api',
+      'https://147.135.28.115' // Alternate URL during migration (per documentation) - Try last as it may be offline
     ];
     
     // Adjusting path if needed, mapping traditional paths to documented endpoints
@@ -45,12 +46,13 @@ export async function proxyApiRequest(
       'User-Agent': 'MindatExplorer/1.0'
     };
     
-    // Based on the documentation, Mindat API uses Token authentication
-    headers['Authorization'] = `Token ${credentials}`;
-    
-    // For backward compatibility, keep these but they likely won't be used
+    // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
-      console.log('Warning: Basic Auth is not supported by Mindat API, using Token auth instead');
+      // Basic Auth is used when we have username/password
+      headers['Authorization'] = `Basic ${credentials}`;
+    } else {
+      // Token authentication is used when we have an API key
+      headers['Authorization'] = `Token ${credentials}`;
     }
 
     // Prepare request options
@@ -154,13 +156,23 @@ export async function proxyApiRequest(
           baseUrl // Include the base URL that worked
         };
       } catch (error: any) {
-        if (error.status !== 404) {
-          // If it's not a 404, rethrow
-          throw error;
+        console.log(`Error connecting to ${baseUrl}: ${error.message}`);
+        
+        // Check if it's a network error (connection refused, etc)
+        const isNetworkError = error.cause && (
+          error.cause.code === 'ECONNREFUSED' || 
+          error.cause.code === 'ETIMEDOUT' ||
+          error.cause.code === 'ENOTFOUND'
+        );
+        
+        // Store this error but continue to the next URL
+        if (isNetworkError || error.status === 404) {
+          lastError = error;
+          continue;
         }
         
-        // Store this error and try the next URL
-        lastError = error;
+        // For other types of errors, throw them immediately
+        throw error;
       }
     }
     

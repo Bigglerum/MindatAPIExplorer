@@ -123,13 +123,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // According to Mindat API docs, we should always use Token authentication
       if (process.env.MINDAT_API_KEY) {
+        // Log for debugging (will be removed before production)
+        console.log('Using Mindat API key for authentication');
+        
         // Use the API key directly for Token authentication
         credentials = process.env.MINDAT_API_KEY;
         useBasicAuth = false;
+      } else if (process.env.MINDAT_USERNAME && process.env.MINDAT_PASSWORD) {
+        // If we have username and password, try using those with Basic auth
+        console.log('No API key found. Trying with username/password.');
+        credentials = Buffer.from(`${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`).toString('base64');
+        useBasicAuth = true;
       } else {
-        // If no API key is available, we'll need to return an error as basic auth isn't supported
+        // If no credentials are available, return an error
         return res.status(401).json({ 
-          error: 'Unauthorized: Missing API key. The Mindat API requires a valid API key for Token authentication.' 
+          error: 'Unauthorized: Missing credentials. The Mindat API requires valid authentication.' 
         });
       }
       
