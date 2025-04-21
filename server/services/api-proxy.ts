@@ -3,29 +3,36 @@
  * @param path - The API path to request
  * @param method - The HTTP method (GET, POST, etc.)
  * @param parameters - The request parameters (query params or body)
- * @param apiKey - The API key for authentication
+ * @param credentials - Either the API key or Basic Auth encoded credentials
+ * @param useBasicAuth - If true, use Basic Auth instead of API key
  * @returns The API response data
  */
 export async function proxyApiRequest(
   path: string,
   method: string,
   parameters: Record<string, any>,
-  apiKey: string
+  credentials: string,
+  useBasicAuth: boolean = false
 ): Promise<any> {
   try {
     // Build the URL with base Mindat API endpoint
     let url = `https://api.mindat.org${path.startsWith('/') ? path : `/${path}`}`;
     const normalizedMethod = method.toUpperCase();
 
-    // Build headers with Basic authentication
-    const authString = `${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`;
-    const base64Auth = Buffer.from(authString).toString('base64');
-    
+    // Set up headers with content type
     const headers: Record<string, string> = {
-      'Authorization': `Basic ${base64Auth}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+    
+    // Add authentication header
+    if (useBasicAuth) {
+      // Use pre-encoded credentials (passed from routes.ts)
+      headers['Authorization'] = `Basic ${credentials}`;
+    } else {
+      // Legacy API key header (not currently used)
+      headers['X-Api-Key'] = credentials;
+    }
 
     // Prepare request options
     const options: RequestInit = {
