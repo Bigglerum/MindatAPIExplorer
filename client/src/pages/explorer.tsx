@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '@/hooks/use-auth';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import { ApiExplorer } from '@/components/explorer/api-explorer';
@@ -8,22 +7,13 @@ import ChatHelper from '@/components/chat/chat-helper';
 import { APIEndpoint } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApiDocs } from '@/hooks/use-api-docs';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Explorer() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [activeEndpoint, setActiveEndpoint] = useState<APIEndpoint | null>(null);
   const [activeTab, setActiveTab] = useState('explorer');
-  const { isAuthenticated, loading: authLoading } = useAuth();
-  const { categories, categoriesLoading } = useApiDocs();
+  const { categories } = useApiDocs();
   const [, navigate] = useLocation();
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, authLoading, navigate]);
 
   // Set a default endpoint when categories are loaded
   useEffect(() => {
@@ -35,16 +25,6 @@ export default function Explorer() {
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
-
-  if (authLoading) {
-    return <div className="flex justify-center items-center h-screen">
-      <Skeleton className="h-12 w-12 rounded-full" />
-    </div>;
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
 
   return (
     <div className="flex flex-col h-screen">

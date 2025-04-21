@@ -1,19 +1,8 @@
-import { useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/use-auth';
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading) {
-      if (isAuthenticated) {
-        navigate('/explorer');
-      }
-    }
-  }, [isAuthenticated, loading, navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col">
@@ -35,7 +24,7 @@ export default function Home() {
           <Button
             size="lg"
             className="bg-primary hover:bg-indigo-700 text-white text-lg px-8"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/explorer')}
           >
             Get Started
           </Button>
@@ -95,14 +84,14 @@ export default function Home() {
       <footer className="bg-gray-100 dark:bg-slate-850 py-6">
         <div className="max-w-7xl mx-auto px-4 text-center text-gray-600 dark:text-gray-400 text-sm">
           <p>
-            This API Explorer is designed to help you explore and learn the Mindat API. Get your API key from{' '}
+            This API Explorer is designed to help you explore and learn the Mindat API. Learn more about the Mindat database at{' '}
             <a 
-              href="https://api.mindat.org" 
+              href="https://www.mindat.org" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="text-primary hover:underline"
             >
-              api.mindat.org
+              mindat.org
             </a>
           </p>
         </div>

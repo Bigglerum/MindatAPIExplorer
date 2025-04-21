@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '@/hooks/use-auth';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import ChatHelper from '@/components/chat/chat-helper';
@@ -8,33 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 
 export default function KnowledgeBase() {
   const [, navigate] = useLocation();
-  const { isAuthenticated, loading: authLoading } = useAuth();
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, authLoading, navigate]);
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
   };
-
-  if (authLoading) {
-    return <div className="flex justify-center items-center h-screen">
-      <Skeleton className="h-12 w-12 rounded-full" />
-    </div>;
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
 
   return (
     <div className="flex flex-col h-screen">

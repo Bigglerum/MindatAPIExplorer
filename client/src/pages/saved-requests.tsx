@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useLocation } from 'wouter';
-import { useAuth } from '@/hooks/use-auth';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import ChatHelper from '@/components/chat/chat-helper';
@@ -38,17 +37,9 @@ import { formatDistanceToNow } from 'date-fns';
 
 export default function SavedRequests() {
   const [sidebarVisible, setSidebarVisible] = useState(true);
-  const { isAuthenticated, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
   const { savedRequests, savedRequestsLoading, deleteSavedRequest } = useApiDocs();
   const [deleteRequestId, setDeleteRequestId] = useState<number | null>(null);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, authLoading, navigate]);
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
@@ -70,16 +61,6 @@ export default function SavedRequests() {
     navigate('/explorer');
     // Additional logic would be implemented to load the specific request
   };
-
-  if (authLoading) {
-    return <div className="flex justify-center items-center h-screen">
-      <Skeleton className="h-12 w-12 rounded-full" />
-    </div>;
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
 
   return (
     <div className="flex flex-col h-screen">
