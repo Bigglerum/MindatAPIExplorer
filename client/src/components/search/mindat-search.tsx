@@ -285,7 +285,10 @@ export default function MindatSearch() {
                     <h3 className="text-lg font-semibold">Formula for {lookupTerm}</h3>
                     <div className="mt-2 p-3 bg-gray-50 dark:bg-slate-800 rounded-md">
                       {formulaResult ? (
-                        <p className="text-xl font-mono">{formulaResult}</p>
+                        <p 
+                          className="text-xl font-mono" 
+                          dangerouslySetInnerHTML={{ __html: formulaResult }}
+                        />
                       ) : (
                         <div className="flex items-center gap-2 text-amber-600">
                           <AlertOctagon className="h-5 w-5" />
@@ -421,9 +424,10 @@ export default function MindatSearch() {
                             <div>
                               <h4 className="text-xl font-semibold">{mineral.name}</h4>
                               {mineral.formula && (
-                                <p className="text-gray-600 dark:text-gray-400 font-mono mt-1">
-                                  {mineral.formula}
-                                </p>
+                                <p 
+                                  className="text-gray-600 dark:text-gray-400 font-mono mt-1"
+                                  dangerouslySetInnerHTML={{ __html: mineral.formula }}
+                                />
                               )}
                             </div>
                             {mineral.ima_status && (

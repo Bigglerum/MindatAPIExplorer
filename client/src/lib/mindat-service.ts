@@ -152,11 +152,18 @@ export async function getLocalityById(id: number) {
  */
 export async function getMineralFormula(name: string): Promise<string | null> {
   try {
-    const searchResults = await searchMinerals({ name, limit: 1 });
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: { name, limit: 1 }
+    });
     
-    if (searchResults?.data?.length > 0) {
-      const mineral = searchResults.data[0];
-      return mineral.formula || null;
+    const data = await response.json();
+    
+    if (data?.data?.results && data.data.results.length > 0) {
+      const mineral = data.data.results[0];
+      // Try various formula fields in order of preference
+      return mineral.mindat_formula || mineral.ima_formula || null;
     }
     
     return null;
@@ -174,10 +181,16 @@ export async function getMineralFormula(name: string): Promise<string | null> {
  */
 export async function getLocalityCoordinates(name: string): Promise<{ latitude: number; longitude: number } | null> {
   try {
-    const searchResults = await searchLocalities({ name, limit: 1 });
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/localities/',
+      method: 'GET',
+      parameters: { name, limit: 1 }
+    });
     
-    if (searchResults?.data?.length > 0) {
-      const locality = searchResults.data[0];
+    const data = await response.json();
+    
+    if (data?.data?.results && data.data.results.length > 0) {
+      const locality = data.data.results[0];
       
       if (locality.latitude && locality.longitude) {
         return {
