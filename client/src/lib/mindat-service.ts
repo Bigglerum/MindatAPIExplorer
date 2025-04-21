@@ -68,14 +68,19 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
     offset: params.offset || 0
   };
 
-  // Use the 'name' parameter for direct name search as per your example
+  // Use the 'q' parameter which is most compatible with the API
   if (params.name) {
-    queryParams.name = params.name;
+    queryParams.q = params.name;
   } 
-  // Add other parameters directly (they should work with API)
-  if (params.country) queryParams.country = params.country;
-  if (params.region) queryParams.region = params.region;
+  // Add type parameter directly
   if (params.type) queryParams.locality_type = params.type;
+  
+  // Construct the country and region as part of the q parameter if needed
+  if (params.country && !params.name) {
+    queryParams.q = `${params.country} country`;
+  } else if (params.region && !params.name) {
+    queryParams.q = `${params.region} region`;
+  }
 
   try {
     // According to our updated approach, we're using direct parameters for search
@@ -239,11 +244,11 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       };
     }
     
-    // Simple approach as per your Python example
+    // Using q parameter which is most compatible with the API
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { name: name }
+      parameters: { q: name } // Use the q parameter for search
     });
     
     const data = await response.json();
