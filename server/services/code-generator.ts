@@ -316,12 +316,9 @@ function getQueryParams(endpoint: APIEndpoint, parameters: Record<string, any>):
 function getBodyParams(endpoint: APIEndpoint, parameters: Record<string, any>): Record<string, any> {
   const bodyParams: Record<string, any> = {};
   
-  // Handle request body parameters
-  for (const param of endpoint.parameters || []) {
-    if (param.in === 'body' && parameters[param.name] !== undefined) {
-      return parameters[param.name]; // Return the entire body object
-    }
-  }
+  // Check if there's a parameter for request body
+  // In some APIs, the body parameter might be labeled differently
+  // We'll just gather non-path and non-query parameters for the body
   
   // If no specific body parameter is found, collect all non-path, non-query parameters
   for (const [key, value] of Object.entries(parameters)) {
