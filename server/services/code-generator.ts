@@ -35,6 +35,12 @@ function generatePythonCode(endpoint: APIEndpoint, parameters: Record<string, an
   let code = `import requests
 import base64
 
+# IMPORTANT: The Mindat API may require specific authentication or be protected by Cloudflare.
+# If you encounter connection issues, try these alternative base URLs:
+#  - https://api.mindat.org
+#  - https://www.mindat.org/api
+#  - https://mindat.org/api
+
 url = "${url}"
 
 # Basic Authentication setup
@@ -123,6 +129,12 @@ function generateJavaScriptCode(endpoint: APIEndpoint, parameters: Record<string
   const hasPathParams = endpoint.path.includes('{');
   
   let code = `// Using fetch API
+// IMPORTANT: The Mindat API may require specific authentication or be protected by Cloudflare.
+// If you encounter connection issues, try these alternative base URLs:
+//  - https://api.mindat.org
+//  - https://www.mindat.org/api
+//  - https://mindat.org/api
+
 // Basic Authentication setup
 const username = "YOUR_USERNAME";
 const password = "YOUR_PASSWORD";
@@ -130,7 +142,8 @@ const base64Auth = btoa(username + ":" + password);
 
 const headers = {
     "Authorization": "Basic " + base64Auth,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "User-Agent": "MindatApiClient/1.0"  // Adding a user agent may help with API access
 };
 
 let url = "${url}";
@@ -263,7 +276,13 @@ function generateCurlCommand(endpoint: APIEndpoint, parameters: Record<string, a
   }
   
   // Build the cURL command
-  let curlCommand = `curl -X ${method} \\`;
+  let curlCommand = `# IMPORTANT: The Mindat API may require specific authentication or be protected by Cloudflare.
+# If you encounter connection issues, try these alternative base URLs:
+#  - https://api.mindat.org
+#  - https://www.mindat.org/api
+#  - https://mindat.org/api
+
+curl -X ${method} \\`;
   
   // Add query parameters for GET requests
   if (method === 'GET') {
@@ -282,7 +301,8 @@ function generateCurlCommand(endpoint: APIEndpoint, parameters: Record<string, a
   
   // Add headers for Basic Authentication
   curlCommand += `\n  -u "YOUR_USERNAME:YOUR_PASSWORD" \\`;
-  curlCommand += `\n  -H "Content-Type: application/json"`;
+  curlCommand += `\n  -H "Content-Type: application/json" \\`;
+  curlCommand += `\n  -H "User-Agent: MindatApiClient/1.0"`;
   
   // Add request body for non-GET requests
   if (method !== 'GET') {

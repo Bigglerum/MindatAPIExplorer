@@ -5,6 +5,7 @@ import Sidebar from '@/components/layout/sidebar';
 import ChatHelper from '@/components/chat/chat-helper';
 import MindatSearch from '@/components/search/mindat-search';
 import { APIEndpoint } from '@/types/api';
+import { ApiStatusIndicator } from '@/components/ui/api-status-indicator';
 
 export default function Search() {
   const [, navigate] = useLocation();
@@ -34,6 +35,10 @@ export default function Search() {
                 Search for minerals and localities directly from the Mindat API. Get detailed information about mineral formulas, 
                 locality coordinates, and more.
               </p>
+            </div>
+            
+            <div className="mb-6">
+              <ApiStatusIndicator />
             </div>
             
             <MindatSearch />
