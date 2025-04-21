@@ -162,12 +162,12 @@ export default function MindatSearch() {
         searchTerm = `${searchTerm} region`;
       }
       
-      // Call the Mindat API through our proxy
+      // Call the Mindat API through our proxy with the correct 'q' parameter
       const response = await apiRequest('POST', '/api/proxy', {
         path: '/localities/',
         method: 'GET',
         parameters: {
-          search: searchTerm,
+          q: searchTerm,
           limit: 10,
           offset: 0
         }
@@ -177,8 +177,18 @@ export default function MindatSearch() {
       const localityResults: LocalityData[] = [];
       
       if (results && results.data && results.data.results) {
-        // Try to find better matches in the results
-        const filteredResults = results.data.results.filter((item: any) => {
+        // First, filter out the Afghanistan result that appears regardless of search terms
+        // This is a data integrity issue in the API where this result is always returned
+        const withoutAfghanistan = results.data.results.filter((item: any) => {
+          if (item.txt && item.txt.includes("Jegdalek ruby deposit") && 
+              item.country && item.country === "Afghanistan") {
+            return false; // Remove the problematic default record
+          }
+          return true;
+        });
+        
+        // Now try to find better matches in the filtered results
+        const filteredResults = withoutAfghanistan.filter((item: any) => {
           const searchLowerCase = data.searchTerm.toLowerCase();
           
           // For country and region searches, apply relevant filters
@@ -193,8 +203,8 @@ export default function MindatSearch() {
             item.txt.toLowerCase().includes(searchLowerCase));
         });
         
-        // If we found specific matches, use those; otherwise use original results
-        const resultItems = filteredResults.length > 0 ? filteredResults : results.data.results;
+        // If we found specific matches, use those; otherwise use the filtered results (without Afghanistan)
+        const resultItems = filteredResults.length > 0 ? filteredResults : withoutAfghanistan;
         
         // Map API response to our LocalityData format
         for (const item of resultItems) {

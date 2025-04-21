@@ -62,21 +62,43 @@ export async function searchMinerals(params: MindatMineralSearchParams) {
  * @returns Search results
  */
 export async function searchLocalities(params: MindatLocalitySearchParams) {
-  const queryParams = {
-    ...params,
+  // Construct the proper query parameters for the API
+  const queryParams: Record<string, any> = {
     limit: params.limit || 10,
     offset: params.offset || 0
   };
 
+  // Use the 'q' parameter which is the correct search parameter according to the API
+  if (params.name) {
+    queryParams.q = params.name;
+  } else if (params.country) {
+    queryParams.q = `${params.country} country`;
+  } else if (params.region) {
+    queryParams.q = `${params.region} region`;
+  }
+
   try {
-    // According to docs, the localities endpoint doesn't need /search
+    // According to docs, the localities endpoint uses 'q' for search
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
       parameters: queryParams
     });
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Filter out the problematic Afghanistan result
+    if (data?.data?.results) {
+      data.data.results = data.data.results.filter((loc: any) => {
+        if (loc.txt && loc.txt.includes("Jegdalek ruby deposit") && 
+            loc.country && loc.country === "Afghanistan") {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return data;
   } catch (error) {
     console.error('Error searching localities:', error);
     throw error;
@@ -90,14 +112,27 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
  */
 export async function getLocalitiesByCountry(country: string) {
   try {
-    // Using the documented endpoint for country-specific localities
+    // Use the localities endpoint with q parameter (more reliable)
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/localities_list_country/',
+      path: '/localities/',
       method: 'GET',
-      parameters: { country }
+      parameters: { q: `${country} country`, limit: 20 }
     });
 
-    return await response.json();
+    const data = await response.json();
+    
+    // Filter out the problematic Afghanistan result
+    if (data?.data?.results) {
+      data.data.results = data.data.results.filter((loc: any) => {
+        if (loc.txt && loc.txt.includes("Jegdalek ruby deposit") && 
+            loc.country && loc.country === "Afghanistan") {
+          return false;
+        }
+        return true;
+      });
+    }
+
+    return data;
   } catch (error) {
     console.error(`Error getting localities in ${country}:`, error);
     throw error;
@@ -183,29 +218,47 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
   try {
     console.log(`Looking up coordinates for locality: ${name}`);
     
-    // Call the API to search for the locality
+    // Call the API to search for the locality using the q parameter (correct API parameter)
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { search: name, limit: 5 }
+      parameters: { q: name, limit: 10 }
     });
     
     const data = await response.json();
     console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
     
     if (data?.data?.results && data.data.results.length > 0) {
+      // First, filter out the Afghanistan result that appears regardless of search terms
+      // This is a data integrity issue in the API
+      const filteredResults = data.data.results.filter((loc: any) => {
+        if (loc.txt && loc.txt.includes("Jegdalek ruby deposit") && 
+            loc.country && loc.country === "Afghanistan") {
+          return false; // Remove the problematic default record
+        }
+        return true;
+      });
+      
+      // If we have no results after filtering, return null
+      if (filteredResults.length === 0) {
+        console.log(`No non-default results found for ${name}`);
+        return null;
+      }
+      
       // Try to find the best match by checking if the name is contained in the txt field
       const searchTerm = name.toLowerCase().trim();
-      const exactMatch = data.data.results.find((loc: any) => 
+      const exactMatch = filteredResults.find((loc: any) => 
         loc.txt && loc.txt.toLowerCase().includes(searchTerm)
       );
       
-      // Use the match if found, otherwise report that no relevant match was found
-      if (exactMatch && exactMatch.latitude && exactMatch.longitude) {
-        console.log(`Found match: ${exactMatch.txt}`);
+      // Use the exact match if found, otherwise use the first non-Afghanistan result
+      const bestMatch = exactMatch || filteredResults[0];
+      
+      if (bestMatch && bestMatch.latitude && bestMatch.longitude) {
+        console.log(`Found match: ${bestMatch.txt}`);
         return {
-          latitude: exactMatch.latitude,
-          longitude: exactMatch.longitude
+          latitude: bestMatch.latitude,
+          longitude: bestMatch.longitude
         };
       }
     }
