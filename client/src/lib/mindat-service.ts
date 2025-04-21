@@ -203,14 +203,14 @@ export async function checkApiAvailability(): Promise<boolean> {
   try {
     // Try a simple request to check if the API is available
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/minerals',
+      path: '/geomaterials/',
       method: 'GET',
       parameters: { limit: 1 }
     });
     
     // If we get here without an error, the API is available
     const data = await response.json();
-    return !!data && !data.error;
+    return !!data && !data.error && !!data.data;
   } catch (error) {
     console.error('API availability check failed:', error);
     return false;

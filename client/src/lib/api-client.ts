@@ -11,37 +11,30 @@ export async function fetchFromMindatApi(
   options: RequestOptions = {},
   apiKey?: string
 ): Promise<Response> {
-  const baseUrl = 'https://api.mindat.org';
-  const url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+  // Using our server proxy to handle authentication and URL issues
+  const proxyUrl = '/api/proxy';
   
-  // Use the apiKey parameter if provided, otherwise get it using the auth hook
-  const key = apiKey || (typeof window !== 'undefined' ? localStorage.getItem('mindat_api_key') : null);
-  
-  if (!key) {
-    throw new Error('No API key provided. Please authenticate first.');
-  }
-  
-  const headers = {
-    'Authorization': `Token ${key}`,
-    'Content-Type': 'application/json',
-    ...options.headers
-  };
-  
+  // Prepare the proxy request
   const requestOptions: RequestInit = {
-    method: options.method || 'GET',
-    headers,
-    credentials: 'include'
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    credentials: 'include',
+    body: JSON.stringify({
+      path: path,
+      method: options.method || 'GET',
+      parameters: options.body || {}
+    })
   };
   
-  if (options.body) {
-    requestOptions.body = JSON.stringify(options.body);
-  }
-  
-  const response = await fetch(url, requestOptions);
+  // Make the request through our proxy
+  const response = await fetch(proxyUrl, requestOptions);
   
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`${response.status}: ${errorText || response.statusText}`);
+    const errorData = await response.json();
+    throw new Error(errorData.error || `${response.status}: ${response.statusText}`);
   }
   
   return response;
@@ -61,31 +54,26 @@ export async function executeApiRequest(
   endpoint: string,
   method: string,
   params: Record<string, any> = {},
-  apiKey: string
+  apiKey: string = ''
 ): Promise<any> {
   try {
-    // For GET requests, add query parameters to the URL
-    let url = endpoint;
-    let body = undefined;
+    // Use our proxy endpoint directly
+    const response = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        path: endpoint,
+        method: method,
+        parameters: params
+      })
+    });
     
-    if (method.toUpperCase() === 'GET' && Object.keys(params).length > 0) {
-      const queryParams = new URLSearchParams();
-      
-      for (const [key, value] of Object.entries(params)) {
-        if (value !== undefined && value !== null) {
-          queryParams.append(key, String(value));
-        }
-      }
-      
-      url = `${endpoint}?${queryParams.toString()}`;
-    } else if (method.toUpperCase() !== 'GET' && Object.keys(params).length > 0) {
-      body = params;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `${response.status}: ${response.statusText}`);
     }
-    
-    const response = await fetchFromMindatApi(url, {
-      method,
-      body
-    }, apiKey);
     
     return await response.json();
   } catch (error) {
