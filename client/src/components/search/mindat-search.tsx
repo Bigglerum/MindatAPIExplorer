@@ -321,7 +321,7 @@ export default function MindatSearch() {
                       </FormControl>
                       {field.value === "locality-coordinates" && (
                         <p className="text-xs text-muted-foreground mt-1">
-                          For precise results, enter a Mindat locality ID (number) found on Mindat.org URLs like: mindat.org/loc-<strong>1234</strong>.html
+                          Enter a locality name as precisely as possible for best results, e.g. "Tsumeb Mine" instead of just "Tsumeb"
                         </p>
                       )}
                       <FormMessage />
@@ -340,7 +340,7 @@ export default function MindatSearch() {
                           placeholder={
                             quickLookupForm.watch('lookupType') === 'mineral-formula' 
                               ? 'Enter mineral name (e.g., Quartz)' 
-                              : 'Enter locality ID or name (e.g., 1234 or Tsumeb)'
+                              : 'Enter locality name (e.g., Tsumeb Mine)'
                           }
                           {...field} 
                         />

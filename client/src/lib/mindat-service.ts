@@ -68,17 +68,17 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
     offset: params.offset || 0
   };
 
-  // Use the 'q' parameter which is the correct search parameter according to the API
+  // Use the 'name' parameter for direct name search as per your example
   if (params.name) {
-    queryParams.q = params.name;
-  } else if (params.country) {
-    queryParams.q = `${params.country} country`;
-  } else if (params.region) {
-    queryParams.q = `${params.region} region`;
-  }
+    queryParams.name = params.name;
+  } 
+  // Add other parameters directly (they should work with API)
+  if (params.country) queryParams.country = params.country;
+  if (params.region) queryParams.region = params.region;
+  if (params.type) queryParams.locality_type = params.type;
 
   try {
-    // According to docs, the localities endpoint uses 'q' for search
+    // According to our updated approach, we're using direct parameters for search
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
@@ -226,7 +226,7 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
   try {
     console.log(`Looking up coordinates for locality: ${name}`);
     
-    // Check for special well-known cases
+    // Check for special well-known cases - keep this for reliable results
     const normalizedName = name.trim().toLowerCase();
     
     // Special case for Tsumeb since it's commonly requested
@@ -239,89 +239,61 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       };
     }
     
-    // Check if the input is a numeric ID
-    const isId = /^\d+$/.test(name.trim());
+    // Simple approach as per your Python example
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/localities/',
+      method: 'GET',
+      parameters: { name: name }
+    });
     
-    if (isId) {
-      // If it's an ID, use the locality search but with a more specific approach
-      const id = parseInt(name.trim());
-      console.log(`Input appears to be an ID: ${id}, searching for exact match`);
-      
-      // Try first with the ID parameter which might work for exact matches
-      const response = await apiRequest('POST', '/api/proxy', {
-        path: `/localities/`,
-        method: 'GET',
-        parameters: { 
-          id: id.toString()
+    const data = await response.json();
+    console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
+    
+    if (data?.data?.results && data.data.results.length > 0) {
+      // Filter out Afghanistan results as they appear to be defaults
+      const filteredResults = data.data.results.filter((loc: any) => {
+        if (loc.country && loc.country === "Afghanistan") {
+          return false;
         }
+        return true;
       });
       
-      const data = await response.json();
+      // If we have no results after filtering, return null
+      if (filteredResults.length === 0) {
+        console.log(`No non-default results found for ${name}`);
+        return null;
+      }
       
-      // Handle ID lookup result - check for results array
-      if (data?.data?.results && data.data.results.length > 0) {
-        // Find the exact match by ID
-        const match = data.data.results.find((loc: any) => loc.id === id);
-        
-        if (match && match.latitude && match.longitude) {
-          console.log(`Found locality by ID ${id}: ${match.txt}`);
-          return {
-            latitude: match.latitude,
-            longitude: match.longitude
-          };
+      // Try to find a match in the text field
+      const searchTerm = name.toLowerCase().trim();
+      let matchFound = null;
+      
+      // Try for an exact match first
+      for (const loc of filteredResults) {
+        if (loc.txt && loc.txt.toLowerCase().includes(searchTerm)) {
+          matchFound = loc;
+          console.log(`Found exact match: ${loc.txt}`);
+          break;
         }
       }
       
-      console.log(`Locality ID ${id} not found or has no coordinates`);
-      return null;
-    } else {
-      // If it's a name, use name search with the q parameter
-      const response = await apiRequest('POST', '/api/proxy', {
-        path: '/localities/',
-        method: 'GET',
-        parameters: { q: name, limit: 10 }
-      });
-      
-      const data = await response.json();
-      console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
-      
-      if (data?.data?.results && data.data.results.length > 0) {
-        // Filter out ALL Afghanistan results since they appear to be default results
-        const filteredResults = data.data.results.filter((loc: any) => {
-          if (loc.country && loc.country === "Afghanistan") {
-            return false;
-          }
-          return true;
-        });
-        
-        // If we have no results after filtering, return null
-        if (filteredResults.length === 0) {
-          console.log(`No non-default results found for ${name}`);
-          return null;
-        }
-        
-        // Try to find the best match by checking if the name is contained in the txt field
-        const searchTerm = name.toLowerCase().trim();
-        const exactMatch = filteredResults.find((loc: any) => 
-          loc.txt && loc.txt.toLowerCase().includes(searchTerm)
-        );
-        
-        // Use the exact match if found, otherwise use the first non-Afghanistan result
-        const bestMatch = exactMatch || filteredResults[0];
-        
-        if (bestMatch && bestMatch.latitude && bestMatch.longitude) {
-          console.log(`Found match: ${bestMatch.txt}`);
-          return {
-            latitude: bestMatch.latitude,
-            longitude: bestMatch.longitude
-          };
-        }
+      // If no exact match, use the first available result
+      if (!matchFound && filteredResults.length > 0) {
+        matchFound = filteredResults[0];
+        console.log(`No exact match found, using first result: ${matchFound.txt}`);
       }
       
-      // If no match found, return null
-      console.log(`No match found for ${name}`);
-      return null;
+      if (matchFound && matchFound.latitude && matchFound.longitude) {
+        return {
+          latitude: matchFound.latitude,
+          longitude: matchFound.longitude
+        };
+      }
     }
+    
+    // If no match found, return null
+    console.log(`No match found for ${name}`);
+    return null;
   } catch (error) {
     console.error(`Error getting coordinates for ${name}:`, error);
     return null;
