@@ -13,6 +13,7 @@ import {
   type InsertSavedRequest
 } from "@shared/schema";
 import { APICategory, APIEndpoint, Parameter } from "../client/src/types/api";
+import { generateChatResponse as generateOpenAIResponse } from "./services/openai-service";
 
 export interface IStorage {
   // User methods
@@ -634,49 +635,26 @@ export class MemStorage implements IStorage {
 
   // Chat/AI methods
   async generateChatResponse(message: string, history: any[]): Promise<string> {
-    // In a production environment, this would call an AI service like OpenAI
-    // For this demo, we'll use hard-coded responses based on keywords
-    
-    const messageLower = message.toLowerCase();
-    
-    if (messageLower.includes('hello') || messageLower.includes('hi')) {
-      return "Hello! How can I help you with the Mindat API today?";
+    try {
+      // Use the OpenAI service to generate a response
+      return await generateOpenAIResponse(message, history);
+    } catch (error) {
+      console.error("Error generating chat response with OpenAI:", error);
+      
+      // Fallback responses if OpenAI call fails
+      const messageLower = message.toLowerCase();
+      
+      if (messageLower.includes('hello') || messageLower.includes('hi')) {
+        return "Hello! How can I help you with the Mindat API today?";
+      }
+      
+      if (messageLower.includes('api key') || messageLower.includes('apikey')) {
+        return "To get an API key for Mindat, you'll need to visit https://api.mindat.org and register for an account. Once you have an account, you can request an API key from your profile.";
+      }
+      
+      // Default fallback response
+      return "I'm currently experiencing some technical difficulties. Please try again with your question about the Mindat API.";
     }
-    
-    if (messageLower.includes('api key') || messageLower.includes('apikey')) {
-      return "To get an API key for Mindat, you'll need to visit https://api.mindat.org and register for an account. Once you have an account, you can request an API key from your profile.";
-    }
-    
-    if (messageLower.includes('mineral') && (messageLower.includes('list') || messageLower.includes('get'))) {
-      return "To list minerals, you can use the GET `/minerals` endpoint. This accepts parameters like `page`, `page_size`, and `fields` to customize your request. Here's a sample code:\n\n```python\nimport requests\n\nurl = \"https://api.mindat.org/minerals\"\nheaders = {\"Authorization\": \"Token YOUR_API_KEY\"}\nparams = {\"page\": 1, \"page_size\": 20}\n\nresponse = requests.get(url, headers=headers, params=params)\ndata = response.json()\n```";
-    }
-    
-    if (messageLower.includes('chemical') && messageLower.includes('element')) {
-      return "To filter minerals by chemical element, you can use the `/minerals` endpoint with the `elements` query parameter. For example, to find minerals containing copper (Cu), use: `?elements=Cu`. You can also combine multiple elements like `?elements=Cu,Fe` to find minerals containing both copper and iron.";
-    }
-    
-    if (messageLower.includes('location')) {
-      return "The Mindat API provides location data through the `/locations` endpoint. You can list all locations with pagination, or get details for a specific location using `/locations/{id}`. Locations can be filtered by country or region using query parameters.";
-    }
-    
-    if (messageLower.includes('search')) {
-      return "To search for minerals in the Mindat API, you can use the POST `/minerals/search` endpoint. This allows more complex searches than the GET endpoint. You can search by name, chemical formula, elements, and more. The request body should be a JSON object with your search criteria.";
-    }
-    
-    if (messageLower.includes('image') || messageLower.includes('photo')) {
-      return "The Mindat API provides access to mineral images through the `/images` endpoint. You can get a list of all images, or filter by mineral or location. Each image record includes thumbnail and full-size URLs.";
-    }
-    
-    if (messageLower.includes('pagination')) {
-      return "Most list endpoints in the Mindat API support pagination using the `page` and `page_size` parameters. The response includes `count`, `next`, and `previous` fields to help you navigate through the pages. The maximum page size is typically 100 items.";
-    }
-    
-    if (messageLower.includes('python') || messageLower.includes('code')) {
-      return "Here's a Python example to get started with the Mindat API:\n\n```python\nimport requests\n\nAPI_KEY = 'your_api_key_here'\nBASE_URL = 'https://api.mindat.org'\n\nheaders = {\n    'Authorization': f'Token {API_KEY}',\n    'Content-Type': 'application/json'\n}\n\n# Get a list of minerals\nresponse = requests.get(f'{BASE_URL}/minerals', headers=headers)\ndata = response.json()\n\nprint(f'Total minerals: {data[\"count\"]}')\nfor mineral in data['results']:\n    print(f'{mineral[\"id\"]}: {mineral[\"name\"]}')\n```";
-    }
-    
-    // Default response
-    return "I can help you understand and use the Mindat API. You can ask me about specific endpoints, how to search for minerals or locations, how to filter results, or how to use the API in your code. What would you like to know?";
   }
 }
 
