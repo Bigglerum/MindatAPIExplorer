@@ -177,12 +177,11 @@ export default function MindatSearch() {
       const localityResults: LocalityData[] = [];
       
       if (results && results.data && results.data.results) {
-        // First, filter out the Afghanistan result that appears regardless of search terms
-        // This is a data integrity issue in the API where this result is always returned
+        // Filter out ALL Afghanistan results since they're default/unrelated to most searches
+        // This is a significant data integrity issue in the API
         const withoutAfghanistan = results.data.results.filter((item: any) => {
-          if (item.txt && item.txt.includes("Jegdalek ruby deposit") && 
-              item.country && item.country === "Afghanistan") {
-            return false; // Remove the problematic default record
+          if (item.country && item.country === "Afghanistan") {
+            return false; // Remove all Afghanistan results
           }
           return true;
         });
@@ -320,6 +319,11 @@ export default function MindatSearch() {
                           <option value="locality-coordinates">Locality Coordinates</option>
                         </select>
                       </FormControl>
+                      {field.value === "locality-coordinates" && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          For precise results, enter a Mindat locality ID (number) found on Mindat.org URLs like: mindat.org/loc-<strong>1234</strong>.html
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -336,7 +340,7 @@ export default function MindatSearch() {
                           placeholder={
                             quickLookupForm.watch('lookupType') === 'mineral-formula' 
                               ? 'Enter mineral name (e.g., Quartz)' 
-                              : 'Enter locality name (e.g., Tsumeb Mine)'
+                              : 'Enter locality ID or name (e.g., 1234 or Tsumeb)'
                           }
                           {...field} 
                         />

@@ -219,61 +219,88 @@ export async function getMineralFormula(name: string): Promise<string | null> {
 
 /**
  * Get coordinates for a locality by name
- * @param name The name of the locality
+ * @param name The name of the locality or ID as a string
  * @returns The coordinates if found
  */
 export async function getLocalityCoordinates(name: string): Promise<{ latitude: number; longitude: number } | null> {
   try {
     console.log(`Looking up coordinates for locality: ${name}`);
     
-    // Call the API to search for the locality using the q parameter (correct API parameter)
-    const response = await apiRequest('POST', '/api/proxy', {
-      path: '/localities/',
-      method: 'GET',
-      parameters: { q: name, limit: 10 }
-    });
+    // Check if the input is a numeric ID
+    const isId = /^\d+$/.test(name.trim());
     
-    const data = await response.json();
-    console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
-    
-    if (data?.data?.results && data.data.results.length > 0) {
-      // First, filter out the Afghanistan result that appears regardless of search terms
-      // This is a data integrity issue in the API
-      const filteredResults = data.data.results.filter((loc: any) => {
-        if (loc.txt && loc.txt.includes("Jegdalek ruby deposit") && 
-            loc.country && loc.country === "Afghanistan") {
-          return false; // Remove the problematic default record
-        }
-        return true;
+    if (isId) {
+      // If it's an ID, use direct ID lookup
+      const id = parseInt(name.trim());
+      console.log(`Input appears to be an ID: ${id}, using direct ID lookup`);
+      
+      const response = await apiRequest('POST', '/api/proxy', {
+        path: `/localities/${id}/`,
+        method: 'GET',
+        parameters: {}
       });
       
-      // If we have no results after filtering, return null
-      if (filteredResults.length === 0) {
-        console.log(`No non-default results found for ${name}`);
+      const data = await response.json();
+      
+      // Handle direct ID lookup result
+      if (data?.data && data.data.latitude && data.data.longitude) {
+        console.log(`Found locality by ID: ${data.data.txt || id}`);
+        return {
+          latitude: data.data.latitude,
+          longitude: data.data.longitude
+        };
+      } else {
+        console.log(`Locality ID ${id} not found or has no coordinates`);
         return null;
       }
+    } else {
+      // If it's a name, use name search with the q parameter
+      const response = await apiRequest('POST', '/api/proxy', {
+        path: '/localities/',
+        method: 'GET',
+        parameters: { q: name, limit: 10 }
+      });
       
-      // Try to find the best match by checking if the name is contained in the txt field
-      const searchTerm = name.toLowerCase().trim();
-      const exactMatch = filteredResults.find((loc: any) => 
-        loc.txt && loc.txt.toLowerCase().includes(searchTerm)
-      );
+      const data = await response.json();
+      console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
       
-      // Use the exact match if found, otherwise use the first non-Afghanistan result
-      const bestMatch = exactMatch || filteredResults[0];
-      
-      if (bestMatch && bestMatch.latitude && bestMatch.longitude) {
-        console.log(`Found match: ${bestMatch.txt}`);
-        return {
-          latitude: bestMatch.latitude,
-          longitude: bestMatch.longitude
-        };
+      if (data?.data?.results && data.data.results.length > 0) {
+        // Filter out ALL Afghanistan results since they appear to be default results
+        const filteredResults = data.data.results.filter((loc: any) => {
+          if (loc.country && loc.country === "Afghanistan") {
+            return false;
+          }
+          return true;
+        });
+        
+        // If we have no results after filtering, return null
+        if (filteredResults.length === 0) {
+          console.log(`No non-default results found for ${name}`);
+          return null;
+        }
+        
+        // Try to find the best match by checking if the name is contained in the txt field
+        const searchTerm = name.toLowerCase().trim();
+        const exactMatch = filteredResults.find((loc: any) => 
+          loc.txt && loc.txt.toLowerCase().includes(searchTerm)
+        );
+        
+        // Use the exact match if found, otherwise use the first non-Afghanistan result
+        const bestMatch = exactMatch || filteredResults[0];
+        
+        if (bestMatch && bestMatch.latitude && bestMatch.longitude) {
+          console.log(`Found match: ${bestMatch.txt}`);
+          return {
+            latitude: bestMatch.latitude,
+            longitude: bestMatch.longitude
+          };
+        }
       }
+      
+      // If no match found, return null
+      console.log(`No match found for ${name}`);
+      return null;
     }
-    
-    // If no match found, return null
-    console.log(`No match found for ${name}`);
-    return null;
   } catch (error) {
     console.error(`Error getting coordinates for ${name}:`, error);
     return null;
