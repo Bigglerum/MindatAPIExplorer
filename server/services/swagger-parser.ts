@@ -4,19 +4,17 @@ import { InsertApiEndpoint, InsertEndpointCategory } from "@shared/schema";
 
 /**
  * Fetches the Swagger documentation from the Mindat API
- * @param apiKey - The API key for authentication
+ * @param apiKey - The API key for Token authentication
  * @returns The Swagger documentation as a JSON object
  */
 export async function fetchSwaggerDocs(apiKey: string): Promise<OpenAPIDocument> {
   try {
-    // Use Basic Auth with username/password from environment variables
-    const authString = `${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`;
-    const base64Auth = Buffer.from(authString).toString('base64');
-    
+    // Use Token authentication with the API key
     const response = await fetch('https://api.mindat.org/schema/swagger.json', {
       headers: {
-        'Authorization': `Basic ${base64Auth}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json',
+        'User-Agent': 'MindatExplorer/1.0'
       }
     });
     

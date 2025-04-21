@@ -11,18 +11,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Validate credentials
   app.post('/api/validate-key', async (req: Request, res: Response) => {
     try {
-      // We're now using environment variables for authentication
-      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
-        return res.status(401).json({ valid: false, error: 'Missing credentials in environment' });
+      // Check for Mindat API key
+      if (!process.env.MINDAT_API_KEY) {
+        return res.status(401).json({ valid: false, error: 'Missing Mindat API key in environment' });
       }
       
       // Try to fetch something simple from the API to validate the credentials
-      const isValid = await storage.validateApiKey('');
+      const isValid = await storage.validateApiKey(process.env.MINDAT_API_KEY);
       
       if (isValid) {
         return res.status(200).json({ valid: true });
       } else {
-        return res.status(401).json({ valid: false, error: 'Invalid credentials' });
+        return res.status(401).json({ valid: false, error: 'Invalid API key' });
       }
     } catch (error) {
       console.error('Error validating API credentials:', error);
@@ -33,13 +33,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Fetch and parse Swagger documentation
   app.get('/api/docs/fetch', async (req: Request, res: Response) => {
     try {
-      // We now use environment variables for authentication, not API key from request
-      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
-        return res.status(401).json({ error: 'Unauthorized: Missing credentials' });
+      // Check for Mindat API key
+      if (!process.env.MINDAT_API_KEY) {
+        return res.status(401).json({ error: 'Unauthorized: Missing Mindat API key' });
       }
       
-      // Pass empty string as the API key is no longer used
-      const swaggerDoc = await fetchSwaggerDocs('');
+      // Pass the API key for Token authentication
+      const swaggerDoc = await fetchSwaggerDocs(process.env.MINDAT_API_KEY);
       return res.status(200).json(swaggerDoc);
     } catch (error) {
       console.error('Error fetching Swagger docs:', error);
@@ -121,39 +121,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let credentials: string;
       let useBasicAuth: boolean = false;
       
-      // Check which authentication method to use
-      if (apiKey === 'useToken') {
-        // Use API key from environment variables
-        if (process.env.MINDAT_API_KEY) {
-          credentials = process.env.MINDAT_API_KEY;
-          useBasicAuth = false;
-        } else {
-          // Fall back to basic auth if no API key is available
-          const username = process.env.MINDAT_USERNAME;
-          const password = process.env.MINDAT_PASSWORD;
-          
-          if (!username || !password) {
-            return res.status(401).json({ 
-              error: 'Unauthorized: Missing API credentials. Please provide a valid Mindat API key or username/password.' 
-            });
-          }
-          
-          credentials = Buffer.from(`${username}:${password}`).toString('base64');
-          useBasicAuth = true;
-        }
+      // According to Mindat API docs, we should always use Token authentication
+      if (process.env.MINDAT_API_KEY) {
+        // Use the API key directly for Token authentication
+        credentials = process.env.MINDAT_API_KEY;
+        useBasicAuth = false;
       } else {
-        // Use username/password from environment variables
-        const username = process.env.MINDAT_USERNAME;
-        const password = process.env.MINDAT_PASSWORD;
-        
-        if (!username || !password) {
-          return res.status(401).json({ 
-            error: 'Unauthorized: Missing credentials. Please provide valid Mindat username and password.' 
-          });
-        }
-        
-        credentials = Buffer.from(`${username}:${password}`).toString('base64');
-        useBasicAuth = true;
+        // If no API key is available, we'll need to return an error as basic auth isn't supported
+        return res.status(401).json({ 
+          error: 'Unauthorized: Missing API key. The Mindat API requires a valid API key for Token authentication.' 
+        });
       }
       
       // Call the proxy with the selected authentication method
