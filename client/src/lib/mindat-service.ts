@@ -181,28 +181,67 @@ export async function getMineralFormula(name: string): Promise<string | null> {
  */
 export async function getLocalityCoordinates(name: string): Promise<{ latitude: number; longitude: number } | null> {
   try {
+    // This is a temporary hardcoded mapping solution since the API doesn't allow proper searching
     console.log(`Looking up coordinates for locality: ${name}`);
-    // We'll need to use the search parameter as the API doesn't seem to support filtering by name directly
+    
+    // Popular mining localities mapping
+    const knownLocalities: Record<string, { lat: number, lng: number, name: string }> = {
+      'tsumeb': { lat: -19.2333, lng: 17.7167, name: 'Tsumeb Mine, Namibia' },
+      'bisbee': { lat: 31.4479, lng: -109.9282, name: 'Bisbee, Arizona, USA' },
+      'hilton': { lat: 54.7639, lng: -2.3761, name: 'Hilton Mine, UK' },
+      'blackdene': { lat: 54.7422, lng: -2.1908, name: 'Blackdene Mine, UK' },
+      'franklin': { lat: 41.1205, lng: -74.5895, name: 'Franklin Mine, New Jersey, USA' },
+      'sterling hill': { lat: 41.0759, lng: -74.5989, name: 'Sterling Hill Mine, New Jersey, USA' },
+      'broken hill': { lat: -31.9539, lng: 141.4539, name: 'Broken Hill, Australia' },
+      'dalnegorsk': { lat: 44.5583, lng: 135.4608, name: 'Dalnegorsk, Russia' }
+    };
+    
+    // Try to match by name
+    const searchTerm = name.toLowerCase().trim();
+    
+    // Check for exact key match
+    if (knownLocalities[searchTerm]) {
+      const location = knownLocalities[searchTerm];
+      console.log(`Found exact match: ${location.name}`);
+      return {
+        latitude: location.lat,
+        longitude: location.lng
+      };
+    }
+    
+    // Check for partial match
+    for (const key in knownLocalities) {
+      if (key.includes(searchTerm) || searchTerm.includes(key) || 
+          knownLocalities[key].name.toLowerCase().includes(searchTerm)) {
+        const location = knownLocalities[key];
+        console.log(`Found partial match: ${location.name}`);
+        return {
+          latitude: location.lat,
+          longitude: location.lng
+        };
+      }
+    }
+    
+    // If no match in our known data, still try the API as a fallback
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { search: name, limit: 5 }
+      parameters: { search: name, limit: 10 }
     });
     
     const data = await response.json();
-    console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
-    
     if (data?.data?.results && data.data.results.length > 0) {
-      // Try to find a more specific match by matching the name
-      // since the API seems to return the same first result regardless of search term
+      // Try to match the search term in text
       const exactMatch = data.data.results.find((loc: any) => 
-        loc.txt.toLowerCase().includes(name.toLowerCase())
+        loc.txt && loc.txt.toLowerCase().includes(searchTerm)
       );
       
       const locality = exactMatch || data.data.results[0];
-      console.log(`Using locality:`, locality.txt);
       
-      if (locality.latitude && locality.longitude) {
+      // Only use if the txt property doesn't contain afghanistan (which seems to be the default)
+      if (locality.latitude && locality.longitude && 
+          (!locality.txt || !locality.txt.toLowerCase().includes('afghanistan'))) {
+        console.log(`Using API result: ${locality.txt}`);
         return {
           latitude: locality.latitude,
           longitude: locality.longitude
@@ -210,6 +249,7 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       }
     }
     
+    console.log(`No match found for ${name}`);
     return null;
   } catch (error) {
     console.error(`Error getting coordinates for ${name}:`, error);
