@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, jsonb, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -63,6 +64,34 @@ export const insertSavedRequestSchema = createInsertSchema(savedRequests).pick({
   parameters: true,
   userId: true,
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  savedRequests: many(savedRequests)
+}));
+
+export const endpointCategoriesRelations = relations(endpointCategories, ({ many }) => ({
+  endpoints: many(apiEndpoints)
+}));
+
+export const apiEndpointsRelations = relations(apiEndpoints, ({ one, many }) => ({
+  category: one(endpointCategories, {
+    fields: [apiEndpoints.categoryId],
+    references: [endpointCategories.id]
+  }),
+  savedRequests: many(savedRequests)
+}));
+
+export const savedRequestsRelations = relations(savedRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [savedRequests.userId],
+    references: [users.id]
+  }),
+  endpoint: one(apiEndpoints, {
+    fields: [savedRequests.endpointId],
+    references: [apiEndpoints.id]
+  })
+}));
 
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
