@@ -17,9 +17,12 @@ export async function proxyApiRequest(
     let url = `https://api.mindat.org${path.startsWith('/') ? path : `/${path}`}`;
     const normalizedMethod = method.toUpperCase();
 
-    // Build headers with authentication
+    // Build headers with Basic authentication
+    const authString = `${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`;
+    const base64Auth = Buffer.from(authString).toString('base64');
+    
     const headers: Record<string, string> = {
-      'X-Api-Key': apiKey,
+      'Authorization': `Basic ${base64Auth}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };

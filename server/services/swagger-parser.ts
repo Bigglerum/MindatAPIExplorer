@@ -9,9 +9,13 @@ import { InsertApiEndpoint, InsertEndpointCategory } from "@shared/schema";
  */
 export async function fetchSwaggerDocs(apiKey: string): Promise<OpenAPIDocument> {
   try {
+    // Use Basic Auth with username/password from environment variables
+    const authString = `${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`;
+    const base64Auth = Buffer.from(authString).toString('base64');
+    
     const response = await fetch('https://api.mindat.org/schema/swagger.json', {
       headers: {
-        'X-Api-Key': apiKey,
+        'Authorization': `Basic ${base64Auth}`,
         'Content-Type': 'application/json'
       }
     });

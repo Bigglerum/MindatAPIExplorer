@@ -37,11 +37,14 @@ export class DatabaseStorage implements IStorage {
 
   async validateApiKey(apiKey: string): Promise<boolean> {
     try {
-      // Make a simple request to the Mindat API to check if the key is valid
-      // Use a simple endpoint like /status or just fetch the base URL
-      const response = await fetch('https://api.mindat.org/status', {
+      // Make a simple request to the Mindat API to check if credentials are valid
+      // We're using Basic Auth with username/password from environment variables
+      const authString = `${process.env.MINDAT_USERNAME}:${process.env.MINDAT_PASSWORD}`;
+      const base64Auth = Buffer.from(authString).toString('base64');
+      
+      const response = await fetch('https://api.mindat.org/minerals/search?name=quartz&limit=1', {
         headers: {
-          'X-Api-Key': apiKey,
+          'Authorization': `Basic ${base64Auth}`,
           'Content-Type': 'application/json'
         }
       });
