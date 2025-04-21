@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import { Search, BookOpen, MapPin, Database, AlertOctagon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as MindatService from '@/lib/mindat-service';
+import { apiRequest } from '@/lib/queryClient';
 
 interface MineralData {
   id: number;
@@ -101,12 +102,33 @@ export default function MindatSearch() {
         params.elements = data.searchTerm.split(',').map(el => el.trim());
       }
       
-      const results = await MindatService.searchMinerals(params);
+      // Directly call the API via proxy
+      const response = await apiRequest('POST', '/api/proxy', {
+        path: '/geomaterials/',
+        method: 'GET',
+        parameters: {
+          ...params,
+          limit: 10,
+          offset: 0
+        }
+      });
       
-      if (results && results.data) {
-        setMinerals(results.data);
+      const results = await response.json();
+      
+      if (results && results.data && results.data.results) {
+        const mineralList = results.data.results.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          formula: item.mindat_formula || item.ima_formula || '',
+          description: item.description,
+          ima_status: item.ima_status,
+          discovery_year: item.discovery_year,
+          url: item.url || `https://www.mindat.org/min-${item.id}.html`
+        }));
         
-        if (results.data.length === 0) {
+        setMinerals(mineralList);
+        
+        if (mineralList.length === 0) {
           toast({
             title: 'No minerals found',
             description: 'Try a different search term or criteria',
@@ -142,12 +164,35 @@ export default function MindatSearch() {
         params.region = data.searchTerm;
       }
       
-      const results = await MindatService.searchLocalities(params);
+      // Directly call the API via proxy
+      const response = await apiRequest('POST', '/api/proxy', {
+        path: '/localities/',
+        method: 'GET',
+        parameters: {
+          ...params,
+          limit: 10,
+          offset: 0
+        }
+      });
       
-      if (results && results.data) {
-        setLocalities(results.data);
+      const results = await response.json();
+      
+      if (results && results.data && results.data.results) {
+        const localityList = results.data.results.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          location_type: item.location_type,
+          country: item.country,
+          region: item.region,
+          description: item.description,
+          url: item.url || `https://www.mindat.org/loc-${item.id}.html`
+        }));
         
-        if (results.data.length === 0) {
+        setLocalities(localityList);
+        
+        if (localityList.length === 0) {
           toast({
             title: 'No localities found',
             description: 'Try a different search term or criteria',
