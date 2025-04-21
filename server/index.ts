@@ -91,14 +91,14 @@ app.use((req, res, next) => {
           
           const processedCategories = await parseSwaggerDoc(swaggerDoc);
           log(`Successfully imported ${processedCategories.length} API categories with endpoints.`);
-        } catch (error) {
-          log(`Error ingesting Swagger documentation: ${error.message}`);
+        } catch (error: any) {
+          log(`Error ingesting Swagger documentation: ${error.message || error}`);
         }
       } else {
         log(`Found ${categories.length} existing API categories. Skipping Swagger ingestion.`);
       }
-    } catch (error) {
-      log(`Error checking API categories: ${error.message}`);
+    } catch (error: any) {
+      log(`Error checking API categories: ${error.message || error}`);
     }
   });
 })();

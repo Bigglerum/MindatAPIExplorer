@@ -36,13 +36,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async validateApiKey(apiKey: string): Promise<boolean> {
-    // For demo purposes, always return true if the key is "demo_api_key"
-    if (apiKey === 'demo_api_key') {
-      return true;
+    try {
+      // Make a simple request to the Mindat API to check if the key is valid
+      // Use a simple endpoint like /status or just fetch the base URL
+      const response = await fetch('https://api.mindat.org/status', {
+        headers: {
+          'Authorization': `Token ${apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      return response.ok;
+    } catch (error) {
+      console.error('Error validating API key:', error);
+      return false;
     }
-    
-    const [user] = await db.select().from(users).where(eq(users.apiKey, apiKey));
-    return !!user;
   }
   
   // API Documentation methods
@@ -51,12 +59,12 @@ export class DatabaseStorage implements IStorage {
     const result: APICategory[] = [];
     
     for (const category of categories) {
-      const endpoints = await db
+      const endpointResults = await db
         .select()
         .from(apiEndpoints)
         .where(eq(apiEndpoints.categoryId, category.id));
       
-      const apiEndpoints: APIEndpoint[] = endpoints.map(endpoint => {
+      const endpointList: APIEndpoint[] = endpointResults.map(endpoint => {
         const parameters = endpoint.parameters 
           ? JSON.parse(endpoint.parameters as string) as Parameter[]
           : [];
@@ -70,18 +78,18 @@ export class DatabaseStorage implements IStorage {
           path: endpoint.path,
           method: endpoint.method,
           summary: endpoint.summary || endpoint.path,
-          description: endpoint.description,
+          description: endpoint.description || undefined,
           parameters,
           responses,
-          categoryId: endpoint.categoryId
+          categoryId: endpoint.categoryId || undefined
         };
       });
       
       result.push({
         id: category.id,
         name: category.name,
-        description: category.description,
-        endpoints: apiEndpoints
+        description: category.description || undefined,
+        endpoints: endpointList
       });
     }
     
@@ -108,10 +116,10 @@ export class DatabaseStorage implements IStorage {
       path: endpoint.path,
       method: endpoint.method,
       summary: endpoint.summary || endpoint.path,
-      description: endpoint.description,
+      description: endpoint.description || undefined,
       parameters,
       responses,
-      categoryId: endpoint.categoryId
+      categoryId: endpoint.categoryId || undefined
     };
   }
 
@@ -144,10 +152,10 @@ export class DatabaseStorage implements IStorage {
         path: endpoint.path,
         method: endpoint.method,
         summary: endpoint.summary || endpoint.path,
-        description: endpoint.description,
+        description: endpoint.description || undefined,
         parameters,
         responses,
-        categoryId: endpoint.categoryId
+        categoryId: endpoint.categoryId || undefined
       };
     });
   }
