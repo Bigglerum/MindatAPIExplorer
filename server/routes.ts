@@ -8,39 +8,38 @@ import { proxyApiRequest } from "./services/api-proxy";
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
   
-  // Validate API key
+  // Validate credentials
   app.post('/api/validate-key', async (req: Request, res: Response) => {
     try {
-      const { apiKey } = req.body;
-      
-      if (!apiKey) {
-        return res.status(400).json({ error: 'API key is required' });
+      // We're now using environment variables for authentication
+      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
+        return res.status(401).json({ valid: false, error: 'Missing credentials in environment' });
       }
       
-      // Try to fetch something simple from the API to validate the key
-      const isValid = await storage.validateApiKey(apiKey);
+      // Try to fetch something simple from the API to validate the credentials
+      const isValid = await storage.validateApiKey('');
       
       if (isValid) {
         return res.status(200).json({ valid: true });
       } else {
-        return res.status(401).json({ valid: false, error: 'Invalid API key' });
+        return res.status(401).json({ valid: false, error: 'Invalid credentials' });
       }
     } catch (error) {
-      console.error('Error validating API key:', error);
-      return res.status(500).json({ error: 'Failed to validate API key' });
+      console.error('Error validating API credentials:', error);
+      return res.status(500).json({ error: 'Failed to validate API credentials' });
     }
   });
 
   // Fetch and parse Swagger documentation
   app.get('/api/docs/fetch', async (req: Request, res: Response) => {
     try {
-      const apiKey = req.headers.authorization?.split(' ')[1];
-      
-      if (!apiKey) {
-        return res.status(401).json({ error: 'Unauthorized: API key required' });
+      // We now use environment variables for authentication, not API key from request
+      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
+        return res.status(401).json({ error: 'Unauthorized: Missing credentials' });
       }
       
-      const swaggerDoc = await fetchSwaggerDocs(apiKey);
+      // Pass empty string as the API key is no longer used
+      const swaggerDoc = await fetchSwaggerDocs('');
       return res.status(200).json(swaggerDoc);
     } catch (error) {
       console.error('Error fetching Swagger docs:', error);
@@ -114,17 +113,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/proxy', async (req: Request, res: Response) => {
     try {
       const { path, method, parameters } = req.body;
-      const apiKey = req.headers.authorization?.split(' ')[1];
       
-      if (!apiKey) {
-        return res.status(401).json({ error: 'Unauthorized: API key required' });
+      // We now use environment variables for authentication
+      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
+        return res.status(401).json({ error: 'Unauthorized: Missing credentials' });
       }
       
       if (!path || !method) {
         return res.status(400).json({ error: 'Path and method are required' });
       }
       
-      const response = await proxyApiRequest(path, method, parameters || {}, apiKey);
+      // Pass empty string as the API key is no longer used
+      const response = await proxyApiRequest(path, method, parameters || {}, '');
       return res.status(200).json(response);
     } catch (error: any) {
       console.error('Error proxying API request:', error);

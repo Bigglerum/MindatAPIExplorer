@@ -27,12 +27,14 @@ export async function generateChatResponse(message: string, history: any[] = [])
       Your purpose is to assist users with understanding and using the API. 
       
       Some key information about the Mindat API:
-      - It requires an API key for authentication
+      - It requires Basic Authentication with username and password
+      - Authentication is done with the 'Authorization: Basic <base64-encoded-username:password>' header
       - It provides endpoints for minerals, locations, images, and other mineralogical data
       - Common parameters include pagination (page, page_size) and filtering options
       - The base URL is https://api.mindat.org
       
       Be helpful, concise, and technical when appropriate. When providing code examples, use markdown code blocks.
+      Show examples with Basic Authentication in different programming languages.
       Always encourage best practices for API usage.`
     };
 

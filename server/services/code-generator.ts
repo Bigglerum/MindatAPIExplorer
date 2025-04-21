@@ -33,10 +33,19 @@ function generatePythonCode(endpoint: APIEndpoint, parameters: Record<string, an
   const hasPathParams = endpoint.path.includes('{');
   
   let code = `import requests
+import base64
 
 url = "${url}"
+
+# Basic Authentication setup
+username = "YOUR_USERNAME"
+password = "YOUR_PASSWORD"
+auth_str = f"{username}:{password}"
+auth_bytes = auth_str.encode('ascii')
+auth_base64 = base64.b64encode(auth_bytes).decode('ascii')
+
 headers = {
-    "Authorization": "Token YOUR_API_KEY",
+    "Authorization": f"Basic {auth_base64}",
     "Content-Type": "application/json"
 }
 `;
@@ -114,8 +123,13 @@ function generateJavaScriptCode(endpoint: APIEndpoint, parameters: Record<string
   const hasPathParams = endpoint.path.includes('{');
   
   let code = `// Using fetch API
+// Basic Authentication setup
+const username = "YOUR_USERNAME";
+const password = "YOUR_PASSWORD";
+const base64Auth = btoa(username + ":" + password);
+
 const headers = {
-    "Authorization": "Token YOUR_API_KEY",
+    "Authorization": "Basic " + base64Auth,
     "Content-Type": "application/json"
 };
 
@@ -266,8 +280,8 @@ function generateCurlCommand(endpoint: APIEndpoint, parameters: Record<string, a
   // Add the URL
   curlCommand += `\n  "${url}" \\`;
   
-  // Add headers
-  curlCommand += `\n  -H "Authorization: Token YOUR_API_KEY" \\`;
+  // Add headers for Basic Authentication
+  curlCommand += `\n  -u "YOUR_USERNAME:YOUR_PASSWORD" \\`;
   curlCommand += `\n  -H "Content-Type: application/json"`;
   
   // Add request body for non-GET requests
