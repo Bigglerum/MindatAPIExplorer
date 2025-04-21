@@ -115,16 +115,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { path, method, parameters } = req.body;
       
       // We now use environment variables for authentication
-      if (!process.env.MINDAT_USERNAME || !process.env.MINDAT_PASSWORD) {
+      const username = process.env.MINDAT_USERNAME;
+      const password = process.env.MINDAT_PASSWORD;
+      
+      if (!username || !password) {
         return res.status(401).json({ error: 'Unauthorized: Missing credentials' });
       }
       
-      if (!path || !method) {
-        return res.status(400).json({ error: 'Path and method are required' });
+      if (!path) {
+        return res.status(400).json({ error: 'Path is required' });
       }
       
-      // Pass empty string as the API key is no longer used
-      const response = await proxyApiRequest(path, method, parameters || {}, '');
+      // Create basic auth credentials
+      const credentials = Buffer.from(`${username}:${password}`).toString('base64');
+      
+      // Call the proxy with basic auth
+      const response = await proxyApiRequest(
+        path, 
+        method || 'GET', 
+        parameters || {}, 
+        credentials,
+        true // Use basic auth
+      );
+      
       return res.status(200).json(response);
     } catch (error: any) {
       console.error('Error proxying API request:', error);

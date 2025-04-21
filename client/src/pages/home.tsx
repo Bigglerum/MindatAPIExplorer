@@ -36,6 +36,14 @@ export default function Home() {
           >
             Learn More
           </Button>
+          <Button
+            variant="secondary"
+            size="lg"
+            className="text-lg px-8"
+            onClick={() => navigate('/search')}
+          >
+            Direct Search
+          </Button>
         </div>
       </div>
       
