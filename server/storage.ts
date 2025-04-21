@@ -453,21 +453,44 @@ export class MemStorage implements IStorage {
   }
 
   async validateApiKey(apiKey: string): Promise<boolean> {
-    // In a real implementation, this would make a call to the Mindat API to validate the key
-    // For now, we'll just check if any user has this API key or accept a demo key
-    if (apiKey === 'demo_api_key') {
-      return true;
-    }
-    
-    for (const user of this.users.values()) {
-      if (user.apiKey === apiKey) {
+    try {
+      // We're now using Basic Auth with environment variables
+      const username = process.env.MINDAT_USERNAME;
+      const password = process.env.MINDAT_PASSWORD;
+      
+      // Check if environment credentials are available
+      if (username && password) {
+        // Create Basic Auth header
+        const base64Auth = Buffer.from(`${username}:${password}`).toString('base64');
+        
+        // Try to make a simple request to validate credentials
+        const response = await fetch('https://api.mindat.org/minerals/search?name=quartz&limit=1', {
+          headers: {
+            'Authorization': `Basic ${base64Auth}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        return response.ok;
+      }
+      
+      // Fallback for development without environment variables
+      if (apiKey === 'demo_api_key') {
         return true;
       }
+      
+      for (const user of this.users.values()) {
+        if (user.apiKey === apiKey) {
+          return true;
+        }
+      }
+      
+      // For development without environment variables, assume any non-empty key is valid
+      return apiKey.length > 0;
+    } catch (error) {
+      console.error('Error validating API credentials:', error);
+      return false;
     }
-    
-    // For development purposes, assume any non-empty key is valid
-    // In production, this would be replaced with actual API validation
-    return apiKey.length > 0;
   }
 
   // API Documentation methods
