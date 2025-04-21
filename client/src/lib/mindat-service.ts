@@ -181,16 +181,26 @@ export async function getMineralFormula(name: string): Promise<string | null> {
  */
 export async function getLocalityCoordinates(name: string): Promise<{ latitude: number; longitude: number } | null> {
   try {
+    console.log(`Looking up coordinates for locality: ${name}`);
+    // We'll need to use the search parameter as the API doesn't seem to support filtering by name directly
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { name, limit: 1 }
+      parameters: { search: name, limit: 5 }
     });
     
     const data = await response.json();
+    console.log(`API response for ${name}:`, data?.data?.results?.length || 0, 'results');
     
     if (data?.data?.results && data.data.results.length > 0) {
-      const locality = data.data.results[0];
+      // Try to find a more specific match by matching the name
+      // since the API seems to return the same first result regardless of search term
+      const exactMatch = data.data.results.find((loc: any) => 
+        loc.txt.toLowerCase().includes(name.toLowerCase())
+      );
+      
+      const locality = exactMatch || data.data.results[0];
+      console.log(`Using locality:`, locality.txt);
       
       if (locality.latitude && locality.longitude) {
         return {

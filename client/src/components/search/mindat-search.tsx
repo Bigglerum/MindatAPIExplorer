@@ -154,22 +154,20 @@ export default function MindatSearch() {
     setLocalities([]);
     
     try {
-      const params: MindatService.MindatLocalitySearchParams = {};
-      
-      if (data.searchType === 'name') {
-        params.name = data.searchTerm;
-      } else if (data.searchType === 'country') {
-        params.country = data.searchTerm;
+      let searchTerm = data.searchTerm;
+      // Add type-specific modifiers to improve search
+      if (data.searchType === 'country') {
+        searchTerm = `${searchTerm} country`;
       } else if (data.searchType === 'region') {
-        params.region = data.searchTerm;
+        searchTerm = `${searchTerm} region`;
       }
       
-      // Directly call the API via proxy
+      // Directly call the API via proxy - using search parameter instead
       const response = await apiRequest('POST', '/api/proxy', {
         path: '/localities/',
         method: 'GET',
         parameters: {
-          ...params,
+          search: searchTerm,
           limit: 10,
           offset: 0
         }
@@ -178,16 +176,29 @@ export default function MindatSearch() {
       const results = await response.json();
       
       if (results && results.data && results.data.results) {
-        const localityList = results.data.results.map((item: any) => ({
+        // Filter the results to improve relevance
+        const filteredResults = results.data.results.filter((item: any) => {
+          if (data.searchType === 'name') {
+            return true; // Keep all results for name search
+          } else if (data.searchType === 'country') {
+            return item.country && item.country.toLowerCase().includes(data.searchTerm.toLowerCase());
+          } else if (data.searchType === 'region') {
+            return item.txt && item.txt.toLowerCase().includes(data.searchTerm.toLowerCase());
+          }
+          return true;
+        });
+        
+        // Map the results to a consistent format
+        const localityList = filteredResults.map((item: any) => ({
           id: item.id,
-          name: item.name,
+          name: item.txt || item.name || "Unknown locality",
           latitude: item.latitude,
-          longitude: item.longitude,
-          location_type: item.location_type,
+          longitude: item.longitude, 
+          location_type: item.locality_type,
           country: item.country,
           region: item.region,
-          description: item.description,
-          url: item.url || `https://www.mindat.org/loc-${item.id}.html`
+          description: item.description_short,
+          url: `https://www.mindat.org/loc-${item.id}.html`
         }));
         
         setLocalities(localityList);
