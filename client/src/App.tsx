@@ -8,6 +8,7 @@ import Home from "@/pages/home";
 import Explorer from "@/pages/explorer";
 import KnowledgeBase from "@/pages/knowledge-base";
 import SavedRequests from "@/pages/saved-requests";
+import Search from "@/pages/search";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/explorer" component={Explorer} />
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/saved-requests" component={SavedRequests} />
+      <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>
   );
