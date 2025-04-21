@@ -116,8 +116,14 @@ export async function proxyApiRequest(
     let lastError: any = null;
     
     for (const baseUrl of baseUrls) {
-      // Update URL with current base URL
-      url = `${baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+      // Update URL with current base URL, keeping any query parameters that were already added
+      const pathWithoutQuery = path.split('?')[0];
+      const queryString = url.includes('?') ? url.substring(url.indexOf('?')) : '';
+      
+      // Construct URL with the current base URL
+      url = `${baseUrl}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}${queryString}`;
+      
+      console.log(`Trying API URL: ${url}`);
       
       try {
         // Make the request
