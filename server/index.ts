@@ -1,6 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { fetchSwaggerDocs, parseSwaggerDoc } from "./services/swagger-parser";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -64,7 +66,39 @@ app.use((req, res, next) => {
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  }, async () => {
     log(`serving on port ${port}`);
+    
+    // Check if we should ingest Swagger documentation
+    try {
+      // Check if we have API categories already
+      const categories = await storage.getApiCategories();
+      
+      if (categories.length === 0) {
+        log('No API categories found. Fetching Swagger documentation...');
+        
+        // Use MINDAT_API_KEY from environment variables
+        const apiKey = process.env.MINDAT_API_KEY;
+        
+        if (!apiKey) {
+          log('MINDAT_API_KEY not found in environment variables. Skipping Swagger ingestion.');
+          return;
+        }
+        
+        try {
+          const swaggerDoc = await fetchSwaggerDocs(apiKey);
+          log('Swagger documentation fetched. Processing...');
+          
+          const processedCategories = await parseSwaggerDoc(swaggerDoc);
+          log(`Successfully imported ${processedCategories.length} API categories with endpoints.`);
+        } catch (error) {
+          log(`Error ingesting Swagger documentation: ${error.message}`);
+        }
+      } else {
+        log(`Found ${categories.length} existing API categories. Skipping Swagger ingestion.`);
+      }
+    } catch (error) {
+      log(`Error checking API categories: ${error.message}`);
+    }
   });
 })();
