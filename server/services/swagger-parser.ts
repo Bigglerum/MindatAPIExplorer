@@ -11,7 +11,7 @@ export async function fetchSwaggerDocs(apiKey: string): Promise<OpenAPIDocument>
   try {
     const response = await fetch('https://api.mindat.org/schema/swagger.json', {
       headers: {
-        'Authorization': `Token ${apiKey}`,
+        'X-Api-Key': apiKey,
         'Content-Type': 'application/json'
       }
     });

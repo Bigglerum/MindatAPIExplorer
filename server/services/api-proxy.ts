@@ -19,7 +19,7 @@ export async function proxyApiRequest(
 
     // Build headers with authentication
     const headers: Record<string, string> = {
-      'Authorization': `Token ${apiKey}`,
+      'X-Api-Key': apiKey,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };

@@ -41,7 +41,7 @@ export class DatabaseStorage implements IStorage {
       // Use a simple endpoint like /status or just fetch the base URL
       const response = await fetch('https://api.mindat.org/status', {
         headers: {
-          'Authorization': `Token ${apiKey}`,
+          'X-Api-Key': apiKey,
           'Content-Type': 'application/json'
         }
       });
@@ -65,13 +65,35 @@ export class DatabaseStorage implements IStorage {
         .where(eq(apiEndpoints.categoryId, category.id));
       
       const endpointList: APIEndpoint[] = endpointResults.map(endpoint => {
-        const parameters = endpoint.parameters 
-          ? JSON.parse(endpoint.parameters as string) as Parameter[]
-          : [];
+        // Handle parameters based on type
+        let parameters: Parameter[] = [];
+        if (endpoint.parameters) {
+          if (typeof endpoint.parameters === 'string') {
+            try {
+              parameters = JSON.parse(endpoint.parameters) as Parameter[];
+            } catch (e) {
+              console.error('Error parsing parameters:', e);
+            }
+          } else {
+            // If already an object, use directly
+            parameters = endpoint.parameters as unknown as Parameter[];
+          }
+        }
         
-        const responses = endpoint.responses
-          ? JSON.parse(endpoint.responses as string)
-          : {};
+        // Handle responses based on type
+        let responses = {};
+        if (endpoint.responses) {
+          if (typeof endpoint.responses === 'string') {
+            try {
+              responses = JSON.parse(endpoint.responses);
+            } catch (e) {
+              console.error('Error parsing responses:', e);
+            }
+          } else {
+            // If already an object, use directly
+            responses = endpoint.responses;
+          }
+        }
         
         return {
           id: endpoint.id,
@@ -103,13 +125,35 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     }
     
-    const parameters = endpoint.parameters 
-      ? JSON.parse(endpoint.parameters as string) as Parameter[]
-      : [];
+    // Handle parameters based on type
+    let parameters: Parameter[] = [];
+    if (endpoint.parameters) {
+      if (typeof endpoint.parameters === 'string') {
+        try {
+          parameters = JSON.parse(endpoint.parameters) as Parameter[];
+        } catch (e) {
+          console.error('Error parsing parameters:', e);
+        }
+      } else {
+        // If already an object, use directly
+        parameters = endpoint.parameters as unknown as Parameter[];
+      }
+    }
     
-    const responses = endpoint.responses
-      ? JSON.parse(endpoint.responses as string)
-      : {};
+    // Handle responses based on type
+    let responses = {};
+    if (endpoint.responses) {
+      if (typeof endpoint.responses === 'string') {
+        try {
+          responses = JSON.parse(endpoint.responses);
+        } catch (e) {
+          console.error('Error parsing responses:', e);
+        }
+      } else {
+        // If already an object, use directly
+        responses = endpoint.responses;
+      }
+    }
     
     return {
       id: endpoint.id,
@@ -139,13 +183,35 @@ export class DatabaseStorage implements IStorage {
       );
     
     return endpoints.map(endpoint => {
-      const parameters = endpoint.parameters 
-        ? JSON.parse(endpoint.parameters as string) as Parameter[]
-        : [];
+      // Handle parameters based on type
+      let parameters: Parameter[] = [];
+      if (endpoint.parameters) {
+        if (typeof endpoint.parameters === 'string') {
+          try {
+            parameters = JSON.parse(endpoint.parameters) as Parameter[];
+          } catch (e) {
+            console.error('Error parsing parameters:', e);
+          }
+        } else {
+          // If already an object, use directly
+          parameters = endpoint.parameters as unknown as Parameter[];
+        }
+      }
       
-      const responses = endpoint.responses
-        ? JSON.parse(endpoint.responses as string)
-        : {};
+      // Handle responses based on type
+      let responses = {};
+      if (endpoint.responses) {
+        if (typeof endpoint.responses === 'string') {
+          try {
+            responses = JSON.parse(endpoint.responses);
+          } catch (e) {
+            console.error('Error parsing responses:', e);
+          }
+        } else {
+          // If already an object, use directly
+          responses = endpoint.responses;
+        }
+      }
       
       return {
         id: endpoint.id,
