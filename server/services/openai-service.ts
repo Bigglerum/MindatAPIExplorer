@@ -56,7 +56,7 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
     const completion = await openai.chat.completions.create({
       model: MODEL,
       messages: [
-        systemPrompt, 
+        { role: "system", content: systemPrompt.content }, 
         { role: "user", content: message }
       ],
       temperature: 0.1, // Lower temperature for more deterministic extraction
@@ -182,7 +182,7 @@ async function generateResponseFromApiData(
     const completion = await openai.chat.completions.create({
       model: MODEL,
       messages: [
-        systemPrompt, 
+        { role: "system", content: systemPrompt.content }, 
         { role: "user", content: context }
       ],
       temperature: 0.7,
@@ -241,13 +241,17 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
       "\nAlways encourage best practices for API usage."
     };
 
-    // Add the system prompt at the beginning of the messages
-    const messages = [systemPrompt, ...formattedHistory, { role: "user", content: message }];
+    // Create properly formatted messages array
+    const messages = [
+      { role: "system", content: systemPrompt.content },
+      ...formattedHistory,
+      { role: "user", content: message }
+    ];
 
     // Make the request to OpenAI
     const completion = await openai.chat.completions.create({
       model: MODEL,
-      messages: messages as any[],
+      messages: messages,
       temperature: 0.7,
       max_tokens: 500,
     });
