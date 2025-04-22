@@ -273,10 +273,10 @@ export async function getMineralsAtLocality(localityName: string) {
       console.log(`Locentries API request failed with status ${locentriesResponse.status}`);
     }
     
-    // APPROACH 2: Get locality details to find element composition then find minerals with those elements
-    console.log("Trying elements-based approach to find minerals at locality");
+    // APPROACH 2: Try more direct approaches to find minerals at a locality
+    console.log("Trying direct locality-mineral associations");
     
-    // Get locality details which include element composition
+    // Get locality details which might include mineral lists
     const localityDetailsUrl = `${BASE_URL}/localities/${localityId}/`;
     try {
       const detailsResponse = await fetch(localityDetailsUrl, {
@@ -287,7 +287,91 @@ export async function getMineralsAtLocality(localityName: string) {
       if (detailsResponse.ok) {
         const localityDetails = await detailsResponse.json();
         
-        // Extract elements from locality
+        // ----- APPROACH 2.1: Check minerals directly listed in locality details -----
+        // Some localities have direct mineral listings
+        if (localityDetails.minerals && Array.isArray(localityDetails.minerals) && localityDetails.minerals.length > 0) {
+          console.log(`Found ${localityDetails.minerals.length} minerals directly listed in locality details`);
+          localityDetails.minerals.forEach((mineralId: number) => {
+            if (!approachTwoMineralIds.includes(mineralId)) {
+              approachTwoMineralIds.push(mineralId);
+            }
+          });
+        }
+        
+        // ----- APPROACH 2.2: Check the related_minerals field -----
+        if (localityDetails.related_minerals && Array.isArray(localityDetails.related_minerals) && localityDetails.related_minerals.length > 0) {
+          console.log(`Found ${localityDetails.related_minerals.length} related minerals in locality details`);
+          localityDetails.related_minerals.forEach((mineral: any) => {
+            if (mineral.id && !approachTwoMineralIds.includes(mineral.id)) {
+              approachTwoMineralIds.push(mineral.id);
+            }
+          });
+        }
+        
+        // ----- APPROACH 2.3: Use minextnt endpoint to find minerals by locality -----
+        try {
+          const minextntUrl = `${BASE_URL}/minextnt/`;
+          const minextntParams = {
+            locality: localityId.toString(),
+            limit: '100'
+          };
+          
+          const minextntQueryString = new URLSearchParams(minextntParams).toString();
+          console.log(`Trying minextnt endpoint: ${minextntUrl}?${minextntQueryString}`);
+          
+          const minextntResponse = await fetch(`${minextntUrl}?${minextntQueryString}`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+          });
+          
+          if (minextntResponse.ok) {
+            const minextntData = await minextntResponse.json();
+            
+            if (minextntData.results && minextntData.results.length > 0) {
+              console.log(`Found ${minextntData.results.length} minerals via minextnt endpoint`);
+              
+              minextntData.results.forEach((entry: any) => {
+                if (entry.min && !approachTwoMineralIds.includes(entry.min)) {
+                  approachTwoMineralIds.push(entry.min);
+                }
+              });
+            }
+          }
+        } catch (err) {
+          console.log("Error with minextnt approach:", err);
+        }
+        
+        // ----- APPROACH 2.4: Use website data to extract manually listed minerals -----
+        if (localityDetails.txt) {
+          try {
+            // Request full locality page that might have mineral listings
+            const localityPageUrl = `${BASE_URL}/localities-detail/${localityId}/`;
+            console.log(`Trying localities-detail endpoint: ${localityPageUrl}`);
+            
+            const pageResponse = await fetch(localityPageUrl, {
+              method: 'GET',
+              headers: getAuthHeaders()
+            });
+            
+            if (pageResponse.ok) {
+              const pageData = await pageResponse.json();
+              
+              if (pageData.minerals && Array.isArray(pageData.minerals) && pageData.minerals.length > 0) {
+                console.log(`Found ${pageData.minerals.length} minerals in locality-detail data`);
+                
+                pageData.minerals.forEach((mineral: any) => {
+                  if (mineral.id && !approachTwoMineralIds.includes(mineral.id)) {
+                    approachTwoMineralIds.push(mineral.id);
+                  }
+                });
+              }
+            }
+          } catch (err) {
+            console.log("Error with locality-detail approach:", err);
+          }
+        }
+        
+        // ----- APPROACH 2.5: Use element filtering to find potential minerals -----
         if (localityDetails.elements) {
           const elementsStr = localityDetails.elements.replace(/-/g, ',').replace(/,,/g, ',');
           const elements = elementsStr.split(',').filter(Boolean);
@@ -346,8 +430,10 @@ export async function getMineralsAtLocality(localityName: string) {
                         const matchingEntry = data.results.find((entry: any) => entry.loc === localityId);
                         
                         if (matchingEntry) {
-                          approachTwoMineralIds.push(mineralId);
-                          console.log(`Found mineral ${mineralId} at locality ${localityId}`);
+                          if (!approachTwoMineralIds.includes(mineralId)) {
+                            approachTwoMineralIds.push(mineralId);
+                            console.log(`Found mineral ${mineralId} at locality ${localityId}`);
+                          }
                         }
                       }
                     }
@@ -355,15 +441,15 @@ export async function getMineralsAtLocality(localityName: string) {
                     console.log(`Error checking if mineral ${mineralId} is at locality ${localityId}:`, err);
                   }
                 }
-                
-                console.log(`Approach 2: Found ${approachTwoMineralIds.length} minerals at locality through element filtering`);
               }
             }
           }
         }
+        
+        console.log(`APPROACH 2: Found ${approachTwoMineralIds.length} minerals at locality through direct approaches`);
       }
     } catch (err) {
-      console.log("Error with element-based approach:", err);
+      console.log("Error with direct approaches:", err);
     }
     
     // Combine unique mineral IDs from both approaches
