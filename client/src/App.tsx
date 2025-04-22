@@ -9,6 +9,7 @@ import Explorer from "@/pages/explorer";
 import KnowledgeBase from "@/pages/knowledge-base";
 import SavedRequests from "@/pages/saved-requests";
 import Search from "@/pages/search";
+import { useEffect } from "react";
 
 function Router() {
   return (
@@ -24,6 +25,18 @@ function Router() {
 }
 
 function App() {
+  // Add passive touch listeners to improve scrolling performance on iOS
+  useEffect(() => {
+    // This helps with iOS scrolling performance
+    document.addEventListener('touchstart', () => {}, { passive: true });
+    document.addEventListener('touchmove', () => {}, { passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', () => {});
+      document.removeEventListener('touchmove', () => {});
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
