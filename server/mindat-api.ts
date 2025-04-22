@@ -302,10 +302,22 @@ export async function getMineralsAtLocality(localityName: string) {
         }
       }
 
-      // Second attempt - try the direct locality minerals endpoint
-      const mineralsUrl = `${BASE_URL}/localities/${localityId}/minerals/`;
+      // Second attempt - Use the proper geomaterials endpoint with locality parameter
+      console.log(`Using geomaterials endpoint with locality ID: ${localityId}`);
       
-      let mineralsResponse = await fetch(mineralsUrl, {
+      // Use the correct endpoint pattern as shown in the example
+      const mineralsUrl = `${BASE_URL}/geomaterials/`;
+      const searchParams = {
+        locality: localityId.toString(),
+        fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description,variantof",
+        limit: "50"
+      };
+      
+      const queryString = new URLSearchParams(searchParams).toString();
+      const fullUrl = `${mineralsUrl}?${queryString}`;
+      
+      console.log(`Making request to: ${fullUrl}`);
+      let mineralsResponse = await fetch(fullUrl, {
         method: 'GET',
         headers: getAuthHeaders()
       });
@@ -321,23 +333,52 @@ export async function getMineralsAtLocality(localityName: string) {
           }
         };
       } else {
-        console.log(`Direct minerals endpoint failed with status ${mineralsResponse.status}, trying alternative approach`);
+        console.log(`Geomaterials endpoint failed with status ${mineralsResponse.status}, trying alternative approach`);
         
-        // Third attempt - try searching for minerals with the locality name in the description
-        // This is a fallback approach that might work for some localities
+        // Third attempt - try with a different parameter format
+        const altParams = {
+          locality_ids: localityId.toString(),
+          fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description,variantof",
+          limit: "50"
+        };
+        
+        const altQueryString = new URLSearchParams(altParams).toString();
+        const altUrl = `${mineralsUrl}?${altQueryString}`;
+        
+        console.log(`Trying alternate parameter format: ${altUrl}`);
+        const altResponse = await fetch(altUrl, {
+          method: 'GET',
+          headers: getAuthHeaders()
+        });
+        
+        if (altResponse.ok) {
+          const altData = await altResponse.json();
+          console.log(`Found ${altData?.results?.length || 0} minerals with alternative approach`);
+          
+          return { 
+            data: {
+              locality: matchedLocality,
+              minerals: altData?.results || []
+            }
+          };
+        }
+        
+        console.log(`Alternative approach also failed, trying direct search by locality name`);
+        
+        // Fourth attempt - try searching for minerals with the locality name in the description
         const localitySearchTerm = matchedLocality.txt.split(',')[0].trim(); // Use just the first part of the locality name
         console.log(`Trying mineral search with locality name: ${localitySearchTerm}`);
         
-        // Search for minerals that might be associated with this locality
-        const searchParams = {
+        // Search for minerals that might be associated with this locality by name
+        const nameSearchParams = {
           q: localitySearchTerm,
           limit: "30",
           offset: "0"
         };
         
-        console.log(`Performing mineral search with params:`, JSON.stringify(searchParams));
+        console.log(`Performing mineral search with params:`, JSON.stringify(nameSearchParams));
         
-        const searchUrl = `${BASE_URL}/geomaterials/?` + new URLSearchParams(searchParams as Record<string, string>);
+        const searchUrl = `${BASE_URL}/geomaterials/?` + new URLSearchParams(nameSearchParams as Record<string, string>);
         const searchResponse = await fetch(searchUrl, {
           method: 'GET',
           headers: getAuthHeaders()

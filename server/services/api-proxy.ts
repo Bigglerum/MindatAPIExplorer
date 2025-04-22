@@ -3,15 +3,15 @@
  * @param path - The API path to request
  * @param method - The HTTP method (GET, POST, etc.)
  * @param parameters - The request parameters (query params or body)
- * @param credentials - API key for Token authentication
- * @param useBasicAuth - No longer used, maintained for backwards compatibility
+ * @param credentials - API key for Token authentication or an object with username/password for Basic Auth
+ * @param useBasicAuth - Whether to use Basic Authentication instead of Token auth
  * @returns The API response data
  */
 export async function proxyApiRequest(
   path: string,
   method: string,
   parameters: Record<string, any>,
-  credentials: string,
+  credentials: any,
   useBasicAuth: boolean = false
 ): Promise<any> {
   try {
@@ -49,10 +49,18 @@ export async function proxyApiRequest(
     // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
       // Basic Auth is used when we have username/password
-      headers['Authorization'] = `Basic ${credentials}`;
+      if (typeof credentials === 'object' && credentials.username && credentials.password) {
+        const auth = Buffer.from(`${credentials.username}:${credentials.password}`).toString('base64');
+        headers['Authorization'] = `Basic ${auth}`;
+        console.log('Using Basic Authentication with username/password');
+      } else {
+        console.log('Missing username/password for Basic Authentication');
+      }
     } else {
       // Token authentication is used when we have an API key
-      headers['Authorization'] = `Token ${credentials}`;
+      const apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
+      headers['Authorization'] = `Token ${apiKey}`;
+      console.log('Using Mindat API key for Token authentication');
     }
 
     // Prepare request options
