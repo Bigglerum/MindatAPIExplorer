@@ -31,15 +31,25 @@ export default function Explorer() {
       <Header toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar 
-          visible={sidebarVisible} 
-          activeEndpoint={activeEndpoint} 
-          setActiveEndpoint={setActiveEndpoint} 
-        />
+        {/* On mobile, position sidebar with lower z-index so it doesn't cover main content */}
+        <div className="lg:relative">
+          <Sidebar 
+            visible={sidebarVisible} 
+            activeEndpoint={activeEndpoint} 
+            setActiveEndpoint={setActiveEndpoint} 
+          />
+          {/* Overlay that appears when sidebar is open on mobile - clicking it closes the sidebar */}
+          {sidebarVisible && (
+            <div 
+              className="fixed inset-0 bg-black/20 lg:hidden z-20" 
+              onClick={toggleSidebar}
+              aria-hidden="true"
+            />
+          )}
+        </div>
         
-        {/* Main content area - needs left padding on mobile when sidebar is showing */}
-        <div className={`flex-1 overflow-hidden flex flex-col ${sidebarVisible ? 'lg:ml-0' : ''}`}>
+        {/* Main content area with higher z-index on mobile */}
+        <div className="flex-1 overflow-hidden flex flex-col z-10 relative lg:z-0">
           <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
             <Tabs 
               value={activeTab}

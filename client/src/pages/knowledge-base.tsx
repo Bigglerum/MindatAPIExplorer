@@ -21,13 +21,24 @@ export default function KnowledgeBase() {
       <Header toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
-          visible={sidebarVisible} 
-          activeEndpoint={null} 
-          setActiveEndpoint={() => {}} 
-        />
+        {/* On mobile, position sidebar with lower z-index so it doesn't cover main content */}
+        <div className="lg:relative">
+          <Sidebar 
+            visible={sidebarVisible} 
+            activeEndpoint={null} 
+            setActiveEndpoint={() => {}} 
+          />
+          {/* Overlay that appears when sidebar is open on mobile - clicking it closes the sidebar */}
+          {sidebarVisible && (
+            <div 
+              className="fixed inset-0 bg-black/20 lg:hidden z-20" 
+              onClick={toggleSidebar}
+              aria-hidden="true"
+            />
+          )}
+        </div>
         
-        <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden flex flex-col z-10 relative lg:z-0">
           <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
             <Tabs defaultValue="explorer" className="w-full">
               <TabsList className="bg-transparent h-auto">

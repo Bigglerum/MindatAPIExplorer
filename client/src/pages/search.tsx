@@ -21,13 +21,24 @@ export default function Search() {
       <Header toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar 
-          visible={sidebarVisible}
-          activeEndpoint={activeEndpoint}
-          setActiveEndpoint={setActiveEndpoint}
-        />
+        {/* On mobile, position sidebar with lower z-index so it doesn't cover main content */}
+        <div className="lg:relative">
+          <Sidebar 
+            visible={sidebarVisible}
+            activeEndpoint={activeEndpoint}
+            setActiveEndpoint={setActiveEndpoint}
+          />
+          {/* Overlay that appears when sidebar is open on mobile - clicking it closes the sidebar */}
+          {sidebarVisible && (
+            <div 
+              className="fixed inset-0 bg-black/20 lg:hidden z-20" 
+              onClick={toggleSidebar}
+              aria-hidden="true"
+            />
+          )}
+        </div>
         
-        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-slate-900">
+        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-slate-900 z-10 relative lg:z-0">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6">
               <h1 className="text-2xl font-bold mb-2">Search Mindat Data</h1>
