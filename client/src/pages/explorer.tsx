@@ -81,7 +81,7 @@ export default function Explorer() {
                 <ApiExplorer endpoint={activeEndpoint} />
               </TabsContent>
               
-              <TabsContent value="knowledge-base" className="mt-0">
+              <TabsContent value="knowledge-base" className="mt-0 flex-1 overflow-auto">
                 <div className="p-6">
                   <h2 className="text-2xl font-bold mb-4">API Knowledge Base</h2>
                   <p>Browse comprehensive documentation and guides for the Mindat API.</p>
@@ -104,7 +104,7 @@ export default function Explorer() {
                 </div>
               </TabsContent>
               
-              <TabsContent value="saved-requests" className="mt-0">
+              <TabsContent value="saved-requests" className="mt-0 flex-1 overflow-auto">
                 <div className="p-6">
                   <h2 className="text-2xl font-bold mb-4">Saved Requests</h2>
                   <p>Access your saved API requests for quick reference.</p>
