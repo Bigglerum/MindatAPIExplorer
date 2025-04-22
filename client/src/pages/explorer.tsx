@@ -5,7 +5,6 @@ import Sidebar from '@/components/layout/sidebar';
 import { ApiExplorer } from '@/components/explorer/api-explorer';
 import { KnowledgeBaseContent } from '@/components/explorer/knowledge-base-content';
 import { SavedRequestsContent } from '@/components/explorer/saved-requests-content';
-import MappingDataContent from '@/components/explorer/mapping-data-content';
 import ChatHelper from '@/components/chat/chat-helper';
 import { APIEndpoint } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -67,12 +66,6 @@ export default function Explorer() {
                   API Explorer
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="mapping-data"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
-                >
-                  Mapping Data
-                </TabsTrigger>
-                <TabsTrigger 
                   value="knowledge-base"
                   className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
                 >
@@ -92,12 +85,6 @@ export default function Explorer() {
           <div className="flex-1 overflow-auto">
             {activeTab === 'explorer' && (
               <ApiExplorer endpoint={activeEndpoint} />
-            )}
-            
-            {activeTab === 'mapping-data' && (
-              <div className="container mx-auto p-4 sm:p-6">
-                <MappingDataContent />
-              </div>
             )}
             
             {activeTab === 'knowledge-base' && (

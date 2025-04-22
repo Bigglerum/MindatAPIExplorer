@@ -13,23 +13,11 @@ export interface CrystalClassInfo {
 }
 
 export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
-  // Special cases and unknown classes
-  0: {
-    system: "Unknown",
-    class: "Unknown/Amorphous",
-    example: "Opal"
-  },
-  
   // Triclinic system
   2: {
     system: "Triclinic",
     class: "1̄ - Pinacoidal",
     example: "Kyanite"
-  },
-  3: {
-    system: "Monoclinic",
-    class: "2 - Sphenoidal",
-    example: "Afwillite"
   },
   
   // Monoclinic system
@@ -40,27 +28,10 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Orthorhombic system
-  7: {
-    system: "Orthorhombic",
-    class: "mm2 - Rhombic-Pyramidal",
-    example: "Adelite"
-  },
   8: {
     system: "Orthorhombic",
     class: "mmm - Orthorhombic-Dipyramidal",
     example: "Topaz"
-  },
-  
-  // Tetragonal system
-  10: {
-    system: "Tetragonal",
-    class: "4̄ - Tetragonal-Disphenoidal",
-    example: "Abenakiite-(Ce)"
-  },
-  11: {
-    system: "Monoclinic",
-    class: "2/m - Prismatic",
-    example: "Acetamide"
   },
   
   // Trigonal system
@@ -73,11 +44,6 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
     system: "Trigonal",
     class: "3̄m - Rhombohedral",
     example: "Corundum"
-  },
-  16: {
-    system: "Trigonal",
-    class: "3 - Trigonal-Pyramidal",
-    example: "Agardite-(Ce)"
   },
   
   // Hexagonal system
@@ -97,13 +63,35 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   // Isometric/Cubic system
   29: {
     system: "Isometric",
-    class: "m3̄ - Diploidal",
+    class: "m3̄ - Dyakisdodecahedral",
     example: "Pyrite"
   },
   32: {
     system: "Isometric",
     class: "m3̄m - Hexoctahedral",
     example: "Diamond"
+  },
+  
+  // Special cases and unknown classes
+  0: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Various minerals"
+  },
+  7: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Adelite"
+  },
+  10: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Abenakiite-(Ce)"
+  },
+  11: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Acetamide"
   }
 };
 
