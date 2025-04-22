@@ -288,19 +288,19 @@ export default function MindatSearch() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-2 sm:px-0">
       {/* Quick Lookup */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
             <Search className="h-5 w-5 text-primary" />
             Quick Lookup
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Quickly look up specific information like mineral formulas or locality coordinates
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           <Form {...quickLookupForm}>
             <form onSubmit={quickLookupForm.handleSubmit(onQuickLookup)} className="space-y-4">
               <div className="flex flex-col md:flex-row gap-4">
@@ -422,21 +422,21 @@ export default function MindatSearch() {
       </Card>
       
       {/* Advanced Search */}
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-xl">
             <Database className="h-5 w-5 text-primary" />
             Advanced Search
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Search for minerals or localities with more detailed criteria
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="minerals">Minerals</TabsTrigger>
-              <TabsTrigger value="localities">Localities</TabsTrigger>
+            <TabsList className="mb-4 w-full justify-start">
+              <TabsTrigger value="minerals" className="flex-1 sm:flex-initial">Minerals</TabsTrigger>
+              <TabsTrigger value="localities" className="flex-1 sm:flex-initial">Localities</TabsTrigger>
             </TabsList>
             
             <TabsContent value="minerals">
@@ -500,23 +500,25 @@ export default function MindatSearch() {
                   <h3 className="text-lg font-semibold mb-3">Results ({minerals.length})</h3>
                   <div className="space-y-4">
                     {minerals.map((mineral) => (
-                      <Card key={mineral.id}>
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="text-xl font-semibold">{mineral.name}</h4>
+                      <Card key={mineral.id} className="overflow-hidden">
+                        <CardContent className="pt-6 px-3 sm:px-6">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+                            <div className="pr-2">
+                              <h4 className="text-base sm:text-xl font-semibold flex items-center gap-2">
+                                {mineral.name}
+                                {mineral.ima_status && (
+                                  <div className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs inline-block">
+                                    {mineral.ima_status}
+                                  </div>
+                                )}
+                              </h4>
                               {mineral.formula && (
                                 <p 
-                                  className="text-gray-600 dark:text-gray-400 font-mono mt-1"
+                                  className="text-gray-600 dark:text-gray-400 font-mono mt-1 text-sm sm:text-base overflow-x-auto"
                                   dangerouslySetInnerHTML={{ __html: mineral.formula }}
                                 />
                               )}
                             </div>
-                            {mineral.ima_status && (
-                              <div className="px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs">
-                                {mineral.ima_status}
-                              </div>
-                            )}
                           </div>
                           
                           {mineral.description && (
@@ -607,22 +609,24 @@ export default function MindatSearch() {
                   <h3 className="text-lg font-semibold mb-3">Results ({localities.length})</h3>
                   <div className="space-y-4">
                     {localities.map((locality) => (
-                      <Card key={locality.id}>
-                        <CardContent className="pt-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h4 className="text-xl font-semibold">{locality.name}</h4>
+                      <Card key={locality.id} className="overflow-hidden">
+                        <CardContent className="pt-6 px-3 sm:px-6">
+                          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+                            <div className="pr-2">
+                              <h4 className="text-base sm:text-xl font-semibold flex items-center gap-2 flex-wrap">
+                                {locality.name}
+                                {locality.location_type && (
+                                  <div className="px-2 py-1 rounded-md bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs inline-block">
+                                    {locality.location_type}
+                                  </div>
+                                )}
+                              </h4>
                               {(locality.country || locality.region) && (
-                                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                                <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm">
                                   {[locality.region, locality.country].filter(Boolean).join(', ')}
                                 </p>
                               )}
                             </div>
-                            {locality.location_type && (
-                              <div className="px-2 py-1 rounded-md bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100 text-xs">
-                                {locality.location_type}
-                              </div>
-                            )}
                           </div>
                           
                           {locality.description && (

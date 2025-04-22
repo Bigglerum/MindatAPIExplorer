@@ -27,31 +27,31 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   return (
     <>
       <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 shadow-sm">
-        <div className="px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+        <div className="px-3 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <div className="flex items-center">
             <button
               onClick={toggleSidebar}
-              className="lg:hidden mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="lg:hidden mr-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               aria-label="Toggle sidebar"
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <Link href="/">
-                <span className="text-primary text-2xl font-bold cursor-pointer">Mindat</span>
+                <span className="text-primary text-lg sm:text-2xl font-bold cursor-pointer">Mindat</span>
               </Link>
-              <span className="text-secondary font-semibold">API Explorer</span>
+              <span className="text-secondary text-sm sm:text-base font-semibold hidden xs:inline">API Explorer</span>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+              className="h-8 w-8 sm:h-9 sm:w-9 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {theme === 'dark' ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
             
             {isAuthenticated ? (

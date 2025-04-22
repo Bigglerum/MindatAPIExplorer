@@ -93,7 +93,7 @@ export default function Sidebar({ visible, activeEndpoint, setActiveEndpoint }: 
 
   return (
     <aside 
-      className={`w-64 lg:w-80 border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0 overflow-y-auto transition-all duration-300 h-full ${
+      className={`w-[280px] sm:w-64 lg:w-80 fixed lg:static border-r border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0 overflow-y-auto transition-all duration-300 h-full z-30 ${
         visible ? '' : '-translate-x-full lg:translate-x-0'
       }`}
     >
