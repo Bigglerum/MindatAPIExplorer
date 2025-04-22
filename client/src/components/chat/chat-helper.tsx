@@ -144,23 +144,30 @@ export default function ChatHelper() {
                         text-align: left;
                       }
                       th {
-                        background-color: #f7fafc;
+                        background-color: #e2e8f0;
                         font-weight: 600;
                         color: #1a202c;
                       }
                       tr:nth-child(even) {
-                        background-color: #f7fafc;
+                        background-color: #f8fafc;
+                      }
+                      tr:nth-child(odd) {
+                        background-color: #ffffff;
                       }
                       .dark th {
-                        background-color: #2d3748;
-                        color: #e2e8f0;
-                        border-color: #4a5568;
+                        background-color: #374151;
+                        color: #f9fafb;
+                        border-color: #4b5563;
                       }
                       .dark td {
-                        border-color: #4a5568;
+                        border-color: #4b5563;
+                        color: #f9fafb;
                       }
                       .dark tr:nth-child(even) {
-                        background-color: #2d3748;
+                        background-color: #1f2937;
+                      }
+                      .dark tr:nth-child(odd) {
+                        background-color: #111827;
                       }
                       code.inline {
                         background-color: #edf2f7;
