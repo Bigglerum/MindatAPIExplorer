@@ -90,9 +90,9 @@ export default function ChatHelper() {
     <>
       {/* Chat Helper */}
       <div 
-        className={`fixed bottom-0 right-0 w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg rounded-tl-lg transition-transform transform ${
+        className={`fixed bottom-0 right-0 sm:w-96 md:w-[600px] lg:w-[800px] bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg rounded-tl-lg transition-transform transform ${
           isOpen ? (isMinimized ? 'translate-y-[calc(100%-40px)]' : 'translate-y-0') : 'translate-y-full'
-        } h-96 flex flex-col z-40`}
+        } h-[500px] flex flex-col z-40`}
       >
         <div className="p-3 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700 rounded-tl-lg">
           <h3 className="font-medium text-gray-800 dark:text-gray-200">API Assistant</h3>
@@ -127,13 +127,15 @@ export default function ChatHelper() {
                   message.role === 'assistant' 
                     ? 'bg-primary text-white rounded-lg rounded-bl-none' 
                     : 'bg-gray-100 dark:bg-slate-700 rounded-lg rounded-br-none'
-                } p-3 max-w-[80%] text-sm`}
+                } p-3 max-w-[90%] text-sm`}
               >
-                <div dangerouslySetInnerHTML={{ 
-                  __html: message.content.replace(
-                    /`(.*?)`/g, 
-                    '<code class="bg-indigo-700 px-1 rounded">$1</code>'
-                  )
+                <div className="prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ 
+                  __html: message.content
+                    .replace(/```([^`]+)```/g, '<pre class="bg-indigo-900 dark:bg-slate-900 p-3 rounded overflow-x-auto"><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code class="bg-indigo-800 dark:bg-indigo-900 px-1 py-0.5 rounded text-white">$1</code>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br />')
                 }} />
               </div>
             </div>
@@ -154,7 +156,7 @@ export default function ChatHelper() {
                   handleSubmit(e);
                 }
               }}
-              rows={1}
+              rows={2}
             />
             <Button
               type="submit"
