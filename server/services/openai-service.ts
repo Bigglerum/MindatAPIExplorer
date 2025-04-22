@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { searchMinerals, searchLocalities, getMineralById, getLocalityById } from "../mindat-api";
 
 // Initialize the OpenAI client with API key from environment variables
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -6,13 +7,211 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const MODEL = "gpt-4o";
 
+interface SearchParams {
+  type: 'mineral' | 'locality';
+  searchTerms: {
+    name?: string;
+    formula?: string;
+    elements?: string[];
+    country?: string;
+    region?: string;
+    id?: number;
+  };
+  action: 'search' | 'details';
+}
+
 /**
- * Generate a response from OpenAI based on user message and conversation history
+ * Determine search parameters from a user question using OpenAI
+ * @param message - The user's message/question
+ * @returns The extracted search parameters
+ */
+async function determineSearchParams(message: string): Promise<SearchParams | null> {
+  try {
+    // Create system prompt specifically for extracting search parameters
+    const systemPrompt = {
+      role: "system",
+      content: "You are a tool that extracts search parameters from user questions about minerals and localities. " +
+      "Given a question about mineralogical data, extract parameters for searching the Mindat API. " +
+      "Response format must be valid JSON with the following structure:\n" +
+      "{\n" +
+      "  \"type\": \"mineral\" or \"locality\",\n" +
+      "  \"searchTerms\": {\n" +
+      "    \"name\": optional string,\n" +
+      "    \"formula\": optional string,\n" +
+      "    \"elements\": optional array of strings,\n" +
+      "    \"country\": optional string,\n" +
+      "    \"region\": optional string,\n" +
+      "    \"id\": optional number\n" +
+      "  },\n" +
+      "  \"action\": \"search\" or \"details\"\n" +
+      "}\n" +
+      "If the user is asking about a specific mineral, set type to \"mineral\".\n" +
+      "If the user is asking about a specific location, set type to \"locality\".\n" +
+      "If the user is requesting details about a specific item, set action to \"details\".\n" +
+      "If the user is searching for items that match criteria, set action to \"search\".\n" +
+      "Include only fields that are relevant to the search, omit others."
+    };
+
+    // Make the request to OpenAI
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        systemPrompt, 
+        { role: "user", content: message }
+      ],
+      temperature: 0.1, // Lower temperature for more deterministic extraction
+      max_tokens: 300,
+      response_format: { type: "json_object" }
+    });
+
+    const responseText = completion.choices[0].message.content;
+    if (!responseText) {
+      return null;
+    }
+
+    try {
+      const params = JSON.parse(responseText) as SearchParams;
+      return params;
+    } catch (error) {
+      console.error("Error parsing search parameters:", error);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error determining search parameters:", error);
+    return null;
+  }
+}
+
+/**
+ * Generate a response to a user query by first searching the API
+ * @param message - The user's message/question
+ * @param history - Previous conversation history
+ * @returns The AI-generated response with actual data from the API
+ */
+export async function generateChatResponse(message: string, history: any[] = []): Promise<string> {
+  try {
+    // First, determine what the user is asking for
+    const searchParams = await determineSearchParams(message);
+    
+    // If we couldn't extract search parameters, fall back to the regular API information response
+    if (!searchParams) {
+      return generateApiInfoResponse(message, history);
+    }
+    
+    // Execute the appropriate search based on the parameters
+    let apiResponse = null;
+    let apiData = null;
+    
+    if (searchParams.type === 'mineral') {
+      if (searchParams.action === 'details' && searchParams.searchTerms.id) {
+        // Get details for a specific mineral by ID
+        apiResponse = await getMineralById(searchParams.searchTerms.id);
+      } else {
+        // Search for minerals based on criteria
+        apiResponse = await searchMinerals({
+          name: searchParams.searchTerms.name,
+          formula: searchParams.searchTerms.formula,
+          elements: searchParams.searchTerms.elements,
+          limit: 5
+        });
+      }
+    } else if (searchParams.type === 'locality') {
+      if (searchParams.action === 'details' && searchParams.searchTerms.id) {
+        // Get details for a specific locality by ID
+        apiResponse = await getLocalityById(searchParams.searchTerms.id);
+      } else {
+        // Search for localities based on criteria
+        apiResponse = await searchLocalities({
+          name: searchParams.searchTerms.name,
+          country: searchParams.searchTerms.country,
+          region: searchParams.searchTerms.region,
+          limit: 5
+        });
+      }
+    }
+    
+    if (apiResponse?.data) {
+      apiData = apiResponse.data;
+    }
+    
+    // Now, use OpenAI to generate a response based on the API data
+    return await generateResponseFromApiData(message, apiData, searchParams);
+  } catch (error) {
+    console.error("Error in chat response generation:", error);
+    return "I encountered an error trying to retrieve that information. Please try again or rephrase your question.";
+  }
+}
+
+/**
+ * Generate a response using the API data
+ */
+async function generateResponseFromApiData(
+  message: string, 
+  apiData: any, 
+  searchParams: SearchParams
+): Promise<string> {
+  try {
+    // Create a context prompt with the API data
+    let context = "The user asked: " + message + "\n\n";
+    
+    if (!apiData || (Array.isArray(apiData.results) && apiData.results.length === 0)) {
+      context += "No data was found in the Mindat API for this query.";
+      return "I couldn't find any information about that in the Mindat database. Could you try a different search term or be more specific?";
+    } else {
+      context += "Here's the data from the Mindat API:\n" + JSON.stringify(apiData, null, 2);
+    }
+    
+    // Create system prompt for generating the final response
+    const systemPrompt = {
+      role: "system",
+      content: "You are a professional mineralogist assistant using the Mindat API. " +
+      "You should create a response based ONLY on the API data provided, never include information not present in the data. " +
+      "If specific information requested is not in the data, clearly state that it's not available. " +
+      "Format your responses nicely:" +
+      "\n- Use **bold** for emphasis and *italics* for terms" +
+      "\n- When providing code examples, use proper markdown code blocks with triple backticks" +
+      "\n- Use single backticks for inline code and parameter names" +
+      "\n- Use line breaks for readability" +
+      "\n\nWhen displaying tabular data, use proper HTML table format with <table>, <tr>, <th>, and <td> tags." +
+      "\nMake tables well-structured with proper headers and aligned data." +
+      "\nProvide useful mineral or locality information in a concise, educational manner." +
+      "\nUse mineral formulas exactly as they appear in the API, preserving any formatting."
+    };
+
+    // Make the request to OpenAI
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        systemPrompt, 
+        { role: "user", content: context }
+      ],
+      temperature: 0.7,
+      max_tokens: 800,
+    });
+
+    // Extract, clean, and return the response text
+    const responseText = completion.choices[0].message.content || "I couldn't find information about that in the Mindat database.";
+    
+    // Clean up any potential invisible characters or excessive spacing
+    const cleanedResponse = responseText
+      .replace(/(\r\n|\r|\n){2,}/g, '\n\n') // Normalize multiple line breaks
+      .replace(/\s{2,}/g, ' ') // Remove excessive spaces
+      .trim();
+      
+    return cleanedResponse;
+  } catch (error) {
+    console.error("Error generating response from API data:", error);
+    return "I encountered an error processing the data. Please try again.";
+  }
+}
+
+/**
+ * Generate a response about the API itself without searching for data
  * @param message - The user's message
  * @param history - Previous conversation history
  * @returns The AI-generated response
  */
-export async function generateChatResponse(message: string, history: any[] = []): Promise<string> {
+async function generateApiInfoResponse(message: string, history: any[] = []): Promise<string> {
   try {
     // Format message history for the OpenAI API
     const formattedHistory = history.map(msg => ({
@@ -38,17 +237,6 @@ export async function generateChatResponse(message: string, history: any[] = [])
       "\n- Use line breaks for readability" +
       "\n\nWhen displaying tables, use proper HTML table format with <table>, <tr>, <th>, and <td> tags." +
       "\nMake sure tables are well-structured with proper headers and aligned data in each column." +
-      "\nFor example:" +
-      "\n<table>" +
-      "\n  <tr>" +
-      "\n    <th>Header 1</th>" +
-      "\n    <th>Header 2</th>" +
-      "\n  </tr>" +
-      "\n  <tr>" +
-      "\n    <td>Data 1</td>" +
-      "\n    <td>Data 2</td>" +
-      "\n  </tr>" +
-      "\n</table>" +
       "\n\nShow examples with proper authentication in different programming languages." +
       "\nAlways encourage best practices for API usage."
     };
@@ -75,7 +263,7 @@ export async function generateChatResponse(message: string, history: any[] = [])
       
     return cleanedResponse;
   } catch (error) {
-    console.error("Error generating OpenAI response:", error);
+    console.error("Error generating API info response:", error);
     throw new Error("Failed to generate AI response");
   }
 }
