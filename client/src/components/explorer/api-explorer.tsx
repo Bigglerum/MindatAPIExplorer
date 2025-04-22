@@ -90,7 +90,7 @@ export function ApiExplorer({ endpoint }: ApiExplorerProps) {
   }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+    <div className="flex-1 overflow-hidden flex flex-col md:flex-row h-full">
       <RequestPanel
         endpoint={endpoint}
         parameters={parameters}

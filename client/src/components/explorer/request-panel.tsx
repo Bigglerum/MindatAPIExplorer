@@ -77,7 +77,7 @@ export function RequestPanel({
 
   return (
     <div className="w-full md:w-1/2 overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200 dark:border-slate-700">
-      <div className="p-5">
+      <div className="p-3 sm:p-5">
         <div className="mb-6">
           <h2 className="text-xl font-bold mb-1">{endpoint.summary || endpoint.path}</h2>
           <div className="flex items-center mb-4">
@@ -138,9 +138,9 @@ export function RequestPanel({
         <CodeGeneration endpoint={endpoint} parameters={parameters} />
         
         {/* Actions */}
-        <div className="mb-6 flex items-center space-x-3">
+        <div className="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <Button
-            className="bg-primary hover:bg-indigo-700 text-white"
+            className="bg-primary hover:bg-indigo-700 text-white w-full sm:w-auto"
             onClick={onSendRequest}
             disabled={loading}
           >
@@ -149,7 +149,7 @@ export function RequestPanel({
           </Button>
           <Button
             variant="outline"
-            className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600"
+            className="bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600 w-full sm:w-auto"
             onClick={() => setSaveDialogOpen(true)}
           >
             <Bookmark className="h-4 w-4 mr-2" />

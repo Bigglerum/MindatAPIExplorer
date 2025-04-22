@@ -35,7 +35,7 @@ export function ResponsePanel({ response, loading }: ResponsePanelProps) {
 
   return (
     <div className="w-full md:w-1/2 overflow-y-auto flex flex-col">
-      <div className="p-5">
+      <div className="p-3 sm:p-5">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-medium text-gray-800 dark:text-gray-200">Response</h3>
           {response && (
@@ -66,14 +66,14 @@ export function ResponsePanel({ response, loading }: ResponsePanelProps) {
           <>
             <Tabs defaultValue="json" value={activeTab} onValueChange={setActiveTab}>
               <div className="border-b border-gray-200 dark:border-slate-700 mb-4">
-                <TabsList className="bg-transparent">
-                  <TabsTrigger value="json" className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none">
+                <TabsList className="bg-transparent w-full justify-start">
+                  <TabsTrigger value="json" className="px-2 sm:px-4 py-2 text-sm data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none flex-1 sm:flex-initial">
                     JSON
                   </TabsTrigger>
-                  <TabsTrigger value="headers" className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none">
+                  <TabsTrigger value="headers" className="px-2 sm:px-4 py-2 text-sm data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none flex-1 sm:flex-initial">
                     Headers
                   </TabsTrigger>
-                  <TabsTrigger value="preview" className="px-4 py-2 data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none">
+                  <TabsTrigger value="preview" className="px-2 sm:px-4 py-2 text-sm data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none flex-1 sm:flex-initial">
                     Preview
                   </TabsTrigger>
                 </TabsList>

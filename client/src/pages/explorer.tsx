@@ -31,35 +31,37 @@ export default function Explorer() {
       <Header toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
         <Sidebar 
           visible={sidebarVisible} 
           activeEndpoint={activeEndpoint} 
           setActiveEndpoint={setActiveEndpoint} 
         />
         
-        <div className="flex-1 overflow-hidden flex flex-col">
+        {/* Main content area - needs left padding on mobile when sidebar is showing */}
+        <div className={`flex-1 overflow-hidden flex flex-col ${sidebarVisible ? 'lg:ml-0' : ''}`}>
           <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
             <Tabs 
               value={activeTab}
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="bg-transparent h-auto">
+              <TabsList className="bg-transparent h-auto overflow-x-auto flex-nowrap justify-start">
                 <TabsTrigger 
                   value="explorer"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-4 py-3"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
                 >
                   API Explorer
                 </TabsTrigger>
                 <TabsTrigger 
                   value="knowledge-base"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-4 py-3"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
                 >
                   Knowledge Base
                 </TabsTrigger>
                 <TabsTrigger 
                   value="saved-requests"
-                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-4 py-3"
+                  className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap"
                 >
                   Saved Requests
                 </TabsTrigger>
