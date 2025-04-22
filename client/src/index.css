@@ -57,9 +57,8 @@
   }
 }
 
-@layer utilities {
-  .ios-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
+/* Add support for iOS momentum scrolling */
+.overflow-auto, .overflow-y-auto, .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
 }
 
