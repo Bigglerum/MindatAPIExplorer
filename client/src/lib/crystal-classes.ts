@@ -58,8 +58,8 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
     example: "Abenakiite-(Ce)"
   },
   11: {
-    system: "Tetragonal",
-    class: "4/m - Tetragonal-Dipyramidal",
+    system: "Monoclinic",
+    class: "2/m - Prismatic",
     example: "Acetamide"
   },
   

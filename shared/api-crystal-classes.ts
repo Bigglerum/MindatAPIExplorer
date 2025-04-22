@@ -28,7 +28,9 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, string> = {
   // Tetragonal system
   27: "Tetragonal", // Examples: Zircon, Rutile
   10: "Tetragonal", // Example: Abenakiite-(Ce)
-  11: "Tetragonal", // Example: Acetamide
+  
+  // Monoclinic system (additional)
+  11: "Monoclinic", // Example: Acetamide
   
   // Orthorhombic system
   8: "Orthorhombic", // Example: Topaz
