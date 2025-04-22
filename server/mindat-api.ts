@@ -255,13 +255,13 @@ export async function getMineralsAtLocality(localityName: string) {
         // Search for minerals that might be associated with this locality
         const searchParams = {
           q: localitySearchTerm,
-          limit: 30,
-          offset: 0
+          limit: "30",
+          offset: "0"
         };
         
         console.log(`Performing mineral search with params:`, JSON.stringify(searchParams));
         
-        const searchUrl = `${BASE_URL}/geomaterials/?` + new URLSearchParams(searchParams);
+        const searchUrl = `${BASE_URL}/geomaterials/?` + new URLSearchParams(searchParams as Record<string, string>);
         const searchResponse = await fetch(searchUrl, {
           method: 'GET',
           headers: getAuthHeaders()
@@ -289,25 +289,8 @@ export async function getMineralsAtLocality(localityName: string) {
     } catch (mineralsError: any) {
       console.error(`Error getting minerals for locality #${localityId}:`, mineralsError);
       
-      // Third attempt - check if this is a notable location that might be worth special handling
-      if (matchedLocality.txt.toLowerCase().includes("aust cliff")) {
-        console.log("Using special handling for Aust Cliff");
-        // For Aust Cliff, we know it's a notable locality for celestine
-        return {
-          data: {
-            locality: matchedLocality,
-            minerals: [
-              { 
-                id: 959, 
-                name: "Celestine", 
-                ima_formula: "SrSO₄",
-                note: "Information retrieved from special handling for well-known localities" 
-              }
-            ],
-            note: "This locality is known for celestine (SrSO₄). The Mindat API doesn't provide direct locality-mineral associations for this location."
-          }
-        };
-      }
+      // No special handling - we must only use API data
+      console.log("No minerals found through API for this locality");
       
       return { 
         error: 'Failed to get minerals for locality', 
