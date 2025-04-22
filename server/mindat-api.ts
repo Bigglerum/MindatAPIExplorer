@@ -188,15 +188,13 @@ export async function getMineralsAtLocality(localityName: string) {
   try {
     console.log(`Looking for minerals at locality: ${localityName}`);
     
-    // First, search for the locality by name
-    const localitySearchResult = await searchLocalities({ name: localityName, limit: 10 });
+    // First, search for the locality by name to get its ID
+    const localitySearchResult = await searchLocalities({ name: localityName, limit: 5 });
     
     if (!localitySearchResult?.data?.results || localitySearchResult.data.results.length === 0) {
       console.log(`No locality found with name: ${localityName}`);
       return { error: 'Locality not found', details: `No locality found with name ${localityName}` };
     }
-    
-    console.log(`Found ${localitySearchResult.data.results.length} possible locality matches for ${localityName}`);
     
     // Look for the best match (exact or closest match)
     let matchedLocality = null;
@@ -221,84 +219,59 @@ export async function getMineralsAtLocality(localityName: string) {
       return { error: 'No matching locality found', details: `Couldn't find a clear match for ${localityName}` };
     }
     
-    // Now, get the minerals found at this locality
+    // Now get the minerals at this locality using the correct endpoint pattern
     const localityId = matchedLocality.id;
-    console.log(`Getting minerals for locality ID: ${localityId}`);
     
-    try {
-      // ONLY use the proper API endpoint with direct access - no fallbacks
-      // Get the locality details for any additional information
-      const localityUrl = `${BASE_URL}/localities/${localityId}/`;
-      
-      let localityDetailsResponse = await fetch(localityUrl, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      
-      if (!localityDetailsResponse.ok) {
-        throw new Error(`Locality details API request failed with status ${localityDetailsResponse.status}`);
-      }
-      
-      const localityDetails = await localityDetailsResponse.json();
-      console.log(`Got locality details for ID: ${localityId}`);
-
-      // Use ONLY the proper geomaterials endpoint with locality parameter
-      console.log(`Using geomaterials endpoint with locality ID: ${localityId}`);
-      
-      // Use the documented endpoint pattern for minerals at a locality
-      const mineralsUrl = `${BASE_URL}/geomaterials/`;
-      const searchParams = {
-        locality: localityId.toString(),
-        fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description,variantof",
-        limit: "50"
-      };
-      
-      const queryString = new URLSearchParams(searchParams).toString();
-      const fullUrl = `${mineralsUrl}?${queryString}`;
-      
-      console.log(`Making request to: ${fullUrl}`);
-      let mineralsResponse = await fetch(fullUrl, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      
-      if (!mineralsResponse.ok) {
-        console.log(`API request failed with status ${mineralsResponse.status}`);
-        throw new Error(`Failed to retrieve minerals for locality. API returned status ${mineralsResponse.status}`);
-      }
-      
-      const mineralsData = await mineralsResponse.json();
-      console.log(`Found ${mineralsData?.results?.length || 0} minerals at locality ID: ${localityId}`);
-      
-      // Ensure we only return actual API data
-      if (!mineralsData.results || mineralsData.results.length === 0) {
-        return {
-          error: 'No minerals found',
-          details: `No minerals found at locality ${matchedLocality.txt} through API`
-        };
-      }
-      
-      return { 
-        data: {
-          locality: matchedLocality,
-          minerals: mineralsData.results
-        }
-      };
-    } catch (mineralsError: any) {
-      console.error(`Error getting minerals for locality #${localityId}:`, mineralsError);
-      
-      // No special handling - we must only use API data
-      console.log("No minerals found through API for this locality");
-      
-      return { 
-        error: 'Failed to get minerals for locality', 
-        details: mineralsError.message || 'Unknown error' 
+    // Use the pattern from the example code
+    // API_KEY = "YOUR_API_KEY"
+    // LOCALITY_ID = 12345
+    // response = requests.get(
+    //   "https://api.mindat.org/geomaterials/",
+    //   headers={"Authorization": f"Token {API_KEY}"},
+    //   params={"locality": LOCALITY_ID, "fields": "id,name,ima_status"}
+    // )
+    
+    console.log(`Getting minerals for locality ID: ${localityId} using geomaterials endpoint`);
+    const url = `${BASE_URL}/geomaterials/`;
+    const params = {
+      locality: localityId.toString(),
+      fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description"
+    };
+    
+    const queryString = new URLSearchParams(params).toString();
+    console.log(`Making request to: ${url}?${queryString}`);
+    
+    const response = await fetch(`${url}?${queryString}`, {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      console.log(`API request failed with status ${response.status}`);
+      throw new Error(`Failed to retrieve minerals. API returned status ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log(`Found ${data?.results?.length || 0} minerals at locality ID: ${localityId}`);
+    
+    if (!data.results || data.results.length === 0) {
+      return {
+        error: 'No minerals found',
+        details: `No minerals found at locality ${matchedLocality.txt} through API`
       };
     }
+    
+    return { 
+      data: {
+        locality: matchedLocality,
+        minerals: data.results
+      }
+    };
   } catch (error: any) {
-    console.error(`Error finding minerals at ${localityName}:`, error);
+    const localityIdStr = typeof localityName === 'string' ? localityName : 'unknown locality';
+    console.error(`Error finding minerals at ${localityIdStr}:`, error);
     return {
-      error: `Failed to find minerals at ${localityName}`,
+      error: `Failed to find minerals at ${localityIdStr}`,
       details: error.message || 'Unknown error'
     };
   }
@@ -520,30 +493,6 @@ export async function getMineralById(id: number) {
         console.error(`Error getting type locality for mineral #${id}:`, typeLocalityError);
         // Continue without type locality data if there's an error
       }
-      
-      // Get mineral relationships if available
-      try {
-        console.log(`Fetching relationship data for mineral ID: ${id}`);
-        const relationshipsUrl = `${BASE_URL}/geomaterials/${id}/relationships/`;
-        
-        const relationshipsResponse = await fetch(relationshipsUrl, {
-          method: 'GET',
-          headers: getAuthHeaders()
-        });
-        
-        if (relationshipsResponse.ok) {
-          const relationshipsData = await relationshipsResponse.json();
-          console.log(`Found relationship data for mineral ID: ${id}`);
-          
-          // Add relationship data to the response
-          if (relationshipsData) {
-            data.relationships = relationshipsData;
-          }
-        }
-      } catch (relationshipsError: any) {
-        console.error(`Error getting relationships for mineral #${id}:`, relationshipsError);
-        // Continue without relationship data if there's an error
-      }
     }
     
     return { data };
@@ -577,59 +526,6 @@ export async function getLocalityById(id: number) {
     
     const data = await response.json();
     
-    // Enhance data with additional API calls for more details if needed
-    if (data) {
-      console.log(`Successfully retrieved basic data for locality ID: ${id}`);
-      
-      // Get minerals found at this locality
-      try {
-        console.log(`Fetching minerals found at locality ID: ${id}`);
-        const mineralsUrl = `${BASE_URL}/localities/${id}/minerals/`;
-        
-        const mineralsResponse = await fetch(mineralsUrl, {
-          method: 'GET',
-          headers: getAuthHeaders()
-        });
-        
-        if (mineralsResponse.ok) {
-          const mineralsData = await mineralsResponse.json();
-          console.log(`Found ${mineralsData?.results?.length || 0} minerals at locality ID: ${id}`);
-          
-          // Add minerals data to the response
-          if (mineralsData?.results?.length > 0) {
-            data.minerals = mineralsData.results;
-          }
-        }
-      } catch (mineralsError: any) {
-        console.error(`Error getting minerals for locality #${id}:`, mineralsError);
-        // Continue without minerals data if there's an error
-      }
-      
-      // Get images for this locality if available
-      try {
-        console.log(`Fetching images for locality ID: ${id}`);
-        const imagesUrl = `${BASE_URL}/localities/${id}/images/`;
-        
-        const imagesResponse = await fetch(imagesUrl, {
-          method: 'GET',
-          headers: getAuthHeaders()
-        });
-        
-        if (imagesResponse.ok) {
-          const imagesData = await imagesResponse.json();
-          console.log(`Found ${imagesData?.results?.length || 0} images for locality ID: ${id}`);
-          
-          // Add images data to the response
-          if (imagesData?.results?.length > 0) {
-            data.images = imagesData.results;
-          }
-        }
-      } catch (imagesError: any) {
-        console.error(`Error getting images for locality #${id}:`, imagesError);
-        // Continue without images data if there's an error
-      }
-    }
-    
     return { data };
   } catch (error: any) {
     console.error(`Error getting locality #${id}:`, error);
@@ -650,101 +546,90 @@ export async function findTypeLocalityForMineral(mineralName: string) {
   try {
     console.log(`Looking for type locality of mineral: ${mineralName}`);
     
-    // First, search for the mineral by name
-    const mineralSearchResult = await searchMinerals({ name: mineralName, limit: 10 });
+    // First, find the mineral by name
+    const mineralSearchResult = await searchMinerals({ name: mineralName, limit: 1 });
     
     if (!mineralSearchResult?.data?.results || mineralSearchResult.data.results.length === 0) {
-      console.log(`No minerals found with name: ${mineralName}`);
-      return { error: 'Mineral not found', details: `No minerals found with name ${mineralName}` };
+      console.log(`No mineral found with name: ${mineralName}`);
+      return { error: 'Mineral not found', details: `No mineral found with name ${mineralName}` };
     }
     
-    console.log(`Found ${mineralSearchResult.data.results.length} possible matches for ${mineralName}`);
+    // Get the first result (most relevant)
+    const mineral = mineralSearchResult.data.results[0];
+    console.log(`Found mineral: ${mineral.name} (ID: ${mineral.id})`);
     
-    // Look for the best match (exact or closest match)
-    let matchedMineral = null;
-    const normalizedSearchName = mineralName.toLowerCase().trim();
+    // Now get the mineral details to check for type locality info
+    const mineralDetailsResult = await getMineralById(mineral.id);
     
-    // Try for exact match first
-    matchedMineral = mineralSearchResult.data.results.find((mineral: any) => 
-      mineral.name && mineral.name.toLowerCase() === normalizedSearchName
-    );
-    
-    // If no exact match, use the first result
-    if (!matchedMineral && mineralSearchResult.data.results.length > 0) {
-      matchedMineral = mineralSearchResult.data.results[0];
-      console.log(`Using closest match: ${matchedMineral.name} (ID: ${matchedMineral.id})`);
+    if (mineralDetailsResult.error) {
+      return { error: 'Failed to get mineral details', details: mineralDetailsResult.error };
     }
     
-    if (!matchedMineral) {
-      return { error: 'No matching mineral found', details: `Couldn't find a clear match for ${mineralName}` };
-    }
+    const mineralDetails = mineralDetailsResult.data;
     
-    // Now, get the mineral details including type locality
-    const mineralId = matchedMineral.id;
-    console.log(`Getting details for mineral ID: ${mineralId}`);
-    
-    const mineralDetails = await getMineralById(mineralId);
-    
-    if (mineralDetails.error) {
-      return mineralDetails;
-    }
-    
-    // Check if we have type locality information
-    if (mineralDetails.data?.type_localities && mineralDetails.data.type_localities.length > 0) {
-      console.log(`Found ${mineralDetails.data.type_localities.length} type localities for ${mineralName}`);
-      // Return success with type locality data
-      return {
-        data: {
-          mineral: matchedMineral,
-          type_localities: mineralDetails.data.type_localities
-        }
-      };
-    } else {
-      // Try an additional approach - some minerals might list type locality info directly
-      if (mineralDetails.data?.type_locality_id || mineralDetails.data?.type_locality) {
-        const typeLocalityId = mineralDetails.data.type_locality_id;
-        const typeLocalityName = mineralDetails.data.type_locality;
-        
-        console.log(`Found type locality reference with ID: ${typeLocalityId} and name: ${typeLocalityName}`);
-        
-        if (typeLocalityId) {
-          // If we have the ID, fetch the locality details
-          const localityDetails = await getLocalityById(typeLocalityId);
-          if (localityDetails.error) {
-            return {
-              data: {
-                mineral: matchedMineral,
-                type_localities: [{ name: typeLocalityName }]
-              }
-            };
-          } else {
-            return {
-              data: {
-                mineral: matchedMineral,
-                type_localities: [localityDetails.data]
-              }
-            };
-          }
-        } else {
-          // Just return the name if that's all we have
-          return {
-            data: {
-              mineral: matchedMineral,
-              type_localities: [{ name: typeLocalityName }]
-            }
-          };
-        }
-      }
+    // Check if type localities are available
+    if (!mineralDetails.type_localities || mineralDetails.type_localities.length === 0) {
+      console.log(`No type locality information available for ${mineralName}`);
       
-      // If we get here, we couldn't find explicit type locality information
-      console.log(`No type locality information found for ${mineralName}`);
-      return {
-        data: {
-          mineral: matchedMineral,
-          type_localities: []
+      // Try to get type locality through a separate API call
+      try {
+        console.log(`Trying to get type locality through separate API call for mineral ID: ${mineral.id}`);
+        const typeLocalityUrl = `${BASE_URL}/geomaterials/${mineral.id}/type_localities/`;
+        
+        const typeLocalityResponse = await fetch(typeLocalityUrl, {
+          method: 'GET',
+          headers: getAuthHeaders()
+        });
+        
+        if (!typeLocalityResponse.ok) {
+          console.log(`Type locality API request failed with status ${typeLocalityResponse.status}`);
+          return { error: 'Type locality not found', details: `No type locality information available for ${mineralName}` };
         }
-      };
+        
+        const typeLocalityData = await typeLocalityResponse.json();
+        
+        if (!typeLocalityData.results || typeLocalityData.results.length === 0) {
+          return { error: 'Type locality not found', details: `No type locality information available for ${mineralName}` };
+        }
+        
+        console.log(`Found ${typeLocalityData.results.length} type localities for ${mineralName}`);
+        
+        // Try to get locality details for the first type locality
+        const firstTypeLocalityId = typeLocalityData.results[0].id;
+        const localityDetails = await getLocalityById(firstTypeLocalityId);
+        
+        if (localityDetails.error) {
+          return { error: 'Failed to get locality details', details: localityDetails.error };
+        }
+        
+        return {
+          data: {
+            mineral,
+            type_localities: typeLocalityData.results,
+            primary_type_locality: localityDetails.data
+          }
+        };
+      } catch (typeLocalityError: any) {
+        console.error(`Error getting type locality for ${mineralName}:`, typeLocalityError);
+        return { error: 'Failed to find type locality', details: typeLocalityError.message || 'Unknown error' };
+      }
     }
+    
+    // Type localities are available, get details for the first one
+    const firstTypeLocalityId = mineralDetails.type_localities[0].id;
+    const localityDetails = await getLocalityById(firstTypeLocalityId);
+    
+    if (localityDetails.error) {
+      return { error: 'Failed to get locality details', details: localityDetails.error };
+    }
+    
+    return {
+      data: {
+        mineral,
+        type_localities: mineralDetails.type_localities,
+        primary_type_locality: localityDetails.data
+      }
+    };
   } catch (error: any) {
     console.error(`Error finding type locality for ${mineralName}:`, error);
     return {
