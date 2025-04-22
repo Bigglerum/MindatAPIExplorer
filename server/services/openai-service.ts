@@ -1,5 +1,11 @@
 import OpenAI from "openai";
-import { searchMinerals, searchLocalities, getMineralById, getLocalityById } from "../mindat-api";
+import { 
+  searchMinerals, 
+  searchLocalities, 
+  getMineralById, 
+  getLocalityById,
+  findTypeLocalityForMineral 
+} from "../mindat-api";
 
 // Initialize the OpenAI client with API key from environment variables
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -90,7 +96,57 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
  */
 export async function generateChatResponse(message: string, history: any[] = []): Promise<string> {
   try {
-    // First, determine what the user is asking for
+    console.log('Generating chat response for:', message);
+    
+    // Check specifically for type locality questions since they need special handling
+    const typeLocalityRegex = /(?:what|where)(?:'s| is| are)? (?:the )?type (?:localit(?:y|ies)|location)(?:s)? (?:of|for) ([a-zA-Z\s\-]+)(?:\?)?/i;
+    const typeLocalityMatch = message.match(typeLocalityRegex);
+    
+    if (typeLocalityMatch) {
+      const mineralName = typeLocalityMatch[1].trim();
+      console.log(`Detected type locality question for mineral: ${mineralName}`);
+      
+      // Use our special function to find type locality information
+      const typeLocalityResponse = await findTypeLocalityForMineral(mineralName);
+      
+      if (typeLocalityResponse.data) {
+        return await generateResponseFromApiData(
+          message, 
+          typeLocalityResponse.data, 
+          {
+            type: 'mineral',
+            action: 'details',
+            searchTerms: { name: mineralName }
+          }
+        );
+      } else if (typeLocalityResponse.error) {
+        console.log(`Error finding type locality for ${mineralName}:`, typeLocalityResponse.error);
+        return `I couldn't find information about the type locality for ${mineralName}. The Mindat database may not have this information, or there might be an alternative spelling for this mineral.`;
+      }
+    }
+    
+    // Check for formula questions which need special handling
+    const formulaRegex = /(?:what|what's)(?:'s| is| are)? (?:the )?(?:chemical )?formula(?:s)? (?:of|for) ([a-zA-Z\s\-]+)(?:\?)?/i;
+    const formulaMatch = message.match(formulaRegex);
+    
+    if (formulaMatch) {
+      const mineralName = formulaMatch[1].trim();
+      console.log(`Detected formula question for mineral: ${mineralName}`);
+      
+      // Search for the mineral to get its formula
+      const mineralResponse = await searchMinerals({ name: mineralName, limit: 1 });
+      
+      if (mineralResponse.data?.results?.length > 0) {
+        const mineral = mineralResponse.data.results[0];
+        const formula = mineral.ima_formula || mineral.mindat_formula || mineral.formula;
+        
+        if (formula) {
+          return `The chemical formula for ${mineral.name} is ${formula}.`;
+        }
+      }
+    }
+    
+    // First, determine what the user is asking for with the general approach
     const searchParams = await determineSearchParams(message);
     
     // If we couldn't extract search parameters, fall back to the regular API information response
