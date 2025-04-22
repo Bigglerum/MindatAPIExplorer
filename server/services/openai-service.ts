@@ -164,7 +164,36 @@ export async function generateChatResponse(message: string, history: any[] = [])
           const locality = localityResponse.data.results[0];
           console.log(`Found locality ${locality.txt} (ID: ${locality.id})`);
           
-          // Now use our function to get minerals at this locality
+          // Special case for Mont Saint-Hilaire due to API limitations
+          if (locationName.toLowerCase().includes("mont saint-hilaire") || 
+              locationName.toLowerCase().includes("mont st hilaire") ||
+              locationName.toLowerCase().includes("poudrette")) {
+            console.log("Direct special handling for Mont Saint-Hilaire");
+            
+            // Enhanced response for Mont Saint-Hilaire with more comprehensive information
+            const mshMinerals = [
+              "Abenakiite-(Ce)", "Acmite", "Aegirine", "Albite", "Analcime", "Annite", "Arfvedsonite", 
+              "Augite", "Catapleiite", "Eudialyte", "Franconite", "Gaidonnayite", "Hochelagaite", "Leifite", 
+              "Microcline", "Natrolite", "Nepheline", "Petarasite", "Pectolite", "Polylithionite", 
+              "Quartz", "Rhodochrosite", "Serandite", "Siderite", "Sodalite", "Titanite", "Yofortierite"
+            ];
+              
+            // Add detailed information about specific minerals
+            const mineralInfo = {
+              "Eudialyte": "A complex zirconosilicate mineral that forms striking red to pink crystals and is characteristic of alkaline rocks. Its formula is approximately Na₄(Ca,Ce)₂(Fe²⁺,Mn,Y)ZrSi₈O₂₂(OH,Cl)₂.",
+              "Serandite": "A rare pink to salmon-colored mineral with a distinctive pearly luster, having the formula NaMn₂Si₃O₈(OH). It forms attractive blade-like crystals.",
+              "Catapleiite": "A hydrated sodium calcium zirconium silicate that typically forms colorless, yellowish, or brownish tabular crystals."
+            };
+              
+            return await generateLimitedResponseForKnownLocation(
+              locality, 
+              "Mont Saint-Hilaire", 
+              mshMinerals,
+              `Mont Saint-Hilaire is one of the most famous mineral localities in the world, with over 430 different mineral species documented, including over 60 type locality minerals. Located near Montreal in Quebec, Canada, it's part of the Monteregian Hills, a series of intrusive stocks and dikes formed during the Cretaceous period. The Poudrette quarry within Mont Saint-Hilaire is particularly notable as a mineral collecting locality.\n\nThe locality is famous for its uncommon and rare mineral species including: Eudialyte (${mineralInfo["Eudialyte"]}), Serandite (${mineralInfo["Serandite"]}), and Catapleiite (${mineralInfo["Catapleiite"]})`
+            );
+          }
+          
+          // Regular case for other localities
           const mineralsResponse = await getMineralsAtLocality(locationName);
           
           if (mineralsResponse.data && mineralsResponse.data.minerals && mineralsResponse.data.minerals.length > 0) {
@@ -416,6 +445,11 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
 
 /**
  * Generate a specialized response for known locations where the API doesn't provide full mineral lists
+ * @param locality - The locality object from the API
+ * @param locationName - The name of the location
+ * @param minerals - Array of mineral names known to be at this location
+ * @param contextInfo - Additional context information about the location
+ * @returns The AI-generated response with enhanced information
  */
 async function generateLimitedResponseForKnownLocation(
   locality: any,
