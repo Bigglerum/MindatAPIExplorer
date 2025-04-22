@@ -49,12 +49,12 @@ export default function Explorer() {
         </div>
         
         {/* Main content area with higher z-index on mobile */}
-        <div className="flex-1 overflow-auto flex flex-col z-10 relative lg:z-0">
+        <div className="flex-1 flex flex-col z-10 relative lg:z-0">
           <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
             <Tabs 
               value={activeTab}
               onValueChange={setActiveTab}
-              className="w-full"
+              className="w-full h-full flex flex-col"
             >
               <TabsList className="bg-transparent h-auto overflow-x-auto flex-nowrap justify-start">
                 <TabsTrigger 
@@ -76,49 +76,52 @@ export default function Explorer() {
                   Saved Requests
                 </TabsTrigger>
               </TabsList>
-              
-              <TabsContent value="explorer" className="mt-0 flex-1 overflow-auto">
-                <ApiExplorer endpoint={activeEndpoint} />
-              </TabsContent>
-              
-              <TabsContent value="knowledge-base" className="mt-0 flex-1 overflow-auto">
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">API Knowledge Base</h2>
-                  <p>Browse comprehensive documentation and guides for the Mindat API.</p>
-                  
-                  {/* This would be expanded with actual knowledge base content */}
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                      <h3 className="text-lg font-medium mb-2">Getting Started</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Learn the basics of connecting to and using the Mindat API.
-                      </p>
-                    </div>
-                    <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                      <h3 className="text-lg font-medium mb-2">Authentication</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">
-                        Learn how to authenticate with the API using your API key.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="saved-requests" className="mt-0 flex-1 overflow-auto">
-                <div className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Saved Requests</h2>
-                  <p>Access your saved API requests for quick reference.</p>
-                  
-                  {/* This would be populated with saved requests */}
-                  <div className="mt-6">
-                    <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                      <p>You haven't saved any requests yet.</p>
-                      <p className="mt-2 text-sm">Save a request by clicking the "Save Request" button in the explorer.</p>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
             </Tabs>
+          </div>
+          
+          {/* Separate scrollable content area */}
+          <div className="flex-1 overflow-auto">
+            {activeTab === 'explorer' && (
+              <ApiExplorer endpoint={activeEndpoint} />
+            )}
+            
+            {activeTab === 'knowledge-base' && (
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-4">API Knowledge Base</h2>
+                <p>Browse comprehensive documentation and guides for the Mindat API.</p>
+                
+                {/* This would be expanded with actual knowledge base content */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                    <h3 className="text-lg font-medium mb-2">Getting Started</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Learn the basics of connecting to and using the Mindat API.
+                    </p>
+                  </div>
+                  <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
+                    <h3 className="text-lg font-medium mb-2">Authentication</h3>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Learn how to authenticate with the API using your API key.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'saved-requests' && (
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-4">Saved Requests</h2>
+                <p>Access your saved API requests for quick reference.</p>
+                
+                {/* This would be populated with saved requests */}
+                <div className="mt-6">
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    <p>You haven't saved any requests yet.</p>
+                    <p className="mt-2 text-sm">Save a request by clicking the "Save Request" button in the explorer.</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
