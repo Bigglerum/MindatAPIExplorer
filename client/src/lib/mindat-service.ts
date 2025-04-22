@@ -68,19 +68,20 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
     offset: params.offset || 0
   };
 
-  // Use the 'q' parameter which is most compatible with the API
+  // Use the 'txt' parameter which works correctly with the localities API
   if (params.name) {
-    queryParams.q = params.name;
+    queryParams.txt = params.name;
   } 
-  // Add type parameter directly
-  if (params.type) queryParams.locality_type = params.type;
   
-  // Construct the country and region as part of the q parameter if needed
+  // Add country and region as part of the search text if needed
   if (params.country && !params.name) {
-    queryParams.q = `${params.country} country`;
+    queryParams.txt = params.country;
   } else if (params.region && !params.name) {
-    queryParams.q = `${params.region} region`;
+    queryParams.txt = params.region;
   }
+  
+  // Add type parameter directly if specified
+  if (params.type) queryParams.locality_type = params.type;
 
   try {
     // According to our updated approach, we're using direct parameters for search
@@ -117,11 +118,11 @@ export async function searchLocalities(params: MindatLocalitySearchParams) {
  */
 export async function getLocalitiesByCountry(country: string) {
   try {
-    // Use the localities endpoint with q parameter (more reliable)
+    // Use the localities endpoint with txt parameter (works correctly)
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { q: `${country} country`, limit: 20 }
+      parameters: { txt: country, limit: 20 }
     });
 
     const data = await response.json();
@@ -244,11 +245,11 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       };
     }
     
-    // Using q parameter which is most compatible with the API
+    // Using txt parameter which works correctly with the localities API
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { q: name } // Use the q parameter for search
+      parameters: { txt: name } // Use the txt parameter for search
     });
     
     const data = await response.json();
