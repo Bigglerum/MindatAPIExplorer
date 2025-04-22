@@ -21,25 +21,6 @@ export default function MappingDataContent() {
       return a.class.localeCompare(b.class);
     });
 
-  // Group by crystal system for better organization
-  const groupedBySystems = crystalClasses.reduce((acc, item) => {
-    if (!acc[item.system]) {
-      acc[item.system] = [];
-    }
-    acc[item.system].push(item);
-    return acc;
-  }, {} as Record<string, typeof crystalClasses>);
-
-  const systemOrder = [
-    "Isometric", 
-    "Hexagonal", 
-    "Tetragonal", 
-    "Trigonal",
-    "Orthorhombic", 
-    "Monoclinic", 
-    "Triclinic"
-  ];
-
   // Function to handle CSV download
   const handleDownloadCSV = () => {
     const csvData = crystalClasses.map(item => ({
@@ -132,25 +113,21 @@ export default function MappingDataContent() {
                 </tr>
               </thead>
               <tbody className="bg-card divide-y divide-gray-200">
-                {systemOrder.map(system => (
-                  <React.Fragment key={system}>
-                    {groupedBySystems[system]?.map((item) => (
-                      <tr key={item.id} className="hover:bg-muted/50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {item.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.system}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.class}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.example}
-                        </td>
-                      </tr>
-                    ))}
-                  </React.Fragment>
+                {crystalClasses.map((item) => (
+                  <tr key={item.id} className="hover:bg-muted/50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {item.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.system}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.class}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      {item.example}
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
