@@ -3,6 +3,8 @@ import { useLocation } from 'wouter';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import { ApiExplorer } from '@/components/explorer/api-explorer';
+import { KnowledgeBaseContent } from '@/components/explorer/knowledge-base-content';
+import { SavedRequestsContent } from '@/components/explorer/saved-requests-content';
 import ChatHelper from '@/components/chat/chat-helper';
 import { APIEndpoint } from '@/types/api';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -86,41 +88,11 @@ export default function Explorer() {
             )}
             
             {activeTab === 'knowledge-base' && (
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">API Knowledge Base</h2>
-                <p>Browse comprehensive documentation and guides for the Mindat API.</p>
-                
-                {/* This would be expanded with actual knowledge base content */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium mb-2">Getting Started</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      Learn the basics of connecting to and using the Mindat API.
-                    </p>
-                  </div>
-                  <div className="border border-gray-200 dark:border-slate-700 rounded-lg p-4">
-                    <h3 className="text-lg font-medium mb-2">Authentication</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      Learn how to authenticate with the API using your API key.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <KnowledgeBaseContent />
             )}
             
             {activeTab === 'saved-requests' && (
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">Saved Requests</h2>
-                <p>Access your saved API requests for quick reference.</p>
-                
-                {/* This would be populated with saved requests */}
-                <div className="mt-6">
-                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
-                    <p>You haven't saved any requests yet.</p>
-                    <p className="mt-2 text-sm">Save a request by clicking the "Save Request" button in the explorer.</p>
-                  </div>
-                </div>
-              </div>
+              <SavedRequestsContent />
             )}
           </div>
         </div>
