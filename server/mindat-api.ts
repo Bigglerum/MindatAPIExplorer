@@ -165,18 +165,29 @@ async function executeSearch(endpoint: string, params: Record<string, any>) {
   
   console.log('Executing API search:', url.toString());
   
-  // Make the request
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers: getAuthHeaders()
-  });
-  
-  if (!response.ok) {
-    console.error(`API search failed with status ${response.status} for URL: ${url.toString()}`);
-    throw new Error(`API request failed with status ${response.status}`);
+  try {
+    // Make the request without timeout to avoid type issues
+    const response = await fetch(url.toString(), {
+      method: 'GET',
+      headers: getAuthHeaders()
+    });
+    
+    if (!response.ok) {
+      console.error(`API search failed with status ${response.status} for URL: ${url.toString()}`);
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error: any) {
+    // If it's an abort error (timeout), provide a clearer message
+    if (error.name === 'AbortError') {
+      console.error(`API request timed out for URL: ${url.toString()}`);
+      throw new Error('API request timed out');
+    }
+    
+    // Otherwise, rethrow the original error
+    throw error;
   }
-  
-  return await response.json();
 }
 
 /**
@@ -356,7 +367,8 @@ export async function getMineralsAtLocality(localityName: string) {
     }
     
     // Combine unique mineral IDs from both approaches
-    const allMineralIds = [...new Set([...approachOneMineralIds, ...approachTwoMineralIds])];
+    const uniqueIds = new Set([...approachOneMineralIds, ...approachTwoMineralIds]);
+    const allMineralIds = Array.from(uniqueIds);
     console.log(`Total unique mineral IDs found: ${allMineralIds.length}`);
     
     if (allMineralIds.length === 0) {
