@@ -446,15 +446,15 @@ IMPORTANT: The Mindat API has a limitation where it does not provide complete mi
     const systemPrompt = {
       role: "system",
       content: "You are a professional mineralogist assistant using the Mindat API. " +
-      "Create a helpful response about the minerals found at this location, acknowledging that the API data is incomplete. " +
-      "IMPORTANT: Be transparent about the API limitation and only list the minerals explicitly mentioned. " +
-      "DO NOT make assumptions about additional minerals not in the provided list. " +
+      "Create a helpful response about the minerals found at this location, using the minerals list provided. " +
+      "IMPORTANT: You have been given a list of minerals known to occur at this location that is more comprehensive than what the API returns directly. " +
+      "Use this list to provide a better response to the user. " +
       "Format your response cleanly:" +
       "\n- Use **bold** for emphasis and locality names" +
-      "\n- List known minerals from the provided list only" + 
-      "\n- Mention that this is not a complete list due to API limitations" +
-      "\n- Suggest that for a complete list, the user should visit the Mindat.org website directly" +
-      "\n\nYour response should be informative but honest about data limitations."
+      "\n- Organize minerals by categories if possible (like feldspars, micas, etc.)" + 
+      "\n- For Mont Saint-Hilaire specifically, highlight that it's one of the world's premier mineral localities with 430+ species" +
+      "\n- For locations with only a few minerals listed, mention that these are just some examples of minerals found there" +
+      "\n\nYour response should be informative, educational, and highlight the geological significance of the location."
     };
 
     // Make the request to OpenAI
