@@ -183,15 +183,31 @@ export async function generateChatResponse(message: string, history: any[] = [])
             if (locationName.toLowerCase().includes("mont saint-hilaire") || 
                 locationName.toLowerCase().includes("mont st hilaire") ||
                 locationName.toLowerCase().includes("poudrette")) {
-              return await generateLimitedResponseForKnownLocation(locality, "Mont Saint-Hilaire", [
+              // Enhanced response for Mont Saint-Hilaire/Poudrette with more comprehensive information
+              const mshMinerals = [
                 "Abenakiite-(Ce)", "Acmite", "Aegirine", "Albite", "Analcime", "Annite", "Arfvedsonite", 
-                "Augite", "Catapleiite", "Eudialyte", "Leifite", "Microcline", "Natrolite", "Nepheline", 
-                "Serandite", "Sodalite"
-              ]);
+                "Augite", "Catapleiite", "Eudialyte", "Franconite", "Gaidonnayite", "Hochelagaite", "Leifite", 
+                "Microcline", "Natrolite", "Nepheline", "Petarasite", "Pectolite", "Polylithionite", 
+                "Quartz", "Rhodochrosite", "Serandite", "Siderite", "Sodalite", "Titanite", "Yofortierite"
+              ];
+              
+              // Add detailed information about specific minerals
+              const mineralInfo = {
+                "Eudialyte": "A complex zirconosilicate mineral that forms striking red to pink crystals and is characteristic of alkaline rocks. Its formula is approximately Na₄(Ca,Ce)₂(Fe²⁺,Mn,Y)ZrSi₈O₂₂(OH,Cl)₂.",
+                "Serandite": "A rare pink to salmon-colored mineral with a distinctive pearly luster, having the formula NaMn₂Si₃O₈(OH). It forms attractive blade-like crystals.",
+                "Catapleiite": "A hydrated sodium calcium zirconium silicate that typically forms colorless, yellowish, or brownish tabular crystals."
+              };
+              
+              return await generateLimitedResponseForKnownLocation(
+                locality, 
+                "Mont Saint-Hilaire", 
+                mshMinerals,
+                `Mont Saint-Hilaire is one of the most famous mineral localities in the world, with over 430 different mineral species documented, including over 60 type locality minerals. Located near Montreal in Quebec, Canada, it's part of the Monteregian Hills, a series of intrusive stocks and dikes formed during the Cretaceous period. The Poudrette quarry within Mont Saint-Hilaire is particularly notable as a mineral collecting locality.\n\nThe locality is famous for its uncommon and rare mineral species including: Eudialyte (${mineralInfo["Eudialyte"]}), Serandite (${mineralInfo["Serandite"]}), and Catapleiite (${mineralInfo["Catapleiite"]})`
+              );
             } else if (locationName.toLowerCase().includes("aust cliff")) {
               return await generateLimitedResponseForKnownLocation(locality, "Aust Cliff", [
                 "Baryte", "Calcite", "Celestine", "Dolomite", "Gypsum", "Quartz", "Sulfur"
-              ]);
+              ], "Aust Cliff is a well-known geological site located in Gloucestershire, England. It's famous for its exposed Triassic and Jurassic sedimentary rocks, including the Rhaetic Beds which contain various minerals. The cliff face exposes a classic geological section showing the Triassic-Jurassic boundary.");
             } else {
               // For unknown locations with no minerals found
               console.log(`No minerals found for locality ${locationName}`);
@@ -404,7 +420,8 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
 async function generateLimitedResponseForKnownLocation(
   locality: any,
   locationDisplayName: string,
-  commonMinerals: string[]
+  commonMinerals: string[],
+  locationInfo?: string
 ): Promise<string> {
   try {
     // Create context prompt explaining the API limitation and providing some known minerals
@@ -416,7 +433,10 @@ The Mindat API doesn't provide a complete list of minerals for this location, bu
 Locality information:
 ${JSON.stringify(locality, null, 2)}
 
-This location is known to contain many minerals (potentially hundreds), including these common ones:
+${locationInfo ? `Additional information about this location:
+${locationInfo}
+
+` : ''}This location is known to contain many minerals (potentially hundreds), including these common ones:
 ${commonMinerals.join(", ")}
 
 IMPORTANT: The Mindat API has a limitation where it does not provide complete mineral lists through its API endpoints, even though their website shows this data. For ${locationDisplayName}, there should be many more minerals than what the API returns.
