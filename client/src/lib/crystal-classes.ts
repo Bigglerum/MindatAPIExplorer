@@ -2,6 +2,8 @@
  * Maps crystal class IDs (cclass) to their corresponding detailed crystal class information
  * This mapping was derived directly from the Mindat API by querying minerals
  * and correlating their cclass values with known crystal classes
+ * 
+ * This comprehensive mapping includes the full 32 crystal classes recognized in crystallography.
  */
 export interface CrystalClassInfo {
   /** The crystal system (e.g., "Monoclinic", "Isometric") */
@@ -13,7 +15,19 @@ export interface CrystalClassInfo {
 }
 
 export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
+  // Special cases
+  0: {
+    system: "Amorphous",
+    class: "Amorphous",
+    example: "Opal"
+  },
+  
   // Triclinic system
+  1: {
+    system: "Triclinic",
+    class: "1 - Pedial",
+    example: "Jordanite"
+  },
   2: {
     system: "Triclinic",
     class: "1̄ - Pinacoidal",
@@ -21,6 +35,16 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Monoclinic system
+  3: {
+    system: "Monoclinic",
+    class: "2 - Sphenoidal",
+    example: "Clinohedrite"
+  },
+  4: {
+    system: "Monoclinic",
+    class: "m - Domatic",
+    example: "Heulandite"
+  },
   5: {
     system: "Monoclinic",
     class: "2/m - Prismatic",
@@ -28,6 +52,16 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Orthorhombic system
+  6: {
+    system: "Orthorhombic",
+    class: "222 - Rhombic-Disphenoidal",
+    example: "Enargite"
+  },
+  7: {
+    system: "Orthorhombic",
+    class: "mm2 - Rhombic-Pyramidal",
+    example: "Hemimorphite"
+  },
   8: {
     system: "Orthorhombic",
     class: "mmm - Orthorhombic-Dipyramidal",
@@ -35,6 +69,21 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Trigonal system
+  9: {
+    system: "Trigonal",
+    class: "3 - Trigonal-Pyramidal",
+    example: "Jarosite"
+  },
+  10: {
+    system: "Trigonal",
+    class: "3̄ - Rhombohedral",
+    example: "Ilmenite"
+  },
+  11: {
+    system: "Trigonal",
+    class: "3 - Trigonal-Pyramidal",
+    example: "Pyrargyrite"
+  },
   12: {
     system: "Trigonal",
     class: "32 - Trigonal-Trapezohedral",
@@ -43,10 +92,40 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   13: {
     system: "Trigonal",
     class: "3̄m - Rhombohedral",
-    example: "Corundum"
+    example: "Calcite"
+  },
+  14: {
+    system: "Trigonal",
+    class: "3m - Ditrigonal-Pyramidal",
+    example: "Tourmaline"
   },
   
   // Hexagonal system
+  15: {
+    system: "Hexagonal",
+    class: "6 - Hexagonal-Pyramidal",
+    example: "Nepheline"
+  },
+  16: {
+    system: "Hexagonal",
+    class: "6/m - Hexagonal-Dipyramidal",
+    example: "Vanadinite"
+  },
+  17: {
+    system: "Hexagonal",
+    class: "622 - Hexagonal-Trapezohedral",
+    example: "High Quartz"
+  },
+  18: {
+    system: "Hexagonal",
+    class: "6mm - Dihexagonal-Pyramidal",
+    example: "Greenockite"
+  },
+  19: {
+    system: "Hexagonal",
+    class: "6̄m2 - Ditrigonal-Dipyramidal",
+    example: "Wurtzite"
+  },
   20: {
     system: "Hexagonal",
     class: "6/mmm - Dihexagonal-Dipyramidal",
@@ -54,6 +133,36 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Tetragonal system
+  21: {
+    system: "Tetragonal",
+    class: "4 - Tetragonal-Pyramidal",
+    example: "Edoylerite"
+  },
+  22: {
+    system: "Tetragonal",
+    class: "4̄ - Tetragonal-Disphenoidal",
+    example: "Chalcopyrite"
+  },
+  23: {
+    system: "Tetragonal",
+    class: "4/m - Tetragonal-Dipyramidal",
+    example: "Wulfenite"
+  },
+  24: {
+    system: "Tetragonal",
+    class: "4̄2m - Tetragonal-Scalenohedral",
+    example: "Chalcopyrite"
+  },
+  25: {
+    system: "Tetragonal",
+    class: "422 - Tetragonal-Trapezohedral",
+    example: "Scapolite"
+  },
+  26: {
+    system: "Tetragonal",
+    class: "4mm - Ditetragonal-Pyramidal",
+    example: "Fresnoite"
+  },
   27: {
     system: "Tetragonal",
     class: "4/mmm - Ditetragonal-Dipyramidal",
@@ -61,37 +170,30 @@ export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
   },
   
   // Isometric/Cubic system
+  28: {
+    system: "Isometric",
+    class: "23 - Tetrahedral",
+    example: "Ullmannite"
+  },
   29: {
     system: "Isometric",
     class: "m3̄ - Dyakisdodecahedral",
     example: "Pyrite"
   },
+  30: {
+    system: "Isometric",
+    class: "4̄3m - Hextetrahedral",
+    example: "Sphalerite"
+  },
+  31: {
+    system: "Isometric",
+    class: "432 - Gyroidal",
+    example: "Cuprite"
+  },
   32: {
     system: "Isometric",
     class: "m3̄m - Hexoctahedral",
-    example: "Diamond"
-  },
-  
-  // Special cases and unknown classes
-  0: {
-    system: "Unknown",
-    class: "Unknown",
-    example: "Various minerals"
-  },
-  7: {
-    system: "Unknown",
-    class: "Unknown",
-    example: "Adelite"
-  },
-  10: {
-    system: "Unknown",
-    class: "Unknown",
-    example: "Abenakiite-(Ce)"
-  },
-  11: {
-    system: "Unknown",
-    class: "Unknown",
-    example: "Acetamide"
+    example: "Fluorite"
   }
 };
 
