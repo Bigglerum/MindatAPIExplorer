@@ -136,10 +136,12 @@ export default function ChatHelper() {
                     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br />')
-                    .replace(/<table>/g, '<table class="border-collapse w-full my-4">')
+                    .replace(/<table>/g, '<table class="border-collapse w-full my-4 table-fixed">')
                     .replace(/<tr>/g, '<tr class="border-b border-gray-300 dark:border-gray-700">')
-                    .replace(/<th>/g, '<th class="p-2 text-left bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-gray-200">')
-                    .replace(/<td>/g, '<td class="p-2 border-gray-300 dark:border-gray-700">')
+                    .replace(/<th>/g, '<th class="p-2 text-left bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700">')
+                    .replace(/<td>/g, '<td class="p-2 border border-gray-300 dark:border-gray-700">')
+                    // Add style for fixing table layout
+                    .replace(/<\/table>/g, '</table><style>table { display: table; width: 100%; } tr { display: table-row; } th, td { display: table-cell; word-break: break-word; }</style>')
                 }} />
               </div>
             </div>
@@ -186,15 +188,17 @@ export default function ChatHelper() {
         </form>
       </div>
       
-      {/* Chat toggle button */}
-      <Button
-        onClick={toggleChat}
-        variant="default"
-        size="icon"
-        className="fixed bottom-5 right-5 bg-primary hover:bg-indigo-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50"
-      >
-        <MessageSquare className="h-5 w-5" />
-      </Button>
+      {/* Chat toggle button - only shown when chat is closed */}
+      {!isOpen && (
+        <Button
+          onClick={toggleChat}
+          variant="default"
+          size="icon"
+          className="fixed bottom-5 right-5 bg-primary hover:bg-indigo-700 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg z-50"
+        >
+          <MessageSquare className="h-5 w-5" />
+        </Button>
+      )}
     </>
   );
 }
