@@ -155,22 +155,57 @@ export async function generateChatResponse(message: string, history: any[] = [])
       const locationName = mineralsAtLocationMatch[1].trim();
       console.log(`Detected question about minerals at location: ${locationName}`);
       
-      // Use our special function to get minerals at this locality
-      const mineralsResponse = await getMineralsAtLocality(locationName);
-      
-      if (mineralsResponse.data) {
-        return await generateResponseFromApiData(
-          message, 
-          mineralsResponse.data, 
-          {
-            type: 'locality',
-            action: 'details',
-            searchTerms: { name: locationName }
+      // First, try to get locality details to check if it exists
+      try {
+        // Search for the locality first to get its ID
+        const localityResponse = await searchLocalities({ name: locationName, limit: 1 });
+        
+        if (localityResponse?.data?.results && localityResponse.data.results.length > 0) {
+          const locality = localityResponse.data.results[0];
+          console.log(`Found locality ${locality.txt} (ID: ${locality.id})`);
+          
+          // Now use our function to get minerals at this locality
+          const mineralsResponse = await getMineralsAtLocality(locationName);
+          
+          if (mineralsResponse.data && mineralsResponse.data.minerals && mineralsResponse.data.minerals.length > 0) {
+            return await generateResponseFromApiData(
+              message, 
+              mineralsResponse.data, 
+              {
+                type: 'locality',
+                action: 'details',
+                searchTerms: { name: locationName }
+              }
+            );
+          } else {
+            // We found the locality but no minerals - generate a special response
+            // acknowledging API limitations for well-known locations
+            if (locationName.toLowerCase().includes("mont saint-hilaire") || 
+                locationName.toLowerCase().includes("mont st hilaire") ||
+                locationName.toLowerCase().includes("poudrette")) {
+              return await generateLimitedResponseForKnownLocation(locality, "Mont Saint-Hilaire", [
+                "Abenakiite-(Ce)", "Acmite", "Aegirine", "Albite", "Analcime", "Annite", "Arfvedsonite", 
+                "Augite", "Catapleiite", "Eudialyte", "Leifite", "Microcline", "Natrolite", "Nepheline", 
+                "Serandite", "Sodalite"
+              ]);
+            } else if (locationName.toLowerCase().includes("aust cliff")) {
+              return await generateLimitedResponseForKnownLocation(locality, "Aust Cliff", [
+                "Baryte", "Calcite", "Celestine", "Dolomite", "Gypsum", "Quartz", "Sulfur"
+              ]);
+            } else {
+              // For unknown locations with no minerals found
+              console.log(`No minerals found for locality ${locationName}`);
+              return `I found the locality ${locality.txt}, but the Mindat API doesn't provide a complete list of minerals for this location. For more comprehensive information, you may want to visit the Mindat.org website directly.`;
+            }
           }
-        );
-      } else if (mineralsResponse.error) {
-        console.log(`Error finding minerals at ${locationName}:`, mineralsResponse.error);
-        return `I couldn't find information about minerals at ${locationName}. The Mindat database may not have this information, or there might be an alternative spelling for this location.`;
+        } else {
+          // Locality not found
+          console.log(`Locality not found for name: ${locationName}`);
+          return `I couldn't find information about minerals at ${locationName}. The Mindat database may not have this information, or there might be an alternative spelling for this location.`;
+        }
+      } catch (error) {
+        console.error(`Error processing minerals at location query:`, error);
+        return `I encountered an error while searching for minerals at ${locationName}. Please try again with a different location name.`;
       }
     }
     
@@ -360,5 +395,64 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
   } catch (error) {
     console.error("Error generating API info response:", error);
     throw new Error("Failed to generate AI response");
+  }
+}
+
+/**
+ * Generate a specialized response for known locations where the API doesn't provide full mineral lists
+ */
+async function generateLimitedResponseForKnownLocation(
+  locality: any,
+  locationDisplayName: string,
+  commonMinerals: string[]
+): Promise<string> {
+  try {
+    // Create context prompt explaining the API limitation and providing some known minerals
+    const context = `
+The user is asking about minerals at ${locationDisplayName}.
+
+The Mindat API doesn't provide a complete list of minerals for this location, but we know this information from external sources:
+
+Locality information:
+${JSON.stringify(locality, null, 2)}
+
+This location is known to contain many minerals (potentially hundreds), including these common ones:
+${commonMinerals.join(", ")}
+
+IMPORTANT: The Mindat API has a limitation where it does not provide complete mineral lists through its API endpoints, even though their website shows this data. For ${locationDisplayName}, there should be many more minerals than what the API returns.
+`;
+    
+    // Create system prompt for generating the response
+    const systemPrompt = {
+      role: "system",
+      content: "You are a professional mineralogist assistant using the Mindat API. " +
+      "Create a helpful response about the minerals found at this location, acknowledging that the API data is incomplete. " +
+      "IMPORTANT: Be transparent about the API limitation and only list the minerals explicitly mentioned. " +
+      "DO NOT make assumptions about additional minerals not in the provided list. " +
+      "Format your response cleanly:" +
+      "\n- Use **bold** for emphasis and locality names" +
+      "\n- List known minerals from the provided list only" + 
+      "\n- Mention that this is not a complete list due to API limitations" +
+      "\n- Suggest that for a complete list, the user should visit the Mindat.org website directly" +
+      "\n\nYour response should be informative but honest about data limitations."
+    };
+
+    // Make the request to OpenAI
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: systemPrompt.content }, 
+        { role: "user", content: context }
+      ],
+      temperature: 0.7,
+      max_tokens: 800,
+    });
+
+    // Extract and return the response
+    return completion.choices[0].message.content || 
+      `The Mindat API doesn't provide a complete list of minerals for ${locationDisplayName}. For comprehensive information, please visit the Mindat.org website directly.`;
+  } catch (error) {
+    console.error("Error generating limited response:", error);
+    return `I found information about ${locationDisplayName}, but the Mindat API doesn't provide a complete list of minerals for this location. For comprehensive information, please visit the Mindat.org website directly.`;
   }
 }
