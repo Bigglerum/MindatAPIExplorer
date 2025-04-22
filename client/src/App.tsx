@@ -25,18 +25,6 @@ function Router() {
 }
 
 function App() {
-  // Add passive touch listeners to improve scrolling performance on iOS
-  useEffect(() => {
-    // This helps with iOS scrolling performance
-    document.addEventListener('touchstart', () => {}, { passive: true });
-    document.addEventListener('touchmove', () => {}, { passive: true });
-    
-    return () => {
-      document.removeEventListener('touchstart', () => {});
-      document.removeEventListener('touchmove', () => {});
-    };
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

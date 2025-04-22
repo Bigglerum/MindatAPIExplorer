@@ -52,33 +52,14 @@
     @apply border-border;
   }
 
-  html, body {
+  body {
     @apply font-sans antialiased bg-background text-foreground;
-    /* iOS scrolling fixed */
-    height: 100%;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    position: fixed;
-    touch-action: none;
   }
-  
-  #root {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
+}
 
-  /* Ensure scrollable areas have their own scrolling behavior */
-  .overflow-auto, .overflow-y-auto, .overflow-x-auto {
+@layer utilities {
+  .ios-scroll {
     -webkit-overflow-scrolling: touch;
-    overflow-scrolling: touch;
-    overscroll-behavior: contain;
-    touch-action: pan-y;
   }
 }
 

@@ -38,7 +38,7 @@ export default function Search() {
           )}
         </div>
         
-        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-slate-900 z-10 relative lg:z-0">
+        <div className="flex-1 overflow-auto p-4 bg-gray-100 dark:bg-slate-900 z-10 relative lg:z-0 ios-scroll">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6">
               <h1 className="text-2xl font-bold mb-2">Search Mindat Data</h1>

@@ -93,7 +93,6 @@ export default function ChatHelper() {
         className={`fixed bottom-0 right-0 w-full md:w-[80%] lg:w-[90%] bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-lg rounded-tl-lg transition-transform transform ${
           isOpen ? (isMinimized ? 'translate-y-[calc(100%-40px)]' : 'translate-y-0') : 'translate-y-full'
         } h-[85vh] md:h-[80vh] flex flex-col z-40`}
-        style={{touchAction: 'manipulation'}}
       >
         <div className="p-3 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center bg-gray-50 dark:bg-slate-700 rounded-tl-lg">
           <h3 className="font-medium text-gray-800 dark:text-gray-200">API Assistant</h3>
@@ -117,7 +116,7 @@ export default function ChatHelper() {
           </div>
         </div>
         
-        <div className="flex-1 p-3 overflow-y-auto space-y-3" style={{WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
+        <div className="flex-1 p-3 overflow-y-auto space-y-3 ios-scroll">
           {messages.map((message, index) => (
             <div 
               key={index} 
