@@ -36,6 +36,19 @@ export async function generateChatResponse(message: string, history: any[] = [])
       "\n- When providing code examples, use proper markdown code blocks with triple backticks" +
       "\n- Use single backticks for inline code and parameter names" +
       "\n- Use line breaks for readability" +
+      "\n\nWhen displaying tables, use proper HTML table format with <table>, <tr>, <th>, and <td> tags." +
+      "\nMake sure tables are well-structured with proper headers and aligned data in each column." +
+      "\nFor example:" +
+      "\n<table>" +
+      "\n  <tr>" +
+      "\n    <th>Header 1</th>" +
+      "\n    <th>Header 2</th>" +
+      "\n  </tr>" +
+      "\n  <tr>" +
+      "\n    <td>Data 1</td>" +
+      "\n    <td>Data 2</td>" +
+      "\n  </tr>" +
+      "\n</table>" +
       "\n\nShow examples with proper authentication in different programming languages." +
       "\nAlways encourage best practices for API usage."
     };

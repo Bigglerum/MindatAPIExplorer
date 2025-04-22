@@ -130,18 +130,64 @@ export default function ChatHelper() {
                 } p-3 max-w-[90%] text-sm`}
               >
                 <div className="prose dark:prose-invert prose-sm max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ 
-                  __html: message.content
-                    .replace(/```([^`]+)```/g, '<pre class="bg-gray-800 dark:bg-slate-800 p-3 rounded overflow-x-auto text-gray-100 dark:text-gray-100"><code>$1</code></pre>')
-                    .replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-slate-700 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">$1</code>')
+                  __html: `
+                    <style>
+                      table { 
+                        border-collapse: collapse;
+                        width: 100%;
+                        margin: 1rem 0;
+                        font-size: 0.875rem;
+                      }
+                      th, td {
+                        border: 1px solid #cbd5e0;
+                        padding: 0.5rem;
+                        text-align: left;
+                      }
+                      th {
+                        background-color: #f7fafc;
+                        font-weight: 600;
+                        color: #1a202c;
+                      }
+                      tr:nth-child(even) {
+                        background-color: #f7fafc;
+                      }
+                      .dark th {
+                        background-color: #2d3748;
+                        color: #e2e8f0;
+                        border-color: #4a5568;
+                      }
+                      .dark td {
+                        border-color: #4a5568;
+                      }
+                      .dark tr:nth-child(even) {
+                        background-color: #2d3748;
+                      }
+                      code.inline {
+                        background-color: #edf2f7;
+                        color: #1a202c;
+                        padding: 0.1rem 0.3rem;
+                        border-radius: 0.25rem;
+                      }
+                      .dark code.inline {
+                        background-color: #2d3748;
+                        color: #e2e8f0;
+                      }
+                      pre {
+                        background-color: #1a202c;
+                        color: #e2e8f0;
+                        padding: 1rem;
+                        border-radius: 0.375rem;
+                        overflow-x: auto;
+                        margin: 1rem 0;
+                      }
+                    </style>
+                  ` + 
+                  message.content
+                    .replace(/```([^`]+)```/g, '<pre><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code class="inline">$1</code>')
                     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br />')
-                    .replace(/<table>/g, '<table class="border-collapse w-full my-4 table-fixed">')
-                    .replace(/<tr>/g, '<tr class="border-b border-gray-300 dark:border-gray-700">')
-                    .replace(/<th>/g, '<th class="p-2 text-left bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-700">')
-                    .replace(/<td>/g, '<td class="p-2 border border-gray-300 dark:border-gray-700">')
-                    // Add style for fixing table layout
-                    .replace(/<\/table>/g, '</table><style>table { display: table; width: 100%; } tr { display: table-row; } th, td { display: table-cell; word-break: break-word; }</style>')
                 }} />
               </div>
             </div>
