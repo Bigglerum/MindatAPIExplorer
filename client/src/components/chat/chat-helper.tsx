@@ -194,7 +194,11 @@ export default function ChatHelper() {
                     .replace(/`([^`]+)`/g, '<code class="inline">$1</code>')
                     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                    .replace(/\n/g, '<br />')
+                    .replace(/\n\s*\n/g, '<br /><br />') // Double line breaks
+                    .replace(/\n/g, '<br />') // Single line breaks
+                    .replace(/\s{4,}/g, ' ') // Remove excessive whitespace
+                    .replace(/<br \/>\s*<table>/g, '<table>') // Remove breaks before tables
+                    .replace(/\s*<\/table>\s*<br \/>/g, '</table>') // Remove breaks after tables
                 }} />
               </div>
             </div>

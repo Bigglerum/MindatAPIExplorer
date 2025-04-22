@@ -64,8 +64,16 @@ export async function generateChatResponse(message: string, history: any[] = [])
       max_tokens: 500,
     });
 
-    // Extract and return the response text
-    return completion.choices[0].message.content || "I'm not sure how to respond to that.";
+    // Extract, clean, and return the response text
+    const responseText = completion.choices[0].message.content || "I'm not sure how to respond to that.";
+    
+    // Clean up any potential invisible characters or excessive spacing
+    const cleanedResponse = responseText
+      .replace(/(\r\n|\r|\n){2,}/g, '\n\n') // Normalize multiple line breaks
+      .replace(/\s{2,}/g, ' ') // Remove excessive spaces
+      .trim();
+      
+    return cleanedResponse;
   } catch (error) {
     console.error("Error generating OpenAI response:", error);
     throw new Error("Failed to generate AI response");
