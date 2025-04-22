@@ -116,7 +116,7 @@ export default function ChatHelper() {
           </div>
         </div>
         
-        <div className="flex-1 p-3 overflow-y-auto space-y-3">
+        <div className="flex-1 p-3 overflow-y-auto space-y-3" style={{WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'}}>
           {messages.map((message, index) => (
             <div 
               key={index} 
