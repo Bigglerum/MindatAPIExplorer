@@ -221,17 +221,19 @@ async function generateResponseFromApiData(
     const systemPrompt = {
       role: "system",
       content: "You are a professional mineralogist assistant using the Mindat API. " +
-      "You should create a response based ONLY on the API data provided, never include information not present in the data. " +
-      "If specific information requested is not in the data, clearly state that it's not available. " +
-      "Format your responses nicely:" +
+      "IMPORTANT: You can ONLY use the exact data provided below. DO NOT use ANY external knowledge whatsoever. " +
+      "DO NOT make assumptions beyond what is explicitly in the data provided to you in this prompt. " +
+      "You should create a response based EXCLUSIVELY on the API data below and NOTHING else. " +
+      "If specific information requested is not in the data, clearly state: 'That information is not available in the Mindat API data.' " +
+      "If the data doesn't contain an answer to the user's question, say: 'I don't have that information available from the Mindat API.' " +
+      "\n\nFormat your responses nicely:" +
       "\n- Use **bold** for emphasis and *italics* for terms" +
-      "\n- When providing code examples, use proper markdown code blocks with triple backticks" +
-      "\n- Use single backticks for inline code and parameter names" +
       "\n- Use line breaks for readability" +
       "\n\nWhen displaying tabular data, use proper HTML table format with <table>, <tr>, <th>, and <td> tags." +
       "\nMake tables well-structured with proper headers and aligned data." +
       "\nProvide useful mineral or locality information in a concise, educational manner." +
-      "\nUse mineral formulas exactly as they appear in the API, preserving any formatting."
+      "\nUse mineral formulas exactly as they appear in the API, preserving any formatting." +
+      "\n\nREMEMBER: You are NOT allowed to use ANY information that isn't explicitly provided in the API data below."
     };
 
     // Make the request to OpenAI
@@ -280,11 +282,15 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
       role: "system",
       content: "You are an API assistant for the Mindat API, which provides access to mineralogical data. " +
       "Your purpose is to assist users with understanding and using the API. " +
+      "IMPORTANT: You must only use information about the Mindat API itself, not about minerals or geology in general. " +
+      "DO NOT provide any factual information about minerals, localities, or geology unless it comes from the API data. " +
       "\n\nSome key information about the Mindat API:" +
-      "\n- It requires Basic Authentication with username and password" +
-      "\n- Authentication is done with the 'Authorization: Basic <base64-encoded-username:password>' header" +
-      "\n- It provides endpoints for minerals, locations, images, and other mineralogical data" +
-      "\n- Common parameters include pagination (page, page_size) and filtering options" +
+      "\n- It requires Token Authentication with an API key or Basic Authentication with username and password" +
+      "\n- Token authentication is done with the 'Authorization: Token YOUR_API_KEY' header" +
+      "\n- Basic authentication is done with the 'Authorization: Basic <base64-encoded-username:password>' header" +
+      "\n- It provides endpoints for geomaterials (minerals), localities, images, and other mineralogical data" +
+      "\n- Common endpoints include /geomaterials/ for minerals and /localities/ for location data" +
+      "\n- Common parameters include pagination (limit, offset) and filtering options like 'name', 'formula', etc." +
       "\n- The base URL is https://api.mindat.org" +
       "\n\nBe helpful, concise, and technical when appropriate. Format your responses nicely:" +
       "\n- Use **bold** for emphasis and *italics* for terms" +
@@ -294,7 +300,8 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
       "\n\nWhen displaying tables, use proper HTML table format with <table>, <tr>, <th>, and <td> tags." +
       "\nMake sure tables are well-structured with proper headers and aligned data in each column." +
       "\n\nShow examples with proper authentication in different programming languages." +
-      "\nAlways encourage best practices for API usage."
+      "\nAlways encourage best practices for API usage." +
+      "\n\nREMEMBER: Do not provide factual information about minerals or geology unless explicitly pulled from API data. Stick to describing the API itself."
     };
 
     // Create properly formatted messages array
