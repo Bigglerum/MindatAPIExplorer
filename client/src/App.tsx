@@ -9,6 +9,7 @@ import Explorer from "@/pages/explorer";
 import KnowledgeBase from "@/pages/knowledge-base";
 import SavedRequests from "@/pages/saved-requests";
 import Search from "@/pages/search";
+import CrystalTest from "@/pages/crystal-test";
 import { useEffect } from "react";
 
 function Router() {
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/saved-requests" component={SavedRequests} />
       <Route path="/search" component={Search} />
+      <Route path="/crystal-test" component={CrystalTest} />
       <Route component={NotFound} />
     </Switch>
   );

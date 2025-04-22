@@ -1,11 +1,4 @@
 /**
- * Crystal class mapping derived directly from the Mindat API
- * 
- * This file provides mappings between the numeric cclass values and
- * their corresponding crystal systems, as extracted from the API.
- */
-
-/**
  * Maps crystal class IDs to their corresponding crystal system names
  * This mapping was derived directly from the Mindat API by querying minerals
  * and extracting their 'cclass' and 'csystem' values
