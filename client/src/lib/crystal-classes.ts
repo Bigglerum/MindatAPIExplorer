@@ -1,55 +1,133 @@
 /**
- * Maps crystal class IDs to their corresponding crystal system names
+ * Maps crystal class IDs (cclass) to their corresponding detailed crystal class information
  * This mapping was derived directly from the Mindat API by querying minerals
- * and extracting their 'cclass' and 'csystem' values
- * 
- * NOTE: These values are directly from the API's actual mineral data, not from 
- * theoretical mapping. The values represent what's used in production.
+ * and correlating their cclass values with known crystal classes
  */
-export const CRYSTAL_CLASS_LOOKUP: Record<number, string> = {
-  // Isometric/Cubic system
-  29: "Isometric",  // Example: Pyrite
-  32: "Isometric",  // Examples: Fluorite, Halite
-  
-  // Hexagonal system
-  20: "Hexagonal",  // Example: Beryl
-  
-  // Tetragonal system
-  27: "Tetragonal", // Examples: Zircon, Rutile
-  
-  // Orthorhombic system
-  8: "Orthorhombic", // Example: Topaz
+export interface CrystalClassInfo {
+  /** The crystal system (e.g., "Monoclinic", "Isometric") */
+  system: string;
+  /** The detailed crystal class notation (e.g., "2/m - Prismatic") */
+  class: string;
+  /** Example mineral with this crystal class */
+  example: string;
+}
+
+export const CRYSTAL_CLASS_LOOKUP: Record<number, CrystalClassInfo> = {
+  // Triclinic system
+  2: {
+    system: "Triclinic",
+    class: "1̄ - Pinacoidal",
+    example: "Kyanite"
+  },
   
   // Monoclinic system
-  5: "Monoclinic",  // Examples: Gypsum, Orthoclase
+  5: {
+    system: "Monoclinic",
+    class: "2/m - Prismatic",
+    example: "Gypsum"
+  },
   
-  // Triclinic system
-  2: "Triclinic",   // Example: Kyanite
+  // Orthorhombic system
+  8: {
+    system: "Orthorhombic",
+    class: "mmm - Orthorhombic-Dipyramidal",
+    example: "Topaz"
+  },
   
   // Trigonal system
-  12: "Trigonal",   // Example: Quartz
-  13: "Trigonal",   // Example: Calcite
+  12: {
+    system: "Trigonal",
+    class: "32 - Trigonal-Trapezohedral",
+    example: "Quartz"
+  },
+  13: {
+    system: "Trigonal",
+    class: "3̄m - Rhombohedral",
+    example: "Corundum"
+  },
   
-  // Additional classes found in real data
-  7: "Unknown",     // Example: Adelite
-  10: "Unknown",    // Example: Abenakiite-(Ce)
-  11: "Unknown",    // Example: Acetamide
+  // Hexagonal system
+  20: {
+    system: "Hexagonal",
+    class: "6/mmm - Dihexagonal-Dipyramidal",
+    example: "Beryl"
+  },
   
-  // Special cases
-  0: "Unknown"      // Various minerals have class 0
+  // Tetragonal system
+  27: {
+    system: "Tetragonal",
+    class: "4/mmm - Ditetragonal-Dipyramidal",
+    example: "Zircon"
+  },
+  
+  // Isometric/Cubic system
+  29: {
+    system: "Isometric",
+    class: "m3̄ - Dyakisdodecahedral",
+    example: "Pyrite"
+  },
+  32: {
+    system: "Isometric",
+    class: "m3̄m - Hexoctahedral",
+    example: "Diamond"
+  },
+  
+  // Special cases and unknown classes
+  0: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Various minerals"
+  },
+  7: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Adelite"
+  },
+  10: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Abenakiite-(Ce)"
+  },
+  11: {
+    system: "Unknown",
+    class: "Unknown",
+    example: "Acetamide"
+  }
 };
 
 /**
- * Convert a crystal class ID to a human-readable crystal system name
+ * Convert a crystal class ID to human-readable crystal system and class information
  * @param classId The numeric crystal class ID from the Mindat API
- * @returns The human-readable crystal system name
+ * @returns Detailed information about the crystal class
  */
-export function getCrystalClassName(classId: number | null | undefined): string {
-  if (classId === null || classId === undefined) {
-    return "Unknown";
+export function getCrystalClassInfo(classId: number | null | undefined): CrystalClassInfo {
+  if (classId === null || classId === undefined || !CRYSTAL_CLASS_LOOKUP[classId]) {
+    return {
+      system: "Unknown",
+      class: "Unknown",
+      example: ""
+    };
   }
   
-  return CRYSTAL_CLASS_LOOKUP[classId] || `Unknown Crystal Class (${classId})`;
+  return CRYSTAL_CLASS_LOOKUP[classId];
+}
+
+/**
+ * Get just the crystal system name from a crystal class ID
+ * @param classId The numeric crystal class ID
+ * @returns The crystal system name (e.g., "Monoclinic", "Isometric")
+ */
+export function getCrystalSystemName(classId: number | null | undefined): string {
+  return getCrystalClassInfo(classId).system;
+}
+
+/**
+ * Get just the crystal class notation from a crystal class ID
+ * @param classId The numeric crystal class ID
+ * @returns The crystal class notation (e.g., "2/m - Prismatic")
+ */
+export function getCrystalClassName(classId: number | null | undefined): string {
+  return getCrystalClassInfo(classId).class;
 }
 
 /**
@@ -89,26 +167,3 @@ export const CRYSTAL_SYSTEM_INFO: Record<string, { description: string, examples
     examples: []
   }
 };
-
-/**
- * Get detailed information about a crystal system
- * @param classId The numeric crystal class ID
- * @returns Detailed information about the crystal system including description and examples
- */
-export function getCrystalSystemInfo(classId: number | null | undefined): {
-  name: string;
-  description: string;
-  examples: string[];
-} {
-  const name = getCrystalClassName(classId);
-  const info = CRYSTAL_SYSTEM_INFO[name] || {
-    description: "No additional information available for this crystal system.",
-    examples: []
-  };
-  
-  return {
-    name,
-    description: info.description,
-    examples: info.examples
-  };
-}

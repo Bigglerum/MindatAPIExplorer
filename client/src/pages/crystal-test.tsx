@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout } from "@/components/layout";
+import { Layout } from "@/components/layout/index";
 import { CrystalSystemTest } from '@/components/explorer/crystal-system-test';
 
 export default function CrystalTestPage() {

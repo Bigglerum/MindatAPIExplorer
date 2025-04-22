@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getCrystalClassName, getCrystalSystemInfo } from '@/lib/crystal-classes';
+import { 
+  getCrystalClassName, 
+  getCrystalSystemName,
+  getCrystalClassInfo,
+  CRYSTAL_CLASS_LOOKUP,
+  CRYSTAL_SYSTEM_INFO 
+} from '@/lib/crystal-classes';
 
 /**
  * A test component for verifying crystal class mappings
@@ -18,22 +24,29 @@ export function CrystalSystemTest() {
       return;
     }
 
-    const name = getCrystalClassName(id);
-    const info = getCrystalSystemInfo(id);
+    const classInfo = getCrystalClassInfo(id);
+    const systemInfo = CRYSTAL_SYSTEM_INFO[classInfo.system] || {
+      description: "No additional information available",
+      examples: []
+    };
     
     setResult({
       id,
-      name,
-      info
+      classInfo,
+      systemInfo
     });
   };
 
   // Sample crystal class IDs from the API
-  const sampleIds = [0, 2, 5, 7, 8, 10, 11, 12, 13, 20, 27, 29, 32];
+  const sampleIds = [0, 2, 5, 8, 12, 13, 20, 27, 29, 32];
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Crystal System Mapping Test</h2>
+      <h2 className="text-xl font-bold mb-4">Crystal Class Mapping Test</h2>
+      <p className="text-gray-600 mb-6">
+        This tool demonstrates how the Mindat API's numeric crystal class IDs 
+        ("cclass" field) map to proper crystal class notations and systems.
+      </p>
       
       <div className="flex gap-4 mb-6">
         <Input 
@@ -52,38 +65,43 @@ export function CrystalSystemTest() {
             <CardTitle>Crystal Class ID: {result.id}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p><strong>Crystal System:</strong> {result.name}</p>
-            {result.info && (
-              <>
-                <p className="mt-2"><strong>Description:</strong> {result.info.description}</p>
-                {result.info.examples.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Crystal Class Information</h3>
+                <p><strong>System:</strong> {result.classInfo.system}</p>
+                <p><strong>Class:</strong> {result.classInfo.class}</p>
+                <p><strong>Example Mineral:</strong> {result.classInfo.example}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg mb-2">Crystal System Information</h3>
+                <p><strong>Description:</strong> {result.systemInfo.description}</p>
+                {result.systemInfo.examples.length > 0 && (
                   <p className="mt-2">
-                    <strong>Examples:</strong> {result.info.examples.join(', ')}
+                    <strong>Examples:</strong> {result.systemInfo.examples.join(', ')}
                   </p>
                 )}
-              </>
-            )}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
       
       <div className="mt-8">
-        <h3 className="text-lg font-bold mb-4">Sample Crystal Class IDs from API</h3>
+        <h3 className="text-lg font-bold mb-4">Crystal Class IDs from Mindat API</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sampleIds.map(id => {
-            const name = getCrystalClassName(id);
+            const classInfo = getCrystalClassInfo(id);
             return (
               <Card key={id} className="hover:shadow-md">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-md">
-                    Class ID: {id} → {name}
+                    Class ID: {id}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-500">
-                    {getCrystalSystemInfo(id).description.substring(0, 100)}
-                    {getCrystalSystemInfo(id).description.length > 100 ? '...' : ''}
-                  </p>
+                  <p className="mb-2"><strong>System:</strong> {classInfo.system}</p>
+                  <p className="mb-2"><strong>Class:</strong> {classInfo.class}</p>
+                  <p className="text-sm text-gray-600">Example: {classInfo.example}</p>
                 </CardContent>
               </Card>
             );
