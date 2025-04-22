@@ -226,7 +226,83 @@ export async function getMineralsAtLocality(localityName: string) {
     console.log(`Getting minerals for locality ID: ${localityId}`);
     
     try {
-      // First attempt - try the direct locality minerals endpoint
+      // First attempt - get the locality details to extract the elements
+      const localityUrl = `${BASE_URL}/localities/${localityId}/`;
+      
+      let localityDetailsResponse = await fetch(localityUrl, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      
+      if (!localityDetailsResponse.ok) {
+        throw new Error(`Locality details API request failed with status ${localityDetailsResponse.status}`);
+      }
+      
+      const localityDetails = await localityDetailsResponse.json();
+      console.log(`Got locality details for ID: ${localityId}`);
+      
+      // Check if we have the elements field which can help us identify minerals
+      if (localityDetails && localityDetails.elements) {
+        console.log(`Locality has elements data: ${localityDetails.elements}`);
+        
+        // Parse the elements string - it's in format like "-Ba-O-S-Ca-C-Sr-H-Fe-"
+        const elementsStr = localityDetails.elements;
+        const elements = elementsStr.split('-').filter(e => e !== '');
+        
+        if (elements.length > 0) {
+          console.log(`Extracted elements from locality: ${elements.join(', ')}`);
+          
+          // Now try to find minerals with these elements
+          const mineralsByElementPromises = elements.map(async (element) => {
+            const searchUrl = `${BASE_URL}/geomaterials/?elements=${element}&limit=30`;
+            console.log(`Searching minerals with element: ${element}`);
+            
+            const searchResponse = await fetch(searchUrl, {
+              method: 'GET',
+              headers: getAuthHeaders()
+            });
+            
+            if (!searchResponse.ok) {
+              console.log(`Search for element ${element} failed with status ${searchResponse.status}`);
+              return [];
+            }
+            
+            const searchData = await searchResponse.json();
+            if (searchData?.results) {
+              console.log(`Found ${searchData.results.length} minerals containing element ${element}`);
+              return searchData.results;
+            }
+            return [];
+          });
+          
+          // Wait for all element searches to complete
+          const mineralsByElementResults = await Promise.all(mineralsByElementPromises);
+          
+          // Combine and deduplicate results by ID
+          const mineralMap = new Map();
+          mineralsByElementResults.flat().forEach(mineral => {
+            if (!mineralMap.has(mineral.id)) {
+              mineralMap.set(mineral.id, mineral);
+            }
+          });
+          
+          const combinedMinerals = Array.from(mineralMap.values());
+          console.log(`Found ${combinedMinerals.length} unique minerals with elements at this locality`);
+          
+          if (combinedMinerals.length > 0) {
+            return { 
+              data: {
+                locality: matchedLocality,
+                minerals: combinedMinerals,
+                note: "This list of minerals is generated based on elements reported at this locality. The Mindat API doesn't provide a direct list of minerals for this specific location.",
+                elements: elements
+              }
+            };
+          }
+        }
+      }
+
+      // Second attempt - try the direct locality minerals endpoint
       const mineralsUrl = `${BASE_URL}/localities/${localityId}/minerals/`;
       
       let mineralsResponse = await fetch(mineralsUrl, {
@@ -247,7 +323,7 @@ export async function getMineralsAtLocality(localityName: string) {
       } else {
         console.log(`Direct minerals endpoint failed with status ${mineralsResponse.status}, trying alternative approach`);
         
-        // Second attempt - try searching for minerals with the locality name in the description
+        // Third attempt - try searching for minerals with the locality name in the description
         // This is a fallback approach that might work for some localities
         const localitySearchTerm = matchedLocality.txt.split(',')[0].trim(); // Use just the first part of the locality name
         console.log(`Trying mineral search with locality name: ${localitySearchTerm}`);
@@ -282,10 +358,10 @@ export async function getMineralsAtLocality(localityName: string) {
               note: "This is an approximate list of minerals that might be associated with this locality based on search results. The Mindat API doesn't provide direct locality-mineral association for this location."
             }
           };
-        } else {
-          throw new Error("No minerals found through alternative search method");
         }
       }
+      
+      throw new Error("No minerals found through any API method");
     } catch (mineralsError: any) {
       console.error(`Error getting minerals for locality #${localityId}:`, mineralsError);
       
