@@ -162,12 +162,12 @@ export default function MindatSearch() {
         searchTerm = `${searchTerm} region`;
       }
       
-      // Call the Mindat API through our proxy with the correct 'q' parameter
+      // Call the Mindat API through our proxy with the correct 'txt' parameter
       const response = await apiRequest('POST', '/api/proxy', {
         path: '/localities/',
         method: 'GET',
         parameters: {
-          q: searchTerm,
+          txt: searchTerm,
           limit: 10,
           offset: 0
         }
