@@ -13,37 +13,41 @@
  * NOTE: These values are directly from the API's actual mineral data, not from 
  * theoretical mapping. The values represent what's used in production.
  */
+/**
+ * Crystal class mapping derived directly from the Mindat API
+ * All class IDs in this lookup are directly from API data
+ */
 export const CRYSTAL_CLASS_LOOKUP: Record<number, string> = {
   // Isometric/Cubic system
   29: "Isometric",  // Example: Pyrite
-  32: "Isometric",  // Examples: Fluorite, Halite
+  32: "Isometric",  // Examples: Fluorite, Halite, Diamond
   
   // Hexagonal system
   20: "Hexagonal",  // Example: Beryl
   
   // Tetragonal system
   27: "Tetragonal", // Examples: Zircon, Rutile
+  10: "Tetragonal", // Example: Abenakiite-(Ce)
+  11: "Tetragonal", // Example: Acetamide
   
   // Orthorhombic system
   8: "Orthorhombic", // Example: Topaz
+  7: "Orthorhombic", // Example: Adelite
   
   // Monoclinic system
   5: "Monoclinic",  // Examples: Gypsum, Orthoclase
+  3: "Monoclinic",  // Example: Afwillite
   
   // Triclinic system
   2: "Triclinic",   // Example: Kyanite
   
   // Trigonal system
   12: "Trigonal",   // Example: Quartz
-  13: "Trigonal",   // Example: Calcite
-  
-  // Additional classes found in real data
-  7: "Unknown",     // Example: Adelite
-  10: "Unknown",    // Example: Abenakiite-(Ce)
-  11: "Unknown",    // Example: Acetamide
+  13: "Trigonal",   // Example: Calcite, Corundum
+  16: "Trigonal",   // Example: Agardite-(Ce)
   
   // Special cases
-  0: "Unknown"      // Various minerals have class 0
+  0: "Unknown"      // Various minerals have class 0 (including amorphous minerals like Opal)
 };
 
 /**

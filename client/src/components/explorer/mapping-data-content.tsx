@@ -145,36 +145,34 @@ export default function MappingDataContent() {
                 </tr>
               </thead>
               <tbody className="bg-card divide-y divide-gray-200">
-                {crystalSystems.map(system => (
-                  <React.Fragment key={system}>
-                    <tr className="bg-muted/30">
-                      <td colSpan={4} className="px-6 py-3 text-sm font-semibold">
-                        {system}
-                        {CRYSTAL_SYSTEM_INFO[system] && (
-                          <span className="ml-2 text-xs font-normal text-muted-foreground">
-                            {CRYSTAL_SYSTEM_INFO[system].description}
-                          </span>
-                        )}
+                {crystalSystems.flatMap(system => [
+                  <tr key={`header-${system}`} className="bg-muted/30">
+                    <td colSpan={4} className="px-6 py-3 text-sm font-semibold">
+                      {system}
+                      {CRYSTAL_SYSTEM_INFO[system] && (
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">
+                          {CRYSTAL_SYSTEM_INFO[system].description}
+                        </span>
+                      )}
+                    </td>
+                  </tr>,
+                  ...(systemGroups[system]?.map((item) => (
+                    <tr key={`class-${item.id}`} className="hover:bg-muted/50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        {item.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.system}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.class}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        {item.example}
                       </td>
                     </tr>
-                    {systemGroups[system]?.map((item) => (
-                      <tr key={item.id} className="hover:bg-muted/50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          {item.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.system}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.class}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          {item.example}
-                        </td>
-                      </tr>
-                    ))}
-                  </React.Fragment>
-                ))}
+                  )) || [])
+                ])}
               </tbody>
             </table>
           </div>
