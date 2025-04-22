@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Send, Minus, X, MessageSquare } from 'lucide-react';
+import { Send, Minus, X, MessageSquare, ArrowUpCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/queryClient';
 
 interface Message {
@@ -129,13 +129,17 @@ export default function ChatHelper() {
                     : 'bg-gray-100 dark:bg-slate-700 rounded-lg rounded-br-none'
                 } p-3 max-w-[90%] text-sm`}
               >
-                <div className="prose dark:prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ 
+                <div className="prose dark:prose-invert prose-sm max-w-none overflow-x-auto" dangerouslySetInnerHTML={{ 
                   __html: message.content
                     .replace(/```([^`]+)```/g, '<pre class="bg-gray-800 dark:bg-slate-800 p-3 rounded overflow-x-auto text-gray-100 dark:text-gray-100"><code>$1</code></pre>')
                     .replace(/`([^`]+)`/g, '<code class="bg-gray-200 dark:bg-slate-700 px-1 py-0.5 rounded text-gray-800 dark:text-gray-200">$1</code>')
                     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
                     .replace(/\n/g, '<br />')
+                    .replace(/<table>/g, '<table class="border-collapse w-full my-4">')
+                    .replace(/<tr>/g, '<tr class="border-b border-gray-300 dark:border-gray-700">')
+                    .replace(/<th>/g, '<th class="p-2 text-left bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-gray-200">')
+                    .replace(/<td>/g, '<td class="p-2 border-gray-300 dark:border-gray-700">')
                 }} />
               </div>
             </div>
@@ -144,28 +148,39 @@ export default function ChatHelper() {
         </div>
         
         <form onSubmit={handleSubmit} className="p-3 border-t border-gray-200 dark:border-slate-700">
-          <div className="relative">
-            <Textarea
-              className="bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full pl-3 pr-10 py-2 resize-none"
-              placeholder="Ask something about the API..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSubmit(e);
-                }
-              }}
-              rows={2}
-            />
+          <div className="flex items-center space-x-2">
+            <div className="relative flex-1">
+              <Textarea
+                className="bg-gray-50 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full pl-3 pr-10 py-2 resize-none"
+                placeholder="Ask something about the API..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSubmit(e);
+                  }
+                }}
+                rows={2}
+              />
+              <Button
+                type="submit"
+                variant="ghost"
+                size="icon"
+                disabled={loading}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-primary"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
             <Button
               type="submit"
-              variant="ghost"
+              variant="default"
               size="icon"
               disabled={loading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-primary"
+              className="bg-primary hover:bg-indigo-700 text-white h-10 w-10 rounded-full flex items-center justify-center"
             >
-              <Send className="h-4 w-4" />
+              <ArrowUpCircle className="h-5 w-5" />
             </Button>
           </div>
         </form>
