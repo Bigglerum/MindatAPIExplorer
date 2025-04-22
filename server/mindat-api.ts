@@ -219,125 +219,52 @@ export async function getMineralsAtLocality(localityName: string) {
       return { error: 'No matching locality found', details: `Couldn't find a clear match for ${localityName}` };
     }
     
-    // Now get the minerals at this locality
+    // Now get the minerals at this locality using the geomaterials endpoint with locality parameter
+    // This exactly follows the pattern in the example code
     const localityId = matchedLocality.id;
     
-    // First approach: Directly use the locentries endpoint which has mineral-locality relationships
-    console.log(`Getting mineral entries for locality ID: ${localityId} using locentries endpoint`);
-    const locentriesUrl = `${BASE_URL}/locentries/`;
-    const locentriesParams = { 
+    // API_KEY = "YOUR_API_KEY"
+    // LOCALITY_ID = 12345
+    // response = requests.get(
+    //   "https://api.mindat.org/geomaterials/",
+    //   headers={"Authorization": f"Token {API_KEY}"},
+    //   params={"locality": LOCALITY_ID, "fields": "id,name,ima_status"}
+    // )
+    
+    console.log(`Getting minerals for locality ID: ${localityId} using geomaterials endpoint`);
+    const url = `${BASE_URL}/geomaterials/`;
+    const params: Record<string, string> = {
       locality: localityId.toString(),
-      limit: 100 // Get a larger number to ensure we get all minerals
+      fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description"
     };
     
-    const locentriesQueryString = new URLSearchParams(locentriesParams).toString();
-    console.log(`Making request to: ${locentriesUrl}?${locentriesQueryString}`);
+    const queryString = new URLSearchParams(params).toString();
+    console.log(`Making request to: ${url}?${queryString}`);
     
-    const locentriesResponse = await fetch(`${locentriesUrl}?${locentriesQueryString}`, {
+    const response = await fetch(`${url}?${queryString}`, {
       method: 'GET',
       headers: getAuthHeaders()
     });
     
-    if (!locentriesResponse.ok) {
-      console.log(`API request failed with status ${locentriesResponse.status}`);
-      
-      // Try alternative approach
-      console.log('Trying alternative approach using geomaterials endpoint');
-      
-      // Use the locality parameter with geomaterials endpoint
-      const url = `${BASE_URL}/geomaterials/`;
-      const params = {
-        locality: localityId.toString(),
-        fields: "id,name,ima_formula,ima_status,mindat_formula,formula,description"
-      };
-      
-      const queryString = new URLSearchParams(params).toString();
-      console.log(`Making request to: ${url}?${queryString}`);
-      
-      const response = await fetch(`${url}?${queryString}`, {
-        method: 'GET',
-        headers: getAuthHeaders()
-      });
-      
-      if (!response.ok) {
-        console.log(`Alternative API request also failed with status ${response.status}`);
-        throw new Error(`Failed to retrieve minerals. API returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log(`Found ${data?.results?.length || 0} minerals at locality ID: ${localityId}`);
-      
-      if (!data.results || data.results.length === 0) {
-        return {
-          error: 'No minerals found',
-          details: `No minerals found at locality ${matchedLocality.txt} through API`
-        };
-      }
-      
-      return { 
-        data: {
-          locality: matchedLocality,
-          minerals: data.results
-        }
-      };
+    if (!response.ok) {
+      console.log(`API request failed with status ${response.status}`);
+      throw new Error(`Failed to retrieve minerals. API returned status ${response.status}`);
     }
     
-    const locentriesData = await locentriesResponse.json();
-    console.log(`Found ${locentriesData?.results?.length || 0} mineral entries for locality ID: ${localityId}`);
+    const data = await response.json();
+    console.log(`Found ${data?.results?.length || 0} minerals at locality ID: ${localityId}`);
     
-    if (!locentriesData.results || locentriesData.results.length === 0) {
+    if (!data.results || data.results.length === 0) {
       return {
         error: 'No minerals found',
         details: `No minerals found at locality ${matchedLocality.txt} through API`
       };
     }
     
-    // Extract the mineral IDs from the locentries
-    const mineralIds = locentriesData.results.map(entry => entry.min);
-    console.log(`Extracted ${mineralIds.length} mineral IDs: ${mineralIds.slice(0, 5).join(', ')}...`);
-    
-    // Fetch details for each mineral
-    const mineralDetails = [];
-    
-    // Process in batches to avoid making too many requests at once
-    const batchSize = 10;
-    for (let i = 0; i < mineralIds.length; i += batchSize) {
-      const batchIds = mineralIds.slice(i, i + batchSize);
-      
-      // Fetch details for these minerals
-      await Promise.all(batchIds.map(async (mineralId) => {
-        try {
-          const url = `${BASE_URL}/geomaterials/${mineralId}/`;
-          const response = await fetch(url, {
-            method: 'GET',
-            headers: getAuthHeaders()
-          });
-          
-          if (response.ok) {
-            const mineralData = await response.json();
-            mineralDetails.push(mineralData);
-          } else {
-            console.log(`Failed to retrieve details for mineral ID: ${mineralId}`);
-          }
-        } catch (mineralError) {
-          console.error(`Error fetching mineral ${mineralId}:`, mineralError);
-        }
-      }));
-    }
-    
-    console.log(`Successfully retrieved details for ${mineralDetails.length} minerals`);
-    
-    if (mineralDetails.length === 0) {
-      return {
-        error: 'Failed to get mineral details',
-        details: `Couldn't retrieve details for minerals at ${matchedLocality.txt}`
-      };
-    }
-    
     return { 
       data: {
         locality: matchedLocality,
-        minerals: mineralDetails
+        minerals: data.results
       }
     };
   } catch (error: any) {
