@@ -1,18 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { CRYSTAL_CLASS_LOOKUP } from '@/lib/crystal-classes';
 
 export function CrystalClassTable() {
-  // Convert the lookup object to an array for easier mapping
+  // Convert the lookup object to an array for easier display
   const crystalClasses = Object.entries(CRYSTAL_CLASS_LOOKUP)
     .map(([id, info]) => ({
       id: parseInt(id),
@@ -27,25 +18,6 @@ export function CrystalClassTable() {
       return a.class.localeCompare(b.class);
     });
 
-  // Group by crystal system for better organization
-  const groupedBySystems = crystalClasses.reduce((acc, item) => {
-    if (!acc[item.system]) {
-      acc[item.system] = [];
-    }
-    acc[item.system].push(item);
-    return acc;
-  }, {} as Record<string, typeof crystalClasses>);
-
-  const systemOrder = [
-    "Isometric", 
-    "Hexagonal", 
-    "Tetragonal", 
-    "Trigonal",
-    "Orthorhombic", 
-    "Monoclinic", 
-    "Triclinic"
-  ];
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -54,39 +26,49 @@ export function CrystalClassTable() {
       <CardContent>
         <div className="text-sm text-gray-500 dark:text-gray-400 mb-4">
           <p>
-            This reference table maps the Mindat API's <code>cclass</code> numeric values to 
-            their corresponding crystal class notation and system. Use this when working with 
-            mineral data from the API.
+            This reference maps the Mindat API's <code>cclass</code> numeric values to 
+            their corresponding crystal class notation and system.
           </p>
         </div>
 
-        <Table>
-          <TableCaption>
-            Crystal Class Reference Table derived from Mindat API mineral data
-          </TableCaption>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">cclass ID</TableHead>
-              <TableHead>Crystal System</TableHead>
-              <TableHead>Crystal Class</TableHead>
-              <TableHead className="text-right">Example Mineral</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {systemOrder.map(system => (
-              <React.Fragment key={system}>
-                {groupedBySystems[system]?.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className="font-medium">{item.id}</TableCell>
-                    <TableCell>{item.system}</TableCell>
-                    <TableCell>{item.class}</TableCell>
-                    <TableCell className="text-right">{item.example}</TableCell>
-                  </TableRow>
-                ))}
-              </React.Fragment>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="border rounded-md overflow-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  cclass ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Crystal System
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Crystal Class
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Example Mineral
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {crystalClasses.map((item) => (
+                <tr key={item.id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {item.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.system}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.class}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {item.example}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         <div className="mt-4 text-sm text-gray-500">
           <h3 className="font-medium mb-2">Note:</h3>
