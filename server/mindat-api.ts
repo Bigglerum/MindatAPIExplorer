@@ -180,6 +180,89 @@ async function executeSearch(endpoint: string, params: Record<string, any>) {
 }
 
 /**
+ * Get minerals found at a specific locality by name
+ * @param localityName The name of the locality to search for
+ * @returns List of minerals found at the locality
+ */
+export async function getMineralsAtLocality(localityName: string) {
+  try {
+    console.log(`Looking for minerals at locality: ${localityName}`);
+    
+    // First, search for the locality by name
+    const localitySearchResult = await searchLocalities({ name: localityName, limit: 10 });
+    
+    if (!localitySearchResult?.data?.results || localitySearchResult.data.results.length === 0) {
+      console.log(`No locality found with name: ${localityName}`);
+      return { error: 'Locality not found', details: `No locality found with name ${localityName}` };
+    }
+    
+    console.log(`Found ${localitySearchResult.data.results.length} possible locality matches for ${localityName}`);
+    
+    // Look for the best match (exact or closest match)
+    let matchedLocality = null;
+    const normalizedSearchName = localityName.toLowerCase().trim();
+    
+    // Try for exact match first
+    for (const loc of localitySearchResult.data.results) {
+      if (loc.txt && loc.txt.toLowerCase().includes(normalizedSearchName)) {
+        matchedLocality = loc;
+        console.log(`Using exact match: ${loc.txt} (ID: ${loc.id})`);
+        break;
+      }
+    }
+    
+    // If no exact match, use the first result
+    if (!matchedLocality && localitySearchResult.data.results.length > 0) {
+      matchedLocality = localitySearchResult.data.results[0];
+      console.log(`Using closest match: ${matchedLocality.txt} (ID: ${matchedLocality.id})`);
+    }
+    
+    if (!matchedLocality) {
+      return { error: 'No matching locality found', details: `Couldn't find a clear match for ${localityName}` };
+    }
+    
+    // Now, get the minerals found at this locality
+    const localityId = matchedLocality.id;
+    console.log(`Getting minerals for locality ID: ${localityId}`);
+    
+    try {
+      const mineralsUrl = `${BASE_URL}/localities/${localityId}/minerals/`;
+      
+      const mineralsResponse = await fetch(mineralsUrl, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      
+      if (!mineralsResponse.ok) {
+        throw new Error(`API request failed with status ${mineralsResponse.status}`);
+      }
+      
+      const mineralsData = await mineralsResponse.json();
+      console.log(`Found ${mineralsData?.results?.length || 0} minerals at locality ID: ${localityId}`);
+      
+      return { 
+        data: {
+          locality: matchedLocality,
+          minerals: mineralsData?.results || []
+        }
+      };
+    } catch (mineralsError: any) {
+      console.error(`Error getting minerals for locality #${localityId}:`, mineralsError);
+      return { 
+        error: 'Failed to get minerals for locality', 
+        details: mineralsError.message || 'Unknown error' 
+      };
+    }
+  } catch (error: any) {
+    console.error(`Error finding minerals at ${localityName}:`, error);
+    return {
+      error: `Failed to find minerals at ${localityName}`,
+      details: error.message || 'Unknown error'
+    };
+  }
+}
+
+/**
  * Search for localities in the Mindat database
  * @param params Search parameters
  * @returns API response data

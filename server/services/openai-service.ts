@@ -4,7 +4,8 @@ import {
   searchLocalities, 
   getMineralById, 
   getLocalityById,
-  findTypeLocalityForMineral 
+  findTypeLocalityForMineral,
+  getMineralsAtLocality 
 } from "../mindat-api";
 
 // Initialize the OpenAI client with API key from environment variables
@@ -143,6 +144,33 @@ export async function generateChatResponse(message: string, history: any[] = [])
         if (formula) {
           return `The chemical formula for ${mineral.name} is ${formula}.`;
         }
+      }
+    }
+    
+    // Check for questions about minerals at a specific locality
+    const mineralsAtLocationRegex = /(?:what|which) minerals(?: are)? (?:found|occur|present) (?:at|in) ([a-zA-Z\s\-\,\.]+)(?:\?)?/i;
+    const mineralsAtLocationMatch = message.match(mineralsAtLocationRegex);
+    
+    if (mineralsAtLocationMatch) {
+      const locationName = mineralsAtLocationMatch[1].trim();
+      console.log(`Detected question about minerals at location: ${locationName}`);
+      
+      // Use our special function to get minerals at this locality
+      const mineralsResponse = await getMineralsAtLocality(locationName);
+      
+      if (mineralsResponse.data) {
+        return await generateResponseFromApiData(
+          message, 
+          mineralsResponse.data, 
+          {
+            type: 'locality',
+            action: 'details',
+            searchTerms: { name: locationName }
+          }
+        );
+      } else if (mineralsResponse.error) {
+        console.log(`Error finding minerals at ${locationName}:`, mineralsResponse.error);
+        return `I couldn't find information about minerals at ${locationName}. The Mindat database may not have this information, or there might be an alternative spelling for this location.`;
       }
     }
     
