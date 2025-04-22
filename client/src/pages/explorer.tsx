@@ -49,7 +49,7 @@ export default function Explorer() {
         </div>
         
         {/* Main content area with higher z-index on mobile */}
-        <div className="flex-1 overflow-hidden flex flex-col z-10 relative lg:z-0">
+        <div className="flex-1 overflow-auto flex flex-col z-10 relative lg:z-0">
           <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
             <Tabs 
               value={activeTab}
@@ -77,7 +77,7 @@ export default function Explorer() {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="explorer" className="mt-0 flex-1 overflow-hidden">
+              <TabsContent value="explorer" className="mt-0 flex-1 overflow-auto">
                 <ApiExplorer endpoint={activeEndpoint} />
               </TabsContent>
               

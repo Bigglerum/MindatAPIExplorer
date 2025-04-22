@@ -78,7 +78,7 @@ export function ApiExplorer({ endpoint }: ApiExplorerProps) {
 
   if (!endpoint) {
     return (
-      <div className="flex-1 overflow-hidden flex items-center justify-center">
+      <div className="flex-1 overflow-auto flex items-center justify-center">
         <div className="text-center p-8">
           <h2 className="text-2xl font-bold mb-2">Select an API Endpoint</h2>
           <p className="text-gray-600 dark:text-gray-400">
@@ -90,7 +90,7 @@ export function ApiExplorer({ endpoint }: ApiExplorerProps) {
   }
 
   return (
-    <div className="flex-1 overflow-hidden flex flex-col md:flex-row h-full">
+    <div className="flex-1 overflow-auto flex flex-col md:flex-row h-full">
       <RequestPanel
         endpoint={endpoint}
         parameters={parameters}
