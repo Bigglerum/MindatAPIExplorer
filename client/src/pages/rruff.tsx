@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Search, Database, Filter, ExternalLink, AlertCircle } from "lucide-react";
-import { searchRruffMinerals, getRruffMineralById, RruffMineral } from "../lib/rruff-service";
+import { searchRruffMinerals, searchRruffByKeyword, getRruffMineralById, RruffMineral } from "../lib/rruff-service";
 
 export default function RruffPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,6 +21,11 @@ export default function RruffPage() {
   const handleSearch = async () => {
     setLoading(true);
     try {
+      console.log("Searching for:", {
+        searchTerm,
+        crystalSystem
+      });
+      
       const result = await searchRruffMinerals({
         name: searchTerm,
         crystalSystem: crystalSystem !== "any" ? crystalSystem : undefined,
@@ -28,10 +33,33 @@ export default function RruffPage() {
         limit: 20
       });
       
+      console.log("Search results:", result);
       setSearchResults(result.minerals || []);
       setSelectedMineral(null);
     } catch (error) {
       console.error("Search error:", error);
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Quick search only uses the keyword search endpoint
+  const handleKeywordSearch = async () => {
+    if (!searchTerm) return;
+    
+    setLoading(true);
+    try {
+      console.log("Keyword searching for:", searchTerm);
+      
+      const result = await searchRruffByKeyword(searchTerm);
+      
+      console.log("Keyword search results:", result);
+      setSearchResults(result.minerals || []);
+      setSelectedMineral(null);
+    } catch (error) {
+      console.error("Keyword search error:", error);
+      setSearchResults([]);
     } finally {
       setLoading(false);
     }
@@ -79,12 +107,22 @@ export default function RruffPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Mineral Name</Label>
-                    <Input 
-                      id="name" 
-                      placeholder="e.g. Quartz, Calcite" 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                    <div className="flex gap-2">
+                      <Input 
+                        id="name" 
+                        placeholder="e.g. Quartz, Calcite" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleKeywordSearch}
+                        disabled={loading || !searchTerm}
+                        className="whitespace-nowrap"
+                      >
+                        Quick Search
+                      </Button>
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
@@ -113,7 +151,7 @@ export default function RruffPage() {
                       disabled={loading}
                     >
                       <Search className="mr-2 h-4 w-4" />
-                      Search
+                      Advanced Search
                     </Button>
                   </div>
                 </div>
