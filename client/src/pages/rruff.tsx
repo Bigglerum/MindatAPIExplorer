@@ -8,38 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Search, Database, Filter, ExternalLink } from "lucide-react";
-
-// Types for IMA minerals
-interface UnitCell {
-  a?: number;
-  b?: number;
-  c?: number;
-  alpha?: number;
-  beta?: number;
-  gamma?: number;
-  z?: number;
-  volume?: number;
-}
-
-interface RruffMineral {
-  id: number;
-  rruffId: string;
-  mineralName: string;
-  chemicalFormula?: string;
-  imaStatus?: string;
-  crystalSystem?: string;
-  crystalClass?: string;
-  spaceGroup?: string;
-  unitCell?: UnitCell;
-  color?: string;
-  density?: string;
-  hardness?: string;
-  yearFirstPublished?: number;
-  elementComposition?: string[];
-  comments?: string;
-  url?: string;
-}
+import { Search, Database, Filter, ExternalLink, AlertCircle } from "lucide-react";
+import { searchRruffMinerals, getRruffMineralById, RruffMineral } from "../lib/rruff-service";
 
 export default function RruffPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,16 +21,14 @@ export default function RruffPage() {
   const handleSearch = async () => {
     setLoading(true);
     try {
-      // Construct query parameters
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("name", searchTerm);
-      if (crystalSystem && crystalSystem !== "any") params.append("crystalSystem", crystalSystem);
+      const result = await searchRruffMinerals({
+        name: searchTerm,
+        crystalSystem: crystalSystem !== "any" ? crystalSystem : undefined,
+        page: 1,
+        limit: 20
+      });
       
-      const response = await fetch(`/api/rruff/minerals?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch data");
-      
-      const data = await response.json();
-      setSearchResults(data.minerals || []);
+      setSearchResults(result.minerals || []);
       setSelectedMineral(null);
     } catch (error) {
       console.error("Search error:", error);
@@ -72,11 +40,8 @@ export default function RruffPage() {
   const handleMineralSelect = async (mineralId: number) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/rruff/minerals/${mineralId}`);
-      if (!response.ok) throw new Error("Failed to fetch mineral details");
-      
-      const data = await response.json();
-      setSelectedMineral(data.mineral);
+      const result = await getRruffMineralById(mineralId);
+      setSelectedMineral(result.mineral);
     } catch (error) {
       console.error("Error fetching mineral details:", error);
     } finally {
@@ -273,11 +238,11 @@ export default function RruffPage() {
                         
                         <div>
                           <h4 className="font-medium mb-2">Elements</h4>
-                          {selectedMineral.elementComposition && selectedMineral.elementComposition.length > 0 ? (
+                          {selectedMineral.elementComposition && typeof selectedMineral.elementComposition === 'object' ? (
                             <div className="flex flex-wrap gap-1">
-                              {selectedMineral.elementComposition.map((element, idx) => (
+                              {Object.keys(selectedMineral.elementComposition).map((element: string) => (
                                 <span 
-                                  key={idx} 
+                                  key={element} 
                                   className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs"
                                 >
                                   {element}
@@ -298,7 +263,7 @@ export default function RruffPage() {
                               <Button 
                                 variant="outline"
                                 className="w-full justify-between"
-                                onClick={() => window.open(selectedMineral.url, '_blank')}
+                                onClick={() => window.open(selectedMineral.url || 'https://rruff.info', '_blank')}
                               >
                                 <span>View on RRUFF.info</span>
                                 <ExternalLink className="h-4 w-4 ml-2" />
