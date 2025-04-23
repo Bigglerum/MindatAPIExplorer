@@ -7,7 +7,7 @@ import {
   rruffSpectra, 
   insertRruffApiKeySchema 
 } from '@shared/rruff-schema';
-import { rruffExtractor } from '../services/rruff-extractor';
+import { rruffCsvImporter } from '../services/rruff-csv-importer';
 import { and, asc, desc, eq, ilike, inArray, like, or, sql } from 'drizzle-orm';
 import { randomBytes } from 'crypto';
 
@@ -256,15 +256,24 @@ export function registerRruffRoutes(app: any) {
       const { id } = req.params;
       const { type } = req.query; // optional filter by spectra type
       
-      const query = db.select()
-        .from(rruffSpectra)
-        .where(eq(rruffSpectra.mineralId, parseInt(id)));
+      let spectra;
       
       if (type) {
-        query.where(eq(rruffSpectra.spectraType, type as string));
+        // If type filter is provided
+        spectra = await db.select()
+          .from(rruffSpectra)
+          .where(
+            and(
+              eq(rruffSpectra.mineralId, parseInt(id)),
+              eq(rruffSpectra.spectraType, type as string)
+            )
+          );
+      } else {
+        // Only filter by mineral ID
+        spectra = await db.select()
+          .from(rruffSpectra)
+          .where(eq(rruffSpectra.mineralId, parseInt(id)));
       }
-      
-      const spectra = await query;
       
       return res.json({ spectra });
     } catch (error) {
@@ -284,10 +293,15 @@ export function registerRruffRoutes(app: any) {
       // Start the import process
       res.json({ message: 'Import process started' });
       
-      // Run the import process asynchronously
-      rruffExtractor.extractAndStoreAllMinerals()
+      // Run the import process asynchronously - this will download and parse the CSV
+      rruffCsvImporter.downloadAndImportData()
         .then(result => {
-          console.log('Import completed:', result);
+          console.log('Import completed successfully!');
+          console.log(`Imported ${result.mineralsCount} minerals and ${result.spectraCount} spectra.`);
+          if (result.errors.length > 0) {
+            console.log(`Encountered ${result.errors.length} errors during import.`);
+            result.errors.forEach(err => console.error(`- ${err}`));
+          }
         })
         .catch(error => {
           console.error('Import failed:', error);
@@ -323,8 +337,16 @@ export function registerRruffRoutes(app: any) {
         key: randomBytes(24).toString('hex') // Generate a random API key
       });
       
+      // Insert the new API key
       const [apiKey] = await db.insert(rruffApiKeys)
-        .values(validatedData)
+        .values({
+          name: validatedData.name,
+          key: validatedData.key,
+          description: validatedData.description,
+          expiresAt: validatedData.expiresAt,
+          isActive: validatedData.isActive ?? true,
+          rateLimit: validatedData.rateLimit
+        })
         .returning();
       
       return res.status(201).json({ apiKey });
