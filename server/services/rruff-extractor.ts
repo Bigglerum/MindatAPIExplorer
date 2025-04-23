@@ -1,9 +1,9 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
-import { InsertRruffMineral, InsertRruffSpectra } from '@shared/rruff-schema';
+import { InsertRruffMineral, InsertRruffSpectra, RruffMineral, RruffSpectra } from '@shared/rruff-schema';
 import { db } from '../db';
 import { rruffDataImportLogs, rruffMinerals, rruffSpectra } from '@shared/rruff-schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 /**
  * Service responsible for extracting data from RRUFF IMA database

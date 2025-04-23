@@ -9,7 +9,7 @@ import { z } from 'zod';
  */
 
 export const rruffMinerals = pgTable('rruff_minerals', {
-  id: integer('id').primaryKey().notNull(),
+  id: serial('id').primaryKey().notNull(),
   rruffId: varchar('rruff_id', { length: 50 }).unique(),
   imaStatus: varchar('ima_status', { length: 50 }),
   mineralName: varchar('mineral_name', { length: 255 }).notNull(),
@@ -18,30 +18,30 @@ export const rruffMinerals = pgTable('rruff_minerals', {
   crystalClass: varchar('crystal_class', { length: 100 }),
   spaceGroup: varchar('space_group', { length: 50 }),
   unitCell: json('unit_cell').$type<{
-    a: number;
-    b: number;
-    c: number;
-    alpha: number;
-    beta: number;
-    gamma: number;
-    z: number;
-    volume: number;
-  }>(),
+    a?: number;
+    b?: number;
+    c?: number;
+    alpha?: number;
+    beta?: number;
+    gamma?: number;
+    z?: number;
+    volume?: number;
+  }>().default({}),
   color: text('color'),
   density: varchar('density', { length: 50 }),
   hardness: varchar('hardness', { length: 50 }),
   opticalProperties: json('optical_properties').$type<{
-    type: string;
-    sign: string;
-    indices: string[];
-    birefringence: string;
-  }>(),
-  elementComposition: json('element_composition').$type<Record<string, number>>(),
+    type?: string;
+    sign?: string;
+    indices?: string[];
+    birefringence?: string;
+  }>().default({}),
+  elementComposition: json('element_composition').$type<Record<string, number>>().default({}),
   yearFirstPublished: integer('year_first_published'),
   idealChemistry: text('ideal_chemistry'),
   comments: text('comments'),
   url: text('url'),
-  structureRefs: json('structure_refs').$type<string[]>(),
+  structureRefs: json('structure_refs').$type<string[]>().default([]),
   // Tracking fields
   lastUpdated: timestamp('last_updated').defaultNow(),
   dataVersion: integer('data_version').default(1),
@@ -49,7 +49,7 @@ export const rruffMinerals = pgTable('rruff_minerals', {
 });
 
 export const rruffSpectra = pgTable('rruff_spectra', {
-  id: integer('id').primaryKey().notNull(),
+  id: serial('id').primaryKey().notNull(),
   mineralId: integer('mineral_id').notNull().references(() => rruffMinerals.id),
   spectraType: varchar('spectra_type', { length: 50 }).notNull(), // Raman, FTIR, XRD
   sampleId: varchar('sample_id', { length: 100 }),
@@ -58,13 +58,13 @@ export const rruffSpectra = pgTable('rruff_spectra', {
   temperature: varchar('temperature', { length: 50 }),
   pressure: varchar('pressure', { length: 50 }),
   dataUrl: text('data_url'),
-  dataPoints: json('data_points').$type<Array<[number, number]>>(), // [[x1,y1], [x2,y2], etc.]
+  dataPoints: json('data_points').$type<Array<[number, number]>>().default([]), // [[x1,y1], [x2,y2], etc.]
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
 
 export const rruffApiKeys = pgTable('rruff_api_keys', {
-  id: integer('id').primaryKey().notNull(),
+  id: integer('id').primaryKey().notNull().defaultRandom(),
   key: varchar('key', { length: 100 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -77,14 +77,14 @@ export const rruffApiKeys = pgTable('rruff_api_keys', {
 });
 
 export const rruffDataImportLogs = pgTable('rruff_data_import_logs', {
-  id: integer('id').primaryKey().notNull(),
+  id: integer('id').primaryKey().notNull().defaultRandom(),
   startTime: timestamp('start_time').defaultNow().notNull(),
   endTime: timestamp('end_time'),
   status: varchar('status', { length: 50 }).notNull(), // 'running', 'completed', 'failed'
   mineralsImported: integer('minerals_imported').default(0),
   spectraImported: integer('spectra_imported').default(0),
-  errors: json('errors').$type<string[]>(),
-  details: json('details').$type<Record<string, any>>(),
+  errors: json('errors').$type<string[]>().default([]),
+  details: json('details').$type<Record<string, any>>().default({}),
 });
 
 // Relation definitions
