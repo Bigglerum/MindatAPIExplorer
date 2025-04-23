@@ -485,7 +485,8 @@ async function searchRruffDatabase(message: string, searchParams: SearchParams):
     if (searchParams.searchTerms.elements && searchParams.searchTerms.elements.length > 0) {
       // Handle element filtering
       searchParams.searchTerms.elements.forEach(element => {
-        conditions.push(sql`${rruffMinerals.elementComposition}::text ILIKE ${'%' + element + '%'}`);
+        // Using a simpler approach for element filtering
+        conditions.push(ilike(sql`${rruffMinerals.elementComposition}::text`, `%${element}%`));
       });
     }
     
