@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { fetchSwaggerDocs, parseSwaggerDoc } from "./services/swagger-parser";
 import { generateCode } from "./services/code-generator";
 import { proxyApiRequest } from "./services/api-proxy";
+import { registerRruffRoutes } from "./routes/rruff-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Routes
@@ -253,6 +254,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Register RRUFF routes
+  registerRruffRoutes(app);
+  
   // Create HTTP server
   const httpServer = createServer(app);
 
