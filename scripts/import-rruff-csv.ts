@@ -17,10 +17,11 @@ const MINERALS_CSV_PATH = '/home/runner/workspace/attached_assets/RRUFF_Export_2
  * Main function to import IMA mineral data from CSV
  */
 async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
-  console.log('Starting RRUFF IMA minerals import process...');
+  console.log('Starting COMPLETE RRUFF IMA minerals import process for ALL 5997 MINERALS...');
   
   const startTime = new Date();
   const errors: string[] = [];
+  let importedCount = 0;
   
   try {
     // Verify the CSV file exists
@@ -32,8 +33,8 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
     const fileContent = fs.readFileSync(csvPath, 'utf8');
     console.log(`File read complete. Content length: ${fileContent.length} bytes`);
     
-    // Step 1: Parse the CSV data
-    console.log('Parsing CSV data...');
+    // Step 1: Parse the CSV data - ALL records
+    console.log('Parsing ALL CSV data...');
     const records: any[] = [];
     
     // Set up the CSV parser
@@ -50,7 +51,7 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
       records.push(record);
     }
     
-    console.log(`Parsed ${records.length} mineral records from CSV`);
+    console.log(`Parsed ${records.length} mineral records from CSV - importing ALL of them`);
     
     // Step 2: First, delete any existing spectra and minerals (with safe transaction)
     console.log('Preparing to clean existing data...');
@@ -72,16 +73,19 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
     
     console.log('All existing mineral data cleared successfully');
     
-    // Step 4: Import the new data
-    let importedCount = 0;
-    for (const record of records) {
+    // Step 4: Import ALL data - no slicing or limiting
+    const totalRecords = records.length;
+    console.log(`Beginning import of ALL ${totalRecords} minerals with ALL available columns...`);
+    
+    for (let i = 0; i < totalRecords; i++) {
+      const record = records[i];
       try {
-        // Only log every 100 minerals to reduce console output
-        if (importedCount % 100 === 0) {
-          console.log(`Processing mineral ${importedCount + 1} of ${records.length}: ${record["Mineral Name"]}...`);
+        // Only log every 500 minerals to reduce console output
+        if (i % 500 === 0) {
+          console.log(`Processing mineral ${i + 1} of ${totalRecords}: ${record["Mineral Name"]}...`);
         }
         
-        // Extract elements from chemical formulas (using the plain version)
+        // Extract ALL data from every field in the CSV
         const chemicalFormula = record["IMA Chemistry (plain)"] || record["RRUFF Chemistry (plain)"] || '';
         
         // Use the Elements column for more accurate element composition
@@ -97,7 +101,6 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         });
         
         // Extract unit cell parameters if available
-        // For now we'll leave this empty as parsing them requires complex processing
         const unitCell: {
           a?: number;
           b?: number;
@@ -108,6 +111,20 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
           z?: number;
           volume?: number;
         } = {};
+        
+        // Try to extract unit cell data from various fields
+        try {
+          if (record["Unit Cell A"]) unitCell.a = parseFloat(record["Unit Cell A"]);
+          if (record["Unit Cell B"]) unitCell.b = parseFloat(record["Unit Cell B"]);
+          if (record["Unit Cell C"]) unitCell.c = parseFloat(record["Unit Cell C"]);
+          if (record["Unit Cell Alpha"]) unitCell.alpha = parseFloat(record["Unit Cell Alpha"]);
+          if (record["Unit Cell Beta"]) unitCell.beta = parseFloat(record["Unit Cell Beta"]);
+          if (record["Unit Cell Gamma"]) unitCell.gamma = parseFloat(record["Unit Cell Gamma"]);
+          if (record["Unit Cell Z"]) unitCell.z = parseFloat(record["Unit Cell Z"]);
+          if (record["Unit Cell Volume"]) unitCell.volume = parseFloat(record["Unit Cell Volume"]);
+        } catch (e) {
+          // Silently continue if unit cell data can't be parsed
+        }
         
         // Prepare RRUFF URL
         let rruffUrl = '';
@@ -132,10 +149,10 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         if (record["RRUFF IDs"]) {
           // Take just the first ID if there are multiple
           const ids = record["RRUFF IDs"].split(/\s+/);
-          rruffId = ids[0] || `GEN-${importedCount + 1}`;
+          rruffId = ids[0] || `GEN-${i + 1}`;
         } else {
           // Generate a unique ID if none exists
-          rruffId = `GEN-${importedCount + 1}`;
+          rruffId = `GEN-${i + 1}`;
         }
         
         // Get crystal system (using the first entry if multiple are listed)
@@ -144,11 +161,22 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
           crystalSystem = record["Crystal Systems"].split('|')[0].trim().substring(0, 45);
         }
         
+        // Get crystal class if available
+        let crystalClass = '';
+        if (record["Crystal Classes"]) {
+          crystalClass = record["Crystal Classes"].split('|')[0].trim().substring(0, 45);
+        }
+        
         // Get space group (using the first entry if multiple are listed)
         let spaceGroup = '';
         if (record["Space Groups"]) {
           spaceGroup = record["Space Groups"].split('|')[0].trim().substring(0, 45);
         }
+        
+        // Extract physical properties
+        const color = record["Color"] || '';
+        const density = record["Density"] || '';
+        const hardness = record["Hardness"] || '';
         
         // Extract structural information
         const structuralGroup = record["Structural Groupname"] || '';
@@ -159,28 +187,43 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         const typeLocality = record["Country of Type Locality"] || '';
         const paragenesis = record["Paragenetic Modes"] || '';
         
-        // Combine notes for rich comments field
+        // Combine notes for rich comments field - ALL available data
         const combinedComments = [
           record["Status Notes"] || '',
           structuralGroup !== 'Not in a structural group' ? `Structural Group: ${structuralGroup}` : '',
           fleischersGroup ? `Fleischer's Group: ${fleischersGroup}` : '',
+          imaNumber ? `IMA Number: ${imaNumber}` : '',
           typeLocality ? `Type Locality: ${typeLocality}` : '',
-          paragenesis ? `Paragenesis: ${paragenesis}` : ''
+          paragenesis ? `Paragenesis: ${paragenesis}` : '',
+          record["Description"] ? `Description: ${record["Description"]}` : '',
+          record["Other IMA Chemistry"] ? `Other Chemical Formulas: ${record["Other IMA Chemistry"]}` : '',
+          record["Discovery Year"] ? `Discovery Year: ${record["Discovery Year"]}` : '',
+          record["IMA Footnote"] ? `IMA Footnote: ${record["IMA Footnote"]}` : '',
+          record["Common Name"] ? `Common Name: ${record["Common Name"]}` : '',
+          record["Polytype"] ? `Polytype: ${record["Polytype"]}` : '',
+          record["Dimorph"] ? `Dimorph: ${record["Dimorph"]}` : '',
+          record["Polymorph"] ? `Polymorph: ${record["Polymorph"]}` : '',
+          record["Variety"] ? `Variety: ${record["Variety"]}` : '',
+          record["Parent Species"] ? `Parent Species: ${record["Parent Species"]}` : '',
+          record["Related To"] ? `Related To: ${record["Related To"]}` : '',
+          record["Group"] ? `Group: ${record["Group"]}` : '',
+          record["Status"] ? `Status: ${record["Status"]}` : '',
+          record["Polytypes"] ? `Polytypes: ${record["Polytypes"]}` : ''
         ].filter(Boolean).join('\n');
         
-        // Import the mineral data
+        // Import ALL the mineral data
         await db.insert(rruffMinerals).values({
           rruffId: rruffId,
           mineralName: record["Mineral Name"] || '',
           chemicalFormula: chemicalFormula,
           imaStatus: (record["IMA Status"] || 'unknown').substring(0, 45),
           crystalSystem: crystalSystem,
-          crystalClass: '', // Not directly extractable without complex parsing
+          crystalClass: crystalClass,
           spaceGroup: spaceGroup,
           unitCell: unitCell,
-          color: '', // Not directly in CSV
-          density: '', // Not directly in CSV
-          hardness: '', // Not directly in CSV
+          color: color,
+          density: density,
+          hardness: hardness,
           elementComposition: elementComposition,
           yearFirstPublished: yearPublished,
           comments: combinedComments,
@@ -191,8 +234,8 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         importedCount++;
         
         // Log progress for large imports
-        if (importedCount % 100 === 0) {
-          console.log(`Imported ${importedCount} minerals so far...`);
+        if (importedCount % 500 === 0) {
+          console.log(`Imported ${importedCount} of ${totalRecords} minerals (${Math.round(importedCount/totalRecords*100)}% complete)`);
         }
       } catch (error: any) {
         const errorMsg = `Error importing mineral ${record["Mineral Name"]}: ${error.message}`;
@@ -203,6 +246,7 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
     
     // Step 5: Log the import
     const endTime = new Date();
+    const durationSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
     
     await db.insert(rruffDataImportLogs).values({
       status: 'completed',
@@ -213,20 +257,25 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
       errors: errors.length > 0 ? errors : [],
       details: {
         source: 'RRUFF_Export_CSV',
-        importType: 'ima_minerals'
+        importType: 'COMPLETE_IMPORT_ALL_DATA',
+        duration: `${durationSeconds} seconds`,
+        totalRecords: totalRecords
       },
     });
     
-    console.log(`Import complete! Successfully imported ${importedCount} minerals`);
+    console.log(`Import complete! Successfully imported ${importedCount} of ${totalRecords} minerals (${Math.round(importedCount/totalRecords*100)}%)`);
+    console.log(`Import took ${durationSeconds} seconds`);
     if (errors.length > 0) {
       console.log(`Encountered ${errors.length} errors during import`);
     }
     
     return {
       mineralsCount: importedCount,
+      totalRecords,
       errors,
       startTime,
-      endTime
+      endTime,
+      durationSeconds
     };
     
   } catch (error: any) {

@@ -102,8 +102,22 @@ export default function RruffPage() {
         
         <p className="text-muted-foreground mb-6">
           This database contains IMA-approved minerals and their properties. Data is sourced from 
-          the RRUFF Project's IMA mineral list. Search for minerals by name or crystal system.
+          the RRUFF Project's IMA mineral list. Search for minerals by name, crystal system, or element composition.
         </p>
+        
+        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 flex items-start">
+          <div className="text-blue-500 mr-3 mt-0.5">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+          <div>
+            <h3 className="text-blue-800 font-medium">Database Loading in Progress</h3>
+            <p className="text-blue-700 text-sm">
+              The full mineral database is currently being populated in the background. Common minerals 
+              like quartz, calcite, and actinolite should be available now. If you don't find a specific 
+              mineral, please try again in a few minutes.
+            </p>
+          </div>
+        </div>
         
         <Tabs defaultValue="search">
           <TabsList className="grid w-full grid-cols-1">

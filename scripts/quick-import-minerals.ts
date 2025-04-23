@@ -19,7 +19,11 @@ const PRIORITY_MINERALS = [
   'Gypsum', 'Cinnabar', 'Hematite', 'Malachite', 'Azurite',
   'Talc', 'Olivine', 'Garnet', 'Corundum', 'Ruby',
   'Sapphire', 'Emerald', 'Topaz', 'Tourmaline', 'Feldspar',
-  'Kaolinite', 'Apatite', 'Zircon', 'Biotite', 'Graphite'
+  'Kaolinite', 'Apatite', 'Zircon', 'Biotite', 'Graphite',
+  // Specific user requests
+  'Liroconite', 'Actinolite', 'Beryl', 'Barite', 'Celestine',
+  'Olivine', 'Forsterite', 'Fayalite', 'Nepheline', 'Sodalite',
+  'Periclase', 'Wollastonite', 'Diopside', 'Enstatite', 'Hypersthene'
 ].map(name => name.toLowerCase());
 
 /**
