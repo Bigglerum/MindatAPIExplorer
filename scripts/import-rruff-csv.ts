@@ -76,17 +76,25 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
     let importedCount = 0;
     for (const record of records) {
       try {
-        // Extract elements from chemical formula (using the plain version)
+        console.log(`Processing ${record["Mineral Name"]}...`);
+        
+        // Extract elements from chemical formulas (using the plain version)
         const chemicalFormula = record["IMA Chemistry (plain)"] || record["RRUFF Chemistry (plain)"] || '';
-        const elements = extractElementsFromFormula(chemicalFormula);
+        
+        // Use the Elements column for more accurate element composition
+        const elements = record["Chemistry Elements"] ? record["Chemistry Elements"].split(' ') : 
+                          extractElementsFromFormula(chemicalFormula);
         
         // Create element composition object for DB
         const elementComposition: Record<string, number> = {};
         elements.forEach(element => {
-          elementComposition[element] = 1; // Simple presence indicator
+          if (element && element.trim()) {
+            elementComposition[element.trim()] = 1; // Simple presence indicator
+          }
         });
         
-        // Extract unit cell parameters if available - note: not directly in CSV, would need additional processing
+        // Extract unit cell parameters if available
+        // For now we'll leave this empty as parsing them requires complex processing
         const unitCell: {
           a?: number;
           b?: number;
@@ -101,7 +109,7 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         // Prepare RRUFF URL
         let rruffUrl = '';
         if (record["RRUFF IDs"]) {
-          const rruffIds = record["RRUFF IDs"].split(' ');
+          const rruffIds = record["RRUFF IDs"].split(/\s+/);
           if (rruffIds.length > 0 && rruffIds[0]) {
             rruffUrl = `https://rruff.info/ima/${rruffIds[0]}`;
           }
@@ -127,9 +135,35 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
           rruffId = `GEN-${importedCount + 1}`;
         }
         
-        // Ensure crystal system and space group are within length limits
-        const crystalSystem = (record["Crystal Systems"] || '').substring(0, 45);
-        const spaceGroup = (record["Space Groups"] || '').substring(0, 45);
+        // Get crystal system (using the first entry if multiple are listed)
+        let crystalSystem = '';
+        if (record["Crystal Systems"]) {
+          crystalSystem = record["Crystal Systems"].split('|')[0].trim().substring(0, 45);
+        }
+        
+        // Get space group (using the first entry if multiple are listed)
+        let spaceGroup = '';
+        if (record["Space Groups"]) {
+          spaceGroup = record["Space Groups"].split('|')[0].trim().substring(0, 45);
+        }
+        
+        // Extract structural information
+        const structuralGroup = record["Structural Groupname"] || '';
+        const fleischersGroup = record["Fleischers Groupname"] || '';
+        
+        // Extract other useful fields
+        const imaNumber = record["IMA Number"] || '';
+        const typeLocality = record["Country of Type Locality"] || '';
+        const paragenesis = record["Paragenetic Modes"] || '';
+        
+        // Combine notes for rich comments field
+        const combinedComments = [
+          record["Status Notes"] || '',
+          structuralGroup !== 'Not in a structural group' ? `Structural Group: ${structuralGroup}` : '',
+          fleischersGroup ? `Fleischer's Group: ${fleischersGroup}` : '',
+          typeLocality ? `Type Locality: ${typeLocality}` : '',
+          paragenesis ? `Paragenesis: ${paragenesis}` : ''
+        ].filter(Boolean).join('\n');
         
         // Import the mineral data
         await db.insert(rruffMinerals).values({
@@ -138,7 +172,7 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
           chemicalFormula: chemicalFormula,
           imaStatus: (record["IMA Status"] || 'unknown').substring(0, 45),
           crystalSystem: crystalSystem,
-          crystalClass: '', // Not directly in CSV
+          crystalClass: '', // Not directly extractable without complex parsing
           spaceGroup: spaceGroup,
           unitCell: unitCell,
           color: '', // Not directly in CSV
@@ -146,7 +180,7 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
           hardness: '', // Not directly in CSV
           elementComposition: elementComposition,
           yearFirstPublished: yearPublished,
-          comments: record["Status Notes"] || '',
+          comments: combinedComments,
           url: rruffUrl,
           isActive: true,
         });
