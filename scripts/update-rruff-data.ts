@@ -7,94 +7,44 @@
  */
 
 import { rruffCsvImporter } from '../server/services/rruff-csv-importer';
-import fs from 'fs';
-import path from 'path';
 import { db } from '../server/db';
-import { rruffDataImportLogs } from '../shared/rruff-schema';
-import { desc, sql } from 'drizzle-orm';
+
+// Formats a date as YYYY-MM-DD HH:MM:SS
+function formatDate(date: Date): string {
+  return date.toISOString().replace('T', ' ').substring(0, 19);
+}
 
 async function main() {
-  // Create logs directory if it doesn't exist
-  const logsDir = path.resolve('./logs');
-  if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
-  }
-
-  // Log file with timestamp
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const logFile = path.join(logsDir, `rruff-update-${timestamp}.log`);
-  const logStream = fs.createWriteStream(logFile, { flags: 'a' });
-
-  // Helper function to log to file and console
-  const log = (message: string) => {
-    const timestampedMessage = `[${new Date().toISOString()}] ${message}`;
-    console.log(timestampedMessage);
-    logStream.write(timestampedMessage + '\n');
-  };
-
+  console.log(`=== RRUFF Data Update Started at ${formatDate(new Date())} ===`);
+  
   try {
-    log('Starting RRUFF data update process...');
-
-    // Check when the last successful update was
-    const [lastImport] = await db.select()
-      .from(rruffDataImportLogs)
-      .where(sql`${rruffDataImportLogs.status} = 'completed'`)
-      .orderBy(desc(rruffDataImportLogs.endTime))
-      .limit(1);
-
-    if (lastImport) {
-      const daysSinceLastUpdate = Math.floor(
-        (Date.now() - new Date(lastImport.endTime!).getTime()) / (1000 * 60 * 60 * 24)
-      );
-      
-      log(`Last successful update was ${daysSinceLastUpdate} days ago on ${lastImport.endTime?.toISOString()}`);
-      
-      // Skip update if less than 28 days have passed (approximately a month)
-      if (daysSinceLastUpdate < 28) {
-        log(`Skipping update as it has been less than 28 days since the last update.`);
-        logStream.end();
-        return;
-      }
-    }
-
-    log('Downloading and importing data from RRUFF...');
-    
-    // Download and import data
+    // Run the CSV import process
     const result = await rruffCsvImporter.downloadAndImportData();
     
-    // Log results
-    log(`Update completed with the following results:`);
-    log(`- Minerals imported: ${result.mineralsCount}`);
-    log(`- Spectra imported: ${result.spectraCount}`);
+    console.log(`=== RRUFF Data Update Completed at ${formatDate(new Date())} ===`);
+    console.log(`Imported/updated ${result.mineralsCount} minerals`);
+    console.log(`Imported/updated ${result.spectraCount} spectra`);
+    console.log(`Import took ${Math.round((result.endTime.getTime() - result.startTime.getTime()) / 1000)} seconds`);
     
     if (result.errors.length > 0) {
-      log(`- Errors encountered: ${result.errors.length}`);
+      console.log(`Encountered ${result.errors.length} errors during update:`);
       result.errors.forEach((error, index) => {
-        log(`  [${index + 1}] ${error}`);
+        console.log(`${index + 1}. ${error}`);
       });
-    } else {
-      log('- No errors encountered.');
     }
     
-    log('RRUFF data update process completed successfully.');
   } catch (error: any) {
-    log(`ERROR: Update process failed with error: ${error.message}`);
-    log(error.stack || 'No stack trace available');
+    console.error(`=== RRUFF Data Update Failed at ${formatDate(new Date())} ===`);
+    console.error('Error:', error.message || 'Unknown error');
+    process.exit(1);
   } finally {
-    logStream.end();
+    // Close the database connection
+    const pool = db.$client;
+    if (pool && typeof pool.end === 'function') {
+      await pool.end().catch(console.error);
+    }
   }
 }
 
-// Execute main function
-main()
-  .catch(error => {
-    console.error('Unhandled error in main function:', error);
-    process.exit(1);
-  })
-  .finally(() => {
-    // Make sure to close any connections
-    const pool = db.$client;
-    if (pool && typeof pool.end === 'function') {
-      pool.end().catch(console.error);
-    }
-  });
+// Execute the main function
+main().catch(console.error);
