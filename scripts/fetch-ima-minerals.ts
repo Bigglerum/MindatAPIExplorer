@@ -9,7 +9,7 @@ import fs from 'fs';
 import path from 'path';
 import { parse } from 'csv-parse';
 import { db } from '../server/db';
-import { rruffMinerals, rruffDataImportLogs } from '@shared/rruff-schema';
+import { rruffMinerals, rruffDataImportLogs } from '../shared/rruff-schema';
 import { sql } from 'drizzle-orm';
 
 // URL for the IMA minerals CSV export
@@ -84,7 +84,16 @@ async function downloadAndImportImaMinerals() {
     let importedCount = 0;
     for (const record of records) {
       try {
-        const unitCell = {};
+        const unitCell: {
+          a?: number;
+          b?: number;
+          c?: number;
+          alpha?: number;
+          beta?: number;
+          gamma?: number;
+          z?: number;
+          volume?: number;
+        } = {};
         
         // Extract unit cell parameters if available
         if (record.a) unitCell.a = parseFloat(record.a);
@@ -99,6 +108,12 @@ async function downloadAndImportImaMinerals() {
         // Extract elements from chemical formula
         const elements = extractElementsFromFormula(record.Chemistry);
         
+        // Create element composition object for DB
+        const elementComposition: Record<string, number> = {};
+        elements.forEach(element => {
+          elementComposition[element] = 1; // Simple presence indicator
+        });
+        
         await db.insert(rruffMinerals).values({
           rruffId: record.Id || '',
           mineralName: record.Mineral || '',
@@ -107,11 +122,11 @@ async function downloadAndImportImaMinerals() {
           crystalSystem: record['Crystal System'] || '',
           crystalClass: record['Crystal Class'] || '',
           spaceGroup: record['Space Group'] || '',
-          unitCell: Object.keys(unitCell).length > 0 ? unitCell : null,
+          unitCell: Object.keys(unitCell).length > 0 ? unitCell : {},
           color: record.Color || '',
           density: record.Density || '',
           hardness: record.Hardness || '',
-          elementComposition: elements,
+          elementComposition: elementComposition,
           yearFirstPublished: record.Year ? parseInt(record.Year) : null,
           comments: record.Note || '',
           url: `https://rruff.info/ima/${record.Id}`,
@@ -130,12 +145,16 @@ async function downloadAndImportImaMinerals() {
     const endTime = new Date();
     
     await db.insert(rruffDataImportLogs).values({
-      importType: 'ima_minerals',
+      status: 'completed',
       startTime,
       endTime,
-      recordsImported: importedCount,
-      errors: errors.length > 0 ? errors : null,
-      dataSource: IMA_MINERALS_URL,
+      mineralsImported: importedCount,
+      spectraImported: 0,
+      errors: errors.length > 0 ? errors : [],
+      details: { 
+        source: IMA_MINERALS_URL,
+        importType: 'ima_minerals'
+      },
     });
     
     console.log(`Import complete! Successfully imported ${importedCount} minerals`);
@@ -158,12 +177,16 @@ async function downloadAndImportImaMinerals() {
     // Log error to database
     const endTime = new Date();
     await db.insert(rruffDataImportLogs).values({
-      importType: 'ima_minerals',
+      status: 'failed',
       startTime,
       endTime,
-      recordsImported: 0,
-      errors,
-      dataSource: IMA_MINERALS_URL,
+      mineralsImported: 0,
+      spectraImported: 0,
+      errors: errors,
+      details: {
+        source: IMA_MINERALS_URL,
+        importType: 'ima_minerals'
+      },
     });
     
     throw error;
@@ -185,19 +208,17 @@ function extractElementsFromFormula(formula: string): string[] {
   return [...new Set(matches)];
 }
 
-// Run the function if this script is executed directly
-if (require.main === module) {
-  downloadAndImportImaMinerals()
-    .then(result => {
-      console.log('Script completed successfully');
-      console.log(`Imported ${result.mineralsCount} minerals`);
-      console.log(`Duration: ${(result.endTime.getTime() - result.startTime.getTime()) / 1000} seconds`);
-      process.exit(0);
-    })
-    .catch(error => {
-      console.error('Script failed:', error);
-      process.exit(1);
-    });
-}
+// Run the main function immediately
+downloadAndImportImaMinerals()
+  .then(result => {
+    console.log('Script completed successfully');
+    console.log(`Imported ${result.mineralsCount} minerals`);
+    console.log(`Duration: ${(result.endTime.getTime() - result.startTime.getTime()) / 1000} seconds`);
+    process.exit(0);
+  })
+  .catch(error => {
+    console.error('Script failed:', error);
+    process.exit(1);
+  });
 
 export { downloadAndImportImaMinerals };
