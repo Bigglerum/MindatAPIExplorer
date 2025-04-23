@@ -11,7 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { db } from '../server/db';
 import { rruffDataImportLogs } from '../shared/rruff-schema';
-import { desc } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 
 async function main() {
   // Create logs directory if it doesn't exist
@@ -38,7 +38,7 @@ async function main() {
     // Check when the last successful update was
     const [lastImport] = await db.select()
       .from(rruffDataImportLogs)
-      .where(({ status }) => status.equals('completed'))
+      .where(sql`${rruffDataImportLogs.status} = 'completed'`)
       .orderBy(desc(rruffDataImportLogs.endTime))
       .limit(1);
 
@@ -93,5 +93,8 @@ main()
   })
   .finally(() => {
     // Make sure to close any connections
-    db.pool.end().catch(console.error);
+    const pool = db.$client;
+    if (pool && typeof pool.end === 'function') {
+      pool.end().catch(console.error);
+    }
   });

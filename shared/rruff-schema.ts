@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { boolean, integer, json, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core';
+import { boolean, integer, json, pgTable, text, timestamp, varchar, serial } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
@@ -64,7 +64,7 @@ export const rruffSpectra = pgTable('rruff_spectra', {
 });
 
 export const rruffApiKeys = pgTable('rruff_api_keys', {
-  id: integer('id').primaryKey().notNull().defaultRandom(),
+  id: serial('id').primaryKey().notNull(),
   key: varchar('key', { length: 100 }).notNull().unique(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description'),
@@ -77,7 +77,7 @@ export const rruffApiKeys = pgTable('rruff_api_keys', {
 });
 
 export const rruffDataImportLogs = pgTable('rruff_data_import_logs', {
-  id: integer('id').primaryKey().notNull().defaultRandom(),
+  id: serial('id').primaryKey().notNull(),
   startTime: timestamp('start_time').defaultNow().notNull(),
   endTime: timestamp('end_time'),
   status: varchar('status', { length: 50 }).notNull(), // 'running', 'completed', 'failed'
@@ -126,13 +126,11 @@ export const insertRruffSpectraSchema = createInsertSchema(rruffSpectra, {
   dataPoints: z.array(z.tuple([z.number(), z.number()])).optional(),
 });
 
-export const insertRruffApiKeySchema = createInsertSchema(rruffApiKeys).pick({
-  key: true,
-  name: true,
-  description: true,
-  expiresAt: true,
-  isActive: true,
-  rateLimit: true,
+export const insertRruffApiKeySchema = createInsertSchema(rruffApiKeys).omit({
+  id: true,
+  createdAt: true,
+  lastUsed: true,
+  usageCount: true,
 });
 
 // Types
