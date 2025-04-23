@@ -8,27 +8,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Search, Database, Filter, ExternalLink, AlertCircle } from "lucide-react";
+import { Search, Database, Filter, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
 import { searchRruffMinerals, searchRruffByKeyword, getRruffMineralById, RruffMineral } from "../lib/rruff-service";
 
 export default function RruffPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [crystalSystem, setCrystalSystem] = useState("");
+  const [elements, setElements] = useState("");
   const [searchResults, setSearchResults] = useState<RruffMineral[]>([]);
   const [selectedMineral, setSelectedMineral] = useState<RruffMineral | null>(null);
   const [loading, setLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
 
   const handleSearch = async () => {
+    if (!searchTerm && !elements && (!crystalSystem || crystalSystem === "any")) {
+      // Don't allow empty searches, need at least one search parameter
+      return;
+    }
+    
     setLoading(true);
+    setNoResults(false);
+    
     try {
       console.log("Searching for:", {
         searchTerm,
-        crystalSystem
+        crystalSystem,
+        elements
       });
       
       const result = await searchRruffMinerals({
         name: searchTerm,
         crystalSystem: crystalSystem !== "any" ? crystalSystem : undefined,
+        elements: elements ? elements : undefined,
         page: 1,
         limit: 20
       });
@@ -36,9 +47,13 @@ export default function RruffPage() {
       console.log("Search results:", result);
       setSearchResults(result.minerals || []);
       setSelectedMineral(null);
+      
+      // Set the no results state based on search results
+      setNoResults(result.minerals.length === 0);
     } catch (error) {
       console.error("Search error:", error);
       setSearchResults([]);
+      setNoResults(true);
     } finally {
       setLoading(false);
     }
@@ -104,7 +119,7 @@ export default function RruffPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Mineral Name</Label>
                     <div className="flex gap-2">
@@ -128,7 +143,7 @@ export default function RruffPage() {
                   <div className="space-y-2">
                     <Label htmlFor="crystal-system">Crystal System</Label>
                     <Select value={crystalSystem} onValueChange={setCrystalSystem}>
-                      <SelectTrigger>
+                      <SelectTrigger id="crystal-system">
                         <SelectValue placeholder="Any crystal system" />
                       </SelectTrigger>
                       <SelectContent>
@@ -144,17 +159,44 @@ export default function RruffPage() {
                     </Select>
                   </div>
                   
-                  <div className="flex items-end">
-                    <Button 
-                      className="w-full" 
-                      onClick={handleSearch}
-                      disabled={loading}
-                    >
-                      <Search className="mr-2 h-4 w-4" />
-                      Advanced Search
-                    </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="elements">Elements (comma separated)</Label>
+                    <Input 
+                      id="elements"
+                      placeholder="e.g. Si,O,Al"
+                      value={elements}
+                      onChange={(e) => setElements(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">Search for minerals containing specific elements</p>
                   </div>
                 </div>
+                
+                <div className="flex justify-end">
+                  <Button 
+                    className="w-full md:w-1/3" 
+                    onClick={handleSearch}
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        Advanced Search
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {noResults && (
+                  <div className="mt-4 p-4 border border-yellow-200 bg-yellow-50 rounded-md flex items-center text-yellow-800">
+                    <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                    <span>No minerals found matching your search criteria. Try adjusting your filters.</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
             
