@@ -92,6 +92,8 @@ export async function searchRruffMinerals(params: RruffMineralSearchParams = {})
     searchParams.append('page', String(params.page || 1));
     searchParams.append('limit', String(params.limit || 20));
     
+    console.log('Searching RRUFF minerals with params:', Object.fromEntries(searchParams.entries()));
+    
     // Make the API request
     const response = await fetch(`/api/rruff/minerals?${searchParams.toString()}`, {
       method: 'GET',
