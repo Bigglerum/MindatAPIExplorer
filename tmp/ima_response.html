@@ -1,0 +1,1120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
+<head>
+<title>Ima - RRUFF Database: Raman, X-ray, Infrared, and Chemistry</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <link href="https://rruff.info/css/rruff_001.css" rel="stylesheet" type="text/css" />
+  <link href="https://rruff.info/css/color_001.css" rel="stylesheet" type="text/css" />
+  <link href="https://rruff.info/css/entity.css" rel="stylesheet" type="text/css" />
+  <link rel="shortcut icon" href="https://rruff.info/favicon.ico">
+  <style type="text/css" media="screen">
+     @import 'https://rruff.info/css/style.css';
+  </style>     
+  <script language="javascript" src="https://rruff.info/scripts/CheckboxFunctions.js" type="text/javascript"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/rruff_lib.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/script.aculo.us/lib/prototype.js"></script> 
+  <script type="text/javascript" src="https://rruff.info/libs/script.aculo.us/src/scriptaculous.js?load=effects"></script> 
+  <script type="text/javascript" src="https://rruff.info/libs/moo.fx.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/moo.fx.pack.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/scroll.js"></script>
+  <script type="text/javascript">
+     var baseurl = "https://rruff.info";
+  </script>
+  <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+   </script>
+   <script type="text/javascript">
+      var pageTracker = _gat._getTracker("UA-3337519-3");
+      pageTracker._initData();
+      pageTracker._trackPageview();
+   </script>
+</head>
+<body ><div id="header">
+   <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr class="page_link_bar">
+         <td width="220" rowspan="2" align="center"><a href="https://rruff.info"><img src="https://rruff.info/images/rruff-logo2.gif" alt="RRUFF" width="209" height="89" /></a></td>
+         <td class="page_link_bar"><a href="https://rruff.info" class="page_link_bar">RRUFF Home</a>&nbsp;&nbsp;| 
+            &nbsp;<a href="http://www.geo.arizona.edu/xtal/group/index.htm" class="page_link_bar">UA Mineralogy</a>&nbsp;&nbsp;| 
+            &nbsp;<a href="http://www.gps.caltech.edu/~grr/" class="page_link_bar">Caltech Mineralogy</a>&nbsp;&nbsp;|
+            &nbsp;<a href="https://rruff.info/ima" class="page_link_bar">The IMA Mineral List</a>&nbsp;&nbsp;| 
+                           <a class="page_link_bar" href="https://rruff.info/constructor.php?r=loginform&return=L3JydWZmL2luZGV4LnBocA=="><strong>Login</strong></a>
+                     </td>
+      </tr>
+      <tr class="page_header_main">
+         <td align="left"><span class="page_nav_bar"><br /><a href="https://rruff.info" class="page_nav_bar">
+               Search <strong>Sample Data</strong></a><a href="https://rruff.info/rruff_1.0/reference_search.php" class="page_nav_bar">Search <strong>References</strong></a><a href="https://rruff.info/about/about_general.php" class="page_nav_bar"><strong>About</strong> RRUFF</a><a href="https://rruff.info/about/about_contact.php" class="page_nav_bar"> <strong>Contact</strong> Us</a></span>
+         </td>
+      </tr>
+   </table>
+</div>
+<table width="600" align="center" cellpadding="0" cellspacing="0">
+<tr>
+   <td>
+<!--      <p class="alert_msg">Notice: The RRUFF Database and associated websites will be down for scheduled maintenance on Monday, October 1, 2007 from 12:00 AM to 8:00 AM PST (GMT +8).</p> -->
+      <p class="welcome_text">Welcome to the RRUFF Project website containing an integrated database of Raman spectra, X-ray diffraction and chemistry data for minerals.</p>
+   </td>
+</tr>
+</table>
+
+<h1>Search RRUFF Sample Data</h1>  
+<h2>Search Results</h2>
+<div align="center">
+<form name="frm_sort" action="https://rruff.info/constructor.php" method="get">
+<input type="hidden" name="r" value="sample_search" />
+<input type="hidden" name="txt_tag_ids" value="" />
+<input type="hidden" name="txt_mineral_ids" value="" />
+<input type="hidden" name="txt_mineral" value="ima" />
+<input type="hidden" name="txt_chemistry_incl" value="" />
+<input type="hidden" name="txt_chemistry_excl" value="" />
+<input type="hidden" name="view" value="" />
+<input type="hidden" name="txt_general" value="" />
+<input type="hidden" name="offset" value="" />
+<input type="hidden" name="limit" value="" />
+Sort By:
+<select name="sel_sort" size="1">                  
+   <option value="name" >Names</option>                  
+   <option value="rruff_id" >RRUFF ID</option>
+   <option value="chemistry" >Ideal Chemistry</option>
+   <option value="source" >Source</option>                  
+   <option value="locality" >Locality</option>
+</select>
+<select name="sel_sort_dir" size="1">
+   <option value="asc" >asc</option>
+   <option value="desc" >desc</option>
+</select>
+<input type="submit" name="sbmt_sample_search" value="go" />
+</form>
+</div>
+<form action="https://rruff.info/rruff_1.0/sample_download.php" method="post" name="frm_search_results" target="_blank" id="frm_search_results">
+<table width="98%" align="center" cellpadding="2" cellspacing="0">
+<tr>
+   <th colspan="8" class="section_head_top">
+   <table width="100%">
+   <tr>
+      <td width="20%" align="left">
+         Displaying: 1 - 69
+      </td>
+      <td align="center" width="60%">
+               </td>
+      <td align="right" width="20%">
+         69 Records Found 
+      </td>
+   </tr>
+   </table>
+   </th>
+</tr><tr>
+   <th class="section_head">
+   <input name="chk_all" id="chk_all" type="checkbox" onclick="toggleCheck(this.form, this)" value="1" />
+   <!-- <input name="listcheck" type="checkbox" onclick="checkAll(this.form);" value="1" /> -->
+   </th>
+   <th class="section_head" nowrap="nowrap">&nbsp;</th>
+   <th class="section_head" nowrap="nowrap">NAMES</th>
+   <th class="section_head" nowrap="nowrap">RRUFF ID</th>
+   <th class="section_head" nowrap="nowrap">IDEAL CHEMISTRY</th>
+   <th class="section_head" nowrap="nowrap">SOURCE</th>
+   <th class="section_head" nowrap="nowrap">LOCALITY</th>
+   <th class="section_head" nowrap="nowrap">OPTIONS</th>
+</tr>
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2238" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060614">Bario-olgite</a></td>
+  <td align="center">R060614</td>
+  <td align="center">Na(Na,Sr,Ce)<sub>2</sub>Ba(PO<sub>4</sub>)<sub>2</sub></td>
+  <td align="center">Michael Scott&nbsp;S100949</td>
+  <td>Palitra pegmatite, Kedykverpakhk Mountain, Lovozero massif, Kola Peninsula, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060614"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4996" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R120059">Bussyite-(Ce)</a></td>
+  <td align="center">R120059</td>
+  <td align="center">(Ce,REE)<sub>3</sub>(Na,H<sub>2</sub>O)<sub>6</sub>MnSi<sub>9</sub>Be<sub>5</sub>(O,OH)<sub>30</sub>F<sub>4</sub></td>
+  <td align="center">Donald Doell&nbsp;</td>
+  <td>Mont Saint-Hilaire, Rouville RCM, Montérégie, Québec, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R120059"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2844" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070008">Caryochroite</a></td>
+  <td align="center">R070008</td>
+  <td align="center">(Na,Sr)<sub>3</sub>(Fe<sup>3+</sup>,Mg)<sub>10</sub>Ti<sub>2</sub>Si<sub>12</sub>O<sub>37</sub>(H<sub>2</sub>O,O,OH)<sub>17</sub></td>
+  <td align="center">Michael Scott&nbsp;S100962</td>
+  <td>Umbozero mine, Alluaiv Mt., Lovozero massif, Kola Peninsula, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070008"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3012" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070024">Chistyakovaite</a></td>
+  <td align="center">R070024</td>
+  <td align="center">Al(UO<sub>2</sub>)<sub>2</sub>(AsO<sub>4</sub>)<sub>2</sub>F&#183;6.5H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S105087</td>
+  <td>Bota-Burum U deposit, Kazakhstan</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070024"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2840" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R061019">Cleusonite</a></td>
+  <td align="center">R061019</td>
+  <td align="center">Pb(U<sup>4+</sup>,U<sup>6+</sup>)Fe<sup>2+</sup><sub>2</sub>(Ti,Fe<sup>2+</sup>,Fe<sup>3+</sup>)<sub>18</sub>(O,OH)<sub>38</sub></td>
+  <td align="center">Michael Scott&nbsp;S101386</td>
+  <td>Bella Tola, Alpe Roua, St-Luc, Val d'Annivers, Wallis</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R061019"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="5127" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R130013">Davisite</a></td>
+  <td align="center">R130013</td>
+  <td align="center">CaScAlSiO<sub>6</sub></td>
+  <td align="center">Chi Ma&nbsp;</td>
+  <td>Allende meteorite, Pueblito de Allende, Chihuahua, Mexico</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R130013"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4943" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R120006">Eirikite</a></td>
+  <td align="center">R120006</td>
+  <td align="center">KNa<sub>6</sub>Be<sub>2</sub>(Si<sub>15</sub>Al<sub>3</sub>)O<sub>39</sub>F<sub>2</sub></td>
+  <td align="center">Donald Doell&nbsp;</td>
+  <td>Poudrette quarry, Mont Saint-Hilaire, Rouville RCM, Montérégie, Québec, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R120006"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3023" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070030">Filatovite</a></td>
+  <td align="center">R070030</td>
+  <td align="center">K(Al,Zn)<sub>2</sub>(As,Si)<sub>2</sub>O<sub>8</sub></td>
+  <td align="center">Michael Scott&nbsp;S105093</td>
+  <td>Great Tolbachik Eruption (1976), Tolbachik Volcano, Kamchatka Peninsula, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070030"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1559" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060100">Frankamenite</a></td>
+  <td align="center">R060100</td>
+  <td align="center">K<sub>3</sub>Na<sub>3</sub>Ca<sub>5</sub>Si<sub>12</sub>O<sub>30</sub>F<sub>3</sub>(OH)&#183;H<sub>2</sub>O</td>
+  <td align="center">University of Arizona Mineral Museum&nbsp;16842</td>
+  <td>Murun Massif, Sakka, Yakutia, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060100"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="5141" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R130025">Galeite</a></td>
+  <td align="center">R130025</td>
+  <td align="center">Na<sub>15</sub>(SO<sub>4</sub>)<sub>5</sub>ClF<sub>4</sub></td>
+  <td align="center">Marcus Origlieri&nbsp;</td>
+  <td>Searles Lake, Trona, San Bernardino County, California, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R130025"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="6899" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R160078">Galeite</a></td>
+  <td align="center">R160078</td>
+  <td align="center">Na<sub>15</sub>(SO<sub>4</sub>)<sub>5</sub>ClF<sub>4</sub></td>
+  <td align="center">Rock Currier&nbsp;</td>
+  <td>Searles Lake, San Bernardino County, California, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R160078"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3024" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070101">Georgbarsanovite</a></td>
+  <td align="center">R070101</td>
+  <td align="center">Na<sub>12</sub>(Mn,Sr,REE)<sub>3</sub>Ca<sub>6</sub>Fe<sup>2+</sup><sub>3</sub>Zr<sub>3</sub>NbSi<sub>25</sub>O<sub>76</sub>Cl<sub>2</sub>&#183;H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S105094</td>
+  <td>Petrelius Mountain, Khibiny Massif, Kola Peninsula, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070101"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2841" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R061047">Golyshevite</a></td>
+  <td align="center">R061047</td>
+  <td align="center">Na<sub>10</sub>Ca<sub>9</sub>Zr<sub>3</sub>Fe<sub>2</sub>SiNb(Si<sub>3</sub>O<sub>9</sub>)<sub>2</sub>(Si<sub>9</sub>O<sub>27</sub>)<sub>2</sub>(OH)<sub>3</sub>(CO<sub>3</sub>)&#183;H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100972</td>
+  <td>Mica mine, Kovdor, Kola, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R061047"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2628" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060811">Guanacoite</a></td>
+  <td align="center">R060811</td>
+  <td align="center">Cu<sub>2</sub>Mg<sub>3</sub>(OH)<sub>4</sub>(AsO<sub>4</sub>)<sub>2</sub>&#183;4H<sub>2</sub>O</td>
+  <td align="center">Bob Jenkins&nbsp;</td>
+  <td>Guanaco mine, Tal Tal, Chile</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060811"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2492" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060808">H&#229;leniusite-(La)</a></td>
+  <td align="center">R060808</td>
+  <td align="center">LaOF</td>
+  <td align="center">Michael Scott&nbsp;S101164</td>
+  <td>Bastnas, Sweden</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060808"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4434" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R090034">Heklaite</a></td>
+  <td align="center">R090034</td>
+  <td align="center">KNaSiF<sub>6</sub></td>
+  <td align="center">Thomas P. Moore&nbsp;</td>
+  <td>Bone Valley district, Bartow, Polk County, Florida</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R090034"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="10156" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/P001140">Heklaite</a></td>
+  <td align="center">P001140</td>
+  <td align="center">KNaSiF<sub>6</sub></td>
+  <td align="center">ScottLab&nbsp;P001140</td>
+  <td>Virtual</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/P001140"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1922" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060387">Herbertsmithite</a></td>
+  <td align="center">R060387</td>
+  <td align="center">Cu<sub>3</sub>Zn(OH)<sub>6</sub>Cl<sub>2</sub></td>
+  <td align="center">Michael Scott&nbsp;S100103</td>
+  <td>San Francisco mine, Sierra Gorda, Antofagasta, Chile</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060387"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3031" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070099">Herbertsmithite</a></td>
+  <td align="center">R070099</td>
+  <td align="center">Cu<sub>3</sub>Zn(OH)<sub>6</sub>Cl<sub>2</sub></td>
+  <td align="center">Michael Scott&nbsp;S105100</td>
+  <td>San Francisco mine, Sierra Gorda, Antofagasta, Chile</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070099"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2859" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R061014">Hillite</a></td>
+  <td align="center">R061014</td>
+  <td align="center">Ca<sub>2</sub>Zn(PO<sub>4</sub>)<sub>2</sub>&#183;2H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S101281</td>
+  <td>Reaphook Hill, South Australia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R061014"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3032" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070027">Imandrite</a></td>
+  <td align="center">R070027</td>
+  <td align="center">Na<sub>12</sub>Ca<sub>3</sub>Fe<sup>3+</sup><sub>2</sub>Si<sub>12</sub>O<sub>36</sub></td>
+  <td align="center">Michael Scott&nbsp;S105066</td>
+  <td>Vuonnemijok River, Khibiny Massif, Kola Peninsula, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070027"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="11172" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R210019">Imayoshiite</a></td>
+  <td align="center">R210019</td>
+  <td align="center">Ca<sub>3</sub>Al(CO<sub>3</sub>)[B(OH)<sub>4</sub>](OH)<sub>6</sub>&#183;12H<sub>2</sub>O</td>
+  <td align="center">Hercule Shen&nbsp;</td>
+  <td>Shijiangshan Pb-Zn mine, Keshiketeng Co., Chifeng City, Inner Mongolia, China</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R210019"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2601" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060884">Juangodoyite</a></td>
+  <td align="center">R060884</td>
+  <td align="center">Na<sub>2</sub>Cu(CO<sub>3</sub>)<sub>2</sub></td>
+  <td align="center">Bob Jenkins&nbsp;</td>
+  <td>Santa Rosa mine, Iquique Province, Chile</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060884"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="7924" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R140623">Kapellasite</a></td>
+  <td align="center">R140623</td>
+  <td align="center">Cu<sub>3</sub>Zn(OH)<sub>6</sub>Cl<sub>2</sub></td>
+  <td align="center">Stefan Schorn&nbsp;</td>
+  <td>Sounion mine No. 19, Lavrion District, Attikí Prefecture, Greece</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R140623"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2430" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060896">Kapustinite</a></td>
+  <td align="center">R060896</td>
+  <td align="center">Na<sub>6</sub>ZrSi<sub>6</sub>O<sub>16</sub>(OH)<sub>2</sub></td>
+  <td align="center">Michael Scott&nbsp;S100956</td>
+  <td>Palitra pegmatite, Kedykverpakhk Mountain, Lovozero Massif, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060896"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4992" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R120055">Kunatite</a></td>
+  <td align="center">R120055</td>
+  <td align="center">CuFe<sup>3+</sup><sub>2</sub>(PO<sub>4</sub>)<sub>2</sub>(OH)<sub>2</sub>&#183;4H<sub>2</sub>O</td>
+  <td align="center">William W Pinch&nbsp;</td>
+  <td>Krasno, Horni Slakov, Bohemia, Czech Republic</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R120055"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2433" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060879">Larisaite</a></td>
+  <td align="center">R060879</td>
+  <td align="center">Na(H<sub>3</sub>O)(UO<sub>2</sub>)<sub>3</sub>(Se<sup>4+</sup>O<sub>3</sub>)<sub>2</sub>O<sub>2</sub>&#183;4H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100961</td>
+  <td>Repete mine, San Juan County, Utah, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060879"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4126" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070650">Lemmleinite-Ba</a></td>
+  <td align="center">R070650</td>
+  <td align="center">Na<sub>4</sub>K<sub>4</sub>Ba<sub>2+x</sub>Ti<sub>8</sub>(Si<sub>4</sub>O<sub>12</sub>)<sub>4</sub>(OH,O)<sub>8</sub>&#183;8H<sub>2</sub>O</td>
+  <td align="center">Michael Scott &nbsp;S100152 </td>
+  <td>Diamond Jo Quarry, Magnet Cove, Hot Spring County, Arkansas, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070650"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4718" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R110017">Lemmleinite-Ba</a></td>
+  <td align="center">R110017</td>
+  <td align="center">Na<sub>4</sub>K<sub>4</sub>Ba<sub>2+x</sub>Ti<sub>8</sub>(Si<sub>4</sub>O<sub>12</sub>)<sub>4</sub>(OH,O)<sub>8</sub>&#183;8H<sub>2</sub>O</td>
+  <td align="center">Ray Grant&nbsp;</td>
+  <td>Partomchorr Mt., Khibiny Massif, Kola, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R110017"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1902" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060388">Mackinawite</a></td>
+  <td align="center">R060388</td>
+  <td align="center">(Fe,Ni)<sub>1+x</sub>S (x = 0-0.07)</td>
+  <td align="center">Michael Scott&nbsp;S100089</td>
+  <td>Hitura, Finland</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060388"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3429" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070302">Mackinawite</a></td>
+  <td align="center">R070302</td>
+  <td align="center">(Fe,Ni)<sub>1+x</sub>S (x = 0-0.07)</td>
+  <td align="center">James Shigley&nbsp;</td>
+  <td>Wannaway Prospect, near Kalgoorlie, Western Australia, Australia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070302"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2438" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070334">Manganilvaite</a></td>
+  <td align="center">R070334</td>
+  <td align="center">CaFe<sup>2+</sup>Fe<sup>3+</sup>Mn<sup>2+</sup>(Si<sub>2</sub>O<sub>7</sub>)O(OH)</td>
+  <td align="center">Michael Scott&nbsp;S100979</td>
+  <td>First Sovetskiy mine, Dalnegorsk, Far East of Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070334"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3110" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070064">Miguelromeroite</a></td>
+  <td align="center">R070064</td>
+  <td align="center">Mn<sub>5</sub>(AsO<sub>3</sub>OH)<sub>2</sub>(AsO<sub>4</sub>)<sub>2</sub>(H<sub>2</sub>O)<sub>4</sub></td>
+  <td align="center">Bob Jenkins&nbsp;</td>
+  <td>Veta Negra mine, Pampa Larga Mining District, Tierra Amarilla, Chile</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070064"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4705" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R110005">Munakataite</a></td>
+  <td align="center">R110005</td>
+  <td align="center">Pb<sub>2</sub>Cu<sub>2</sub>(Se<sup>4+</sup>O<sub>3</sub>)(SO<sub>4</sub>)(OH)<sub>4</sub></td>
+  <td align="center">Marcus Origlieri&nbsp;</td>
+  <td>Tonopah-Belmont mine, Maricopa County, Arizona, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R110005"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4706" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R110006">Munakataite</a></td>
+  <td align="center">R110006</td>
+  <td align="center">Pb<sub>2</sub>Cu<sub>2</sub>(Se<sup>4+</sup>O<sub>3</sub>)(SO<sub>4</sub>)(OH)<sub>4</sub></td>
+  <td align="center">Marcus Origlieri&nbsp;</td>
+  <td>Tonopah-Belmont mine, Maricopa County, Arizona, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R110006"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="8710" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R150128">Munakataite</a></td>
+  <td align="center">R150128</td>
+  <td align="center">Pb<sub>2</sub>Cu<sub>2</sub>(Se<sup>4+</sup>O<sub>3</sub>)(SO<sub>4</sub>)(OH)<sub>4</sub></td>
+  <td align="center">Shields Flynn&nbsp;</td>
+  <td>Tsumeb mine, Tsumeb, Namibia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R150128"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2477" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060775">Nevadaite</a></td>
+  <td align="center">R060775</td>
+  <td align="center">(Cu<sup>2+</sup>,◻,Al,V<sup>3+</sup>)<sub>6</sub>Al<sub>8</sub>(PO<sub>4</sub>)<sub>8</sub>F<sub>8</sub>(OH)<sub>2</sub>&#183;22H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S101111</td>
+  <td>Gold Quarry mine, Eueka County, Nevada, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060775"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3120" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070115">Ottensite</a></td>
+  <td align="center">R070115</td>
+  <td align="center">Na<sub>3</sub>(Sb<sub>2</sub>O<sub>3</sub>)<sub>3</sub>(SbS<sub>3</sub>)&#183;3H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100424</td>
+  <td>Qinglong District, Qinglong, Qianxi'n Autonomous Prefecture, Guizhou, China</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070115"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="11224" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R220043">Ottensite</a></td>
+  <td align="center">R220043</td>
+  <td align="center">Na<sub>3</sub>(Sb<sub>2</sub>O<sub>3</sub>)<sub>3</sub>(SbS<sub>3</sub>)&#183;3H<sub>2</sub>O</td>
+  <td align="center">Erica Bittarello&nbsp;</td>
+  <td>Pereta mine, Tuscany, Italy</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R220043"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1054" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R050516">Potassic-arfvedsonite</a></td>
+  <td align="center">R050516</td>
+  <td align="center">KNa<sub>2</sub>(Fe<sup>2+</sup><sub>4</sub>Fe<sup>3+</sup>)Si<sub>8</sub>O<sub>22</sub>(OH)<sub>2</sub></td>
+  <td align="center">Frank Hawthorne&nbsp;</td>
+  <td>Red Wine complex, Labrador, Newfoundland, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R050516"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3059" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070048">Rudenkoite</a></td>
+  <td align="center">R070048</td>
+  <td align="center">Sr<sub>3</sub>Al<sub>3.5</sub>Si<sub>3.5</sub>O<sub>10</sub>(OH,O)<sub>8</sub>Cl<sub>2</sub>&#183;H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S105053</td>
+  <td>80 km SEE of Aldan, Yakutia, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070048"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4990" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R120053">Sazhinite-(La)</a></td>
+  <td align="center">R120053</td>
+  <td align="center">Na<sub>3</sub>LaSi<sub>6</sub>O<sub>15</sub>&#183;2H<sub>2</sub>O</td>
+  <td align="center">William W. Pinch&nbsp;</td>
+  <td>Aris quarry, near Windhoek, Namibia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R120053"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1409" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R050601">Sillimanite</a></td>
+  <td align="center">R050601</td>
+  <td align="center">Al<sub>2</sub>SiO<sub>5</sub></td>
+  <td align="center">Bill Larson&nbsp;</td>
+  <td>Mogok, Burma</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R050601"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1581" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060080">Sillimanite</a></td>
+  <td align="center">R060080</td>
+  <td align="center">Al<sub>2</sub>SiO<sub>5</sub></td>
+  <td align="center">Marcus Origlieri&nbsp;</td>
+  <td>Pein Pyit, Mogok, Burma</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060080"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2471" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060787">Sillimanite</a></td>
+  <td align="center">R060787</td>
+  <td align="center">Al<sub>2</sub>SiO<sub>5</sub></td>
+  <td align="center">Michael Scott&nbsp;S101078</td>
+  <td>Moragahakanda, Sri Lanka</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060787"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4600" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100126">Sillimanite</a></td>
+  <td align="center">R100126</td>
+  <td align="center">Al<sub>2</sub>SiO<sub>5</sub></td>
+  <td align="center">William W. Pinch&nbsp;</td>
+  <td>Orissa, India</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100126"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4601" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100127">Sillimanite</a></td>
+  <td align="center">R100127</td>
+  <td align="center">Al<sub>2</sub>SiO<sub>5</sub></td>
+  <td align="center">William W. Pinch&nbsp;</td>
+  <td>Andana Tea Plantation, near Khawatha, Rathapura District, Sri Lanka</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100127"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2124" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060731">Terlinguacreekite</a></td>
+  <td align="center">R060731</td>
+  <td align="center">Hg<sup>2+</sup><sub>3</sub>O<sub>2</sub>Cl<sub>2</sub></td>
+  <td align="center">Michael Scott&nbsp;S100033</td>
+  <td>Mariposa mine, Terlingua, Brewster County, Texas, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060731"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="9207" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R170055">Tistarite</a></td>
+  <td align="center">R170055</td>
+  <td align="center">Ti<sub>2</sub>O<sub>3</sub></td>
+  <td align="center">Sarah Gain&nbsp;</td>
+  <td>Pyroclastic and alluvial deposits near Mount Carmel, Israel</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R170055"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2555" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060833">Tsepinite-Ca</a></td>
+  <td align="center">R060833</td>
+  <td align="center">(Ca,K,Na)<sub>2-x</sub>(Ti,Nb)<sub>2</sub>(Si<sub>4</sub>O<sub>12</sub>)(OH,O)<sub>2</sub>&#183;4H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S101008</td>
+  <td>Hackmann Valley, Yukspor Mountain, Khibiny, Kola, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060833"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3367" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070241">Tsepinite-Na</a></td>
+  <td align="center">R070241</td>
+  <td align="center">(Na,H<sub>3</sub>O,K,Sr,Ba,◻)<sub>2</sub>(Ti,Nb)<sub>2</sub>(Si<sub>4</sub>O<sub>12</sub>)(OH,O)<sub>2</sub>&#183;3H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100450</td>
+  <td>Lepkhe-Nel'm Mt. (Lepkhe-Nelm Mt.), Seidozero Lake, Lovozero Massif, Kola Peninsula, Murmanskaja Oblast', Northern Region, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070241"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2148" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060537">Yanomamite</a></td>
+  <td align="center">R060537</td>
+  <td align="center">In(AsO<sub>4</sub>)&#183;2H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100011</td>
+  <td>Periquito mine, Monte Alegre de Goias, Goias, Brazil</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060537"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2143" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060536">Yarrowite</a></td>
+  <td align="center">R060536</td>
+  <td align="center">Cu<sub>9</sub>S<sub>8</sub></td>
+  <td align="center">Michael Scott&nbsp;S100224</td>
+  <td>Yarrow Creek, southwestern Alberta, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060536"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1093" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R050338">Yedlinite</a></td>
+  <td align="center">R050338</td>
+  <td align="center">Pb<sub>6</sub>Cr(Cl,OH)<sub>6</sub>(OH,O)<sub>8</sub></td>
+  <td align="center">University of Arizona Mineral Museum&nbsp;11360</td>
+  <td>Tiger, Pinal County, Arizona, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R050338"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4064" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070740">Yingjiangite</a></td>
+  <td align="center">R070740</td>
+  <td align="center">K<sub>2</sub>Ca(UO<sub>2</sub>)<sub>7</sub>(PO<sub>4</sub>)<sub>4</sub>(OH)<sub>6</sub>&#183;6H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S106144</td>
+  <td>Kamaka Bar, Frazier River, Kamloops Mining Division, British Columbia, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070740"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4230" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R080111">Yofortierite</a></td>
+  <td align="center">R080111</td>
+  <td align="center">Mn<sup>2+</sup><sub>5</sub>Si<sub>8</sub>O<sub>20</sub>(OH)<sub>2</sub>&#183;7H<sub>2</sub>O</td>
+  <td align="center">William W. Pinch&nbsp;</td>
+  <td>Mont Saint-Hilaire, Quebec, Canada</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R080111"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4542" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100067">Yuanfuliite</a></td>
+  <td align="center">R100067</td>
+  <td align="center">Mg(Fe<sup>3+</sup>,Al)O(BO<sub>3</sub>)</td>
+  <td align="center">Bob Jenkins&nbsp;</td>
+  <td>La Ceila, near Jumilla, Murcia Province, Spain</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100067"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4486" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100010">Yvonite</a></td>
+  <td align="center">R100010</td>
+  <td align="center">Cu(AsO<sub>3</sub>OH)&#183;2H<sub>2</sub>O</td>
+  <td align="center">William Pinch&nbsp;</td>
+  <td>Salsigne Gold mine, Aude, France</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100010"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4677" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100211">Zabuyelite</a></td>
+  <td align="center">R100211</td>
+  <td align="center">Li<sub>2</sub>(CO<sub>3</sub>)</td>
+  <td align="center">Michael Scott &nbsp;</td>
+  <td>Synthetic, purchased from Sigma-Aldrich</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100211"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1757" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R060228">Z&#225;les&#237;ite</a></td>
+  <td align="center">R060228</td>
+  <td align="center">CaCu<sub>6</sub>(AsO<sub>4</sub>)<sub>2</sub>(AsO<sub>3</sub>OH)(OH)<sub>6</sub>&#183;3H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S100145</td>
+  <td>Hilarion mine, near Kamareza, Laurium, Attica Penninsula, Greece</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R060228"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3573" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070455">Z&#225;les&#237;ite</a></td>
+  <td align="center">R070455</td>
+  <td align="center">CaCu<sub>6</sub>(AsO<sub>4</sub>)<sub>2</sub>(AsO<sub>3</sub>OH)(OH)<sub>6</sub>&#183;3H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S103060</td>
+  <td>Zálesí, Javorník, Olomouc Region, Moravia (Mähren; Maehren), Czech Republic</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070455"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="1331" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R050578">Zanazziite</a></td>
+  <td align="center">R050578</td>
+  <td align="center">Ca<sub>2</sub>Be<sub>4</sub>Mg<sub>5</sub>(PO<sub>4</sub>)<sub>6</sub>(OH)<sub>4</sub>&#183;6H<sub>2</sub>O</td>
+  <td align="center">University of Arizona Mineral Museum&nbsp;16166</td>
+  <td>Lavra da Ilha pegmatite, Taquaral, Minas Gerais, Brazil</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R050578"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="4696" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R100220">Zanazziite</a></td>
+  <td align="center">R100220</td>
+  <td align="center">Ca<sub>2</sub>Be<sub>4</sub>Mg<sub>5</sub>(PO<sub>4</sub>)<sub>6</sub>(OH)<sub>4</sub>&#183;6H<sub>2</sub>O</td>
+  <td align="center">Luiz Menezes&nbsp;</td>
+  <td>Jenipapo district, Itinga, Minas Gerais, Brazil</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R100220"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3575" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070485">Zektzerite</a></td>
+  <td align="center">R070485</td>
+  <td align="center">NaLiZrSi<sub>6</sub>O<sub>15</sub></td>
+  <td align="center">Michael Scott&nbsp;S103063</td>
+  <td>Washington Pass, Golden Horn Batholith, Okanogan County, Washington, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070485"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3576" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070454">Zellerite</a></td>
+  <td align="center">R070454</td>
+  <td align="center">Ca(UO<sub>2</sub>)(CO<sub>3</sub>)<sub>2</sub>&#183;5H<sub>2</sub>O</td>
+  <td align="center">Michael Scott&nbsp;S103072</td>
+  <td>Frey No. 4 mine, Red Canyon, White Canyon District, San Juan County, Utah, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070454"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="978" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R050273">Zemannite</a></td>
+  <td align="center">R050273</td>
+  <td align="center">Mg<sub>0.5</sub>ZnFe<sup>3+</sup>(Te<sup>4+</sup>O<sub>3</sub>)<sub>3</sub>&#183;<i>n</i>H<sub>2</sub>O (3&#8804;<i>n</i>&#8804;4.5)</td>
+  <td align="center">Marcus Origlieri&nbsp;</td>
+  <td>Mina Bambollita, Moctezuma, Sonora, Mexico</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R050273"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="2992" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R061136">Zharchikhite</a></td>
+  <td align="center">R061136</td>
+  <td align="center">Al(OH)<sub>2</sub>F</td>
+  <td align="center">Michael Scott&nbsp;S105120</td>
+  <td>Zharchikha deposit, Buryatia, Russia</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R061136"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr class="colored_bg">
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="3577" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R070482">Ziesite</a></td>
+  <td align="center">R070482</td>
+  <td align="center">Cu<sub>2</sub>V<sup>5+</sup><sub>2</sub>O<sub>7</sub></td>
+  <td align="center">Michael Scott&nbsp;S103064</td>
+  <td>Izalco Volcano, Sonsonate Department, El Salvador</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R070482"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+
+<tr>
+  <td align="center"><input type="checkbox" name="chk_export_select[]" value="5081" /></td>
+  <td align="center"></td><td align="center"><a class="page_link_2" href="/ima/download_csv.php/R120143">Zigrasite</a></td>
+  <td align="center">R120143</td>
+  <td align="center">MgZr(PO<sub>4</sub>)<sub>2</sub>&#183;4H<sub>2</sub>O</td>
+  <td align="center">James Zigras&nbsp;</td>
+  <td>Dunton quarry, Newry, Oxford County, Maine, USA</td>
+  <td align="center">
+          <a href="/ima/download_csv.php/R120143"><img src="https://rruff.info/images/view.gif" border="0" alt="view" /></a>
+  </td>
+</tr>
+<tr>
+   <th colspan="8" class="section_head_top">
+   <table width="100%">
+   <tr>
+      <td width="20%" align="left">
+         Displaying: 1 - 69
+      </td>
+      <td align="center" width="60%">
+               </td>
+      <td align="right" width="20%">
+         69 Records Found 
+      </td>
+   </tr>
+   </table>
+   </th>
+</tr></table>
+</form>
+<div align="center"><strong>Search Again:</strong></div><br />
+      <form name="frm_sample_search" id="frm_sample_search" action="https://rruff.info/constructor.php" method="get">
+            <p align="center" class="instruction_text">Enter search criteria or leave all the fields blank to retrieve all available data.</p>
+      <table align="center" class="search_form" width="600">
+         <tr>
+            <td></td>
+            <th class="search_form" valign="top">Mineral:</th>
+            <td valign="top">
+                  <input type="hidden" id="mineral_ids" name="mineral_ids" value="" />
+                  <input type="hidden" id="txt_tag_ids" name="txt_tag_ids" value="" />
+                  <div id="multi_mineral_search" style="display: none">
+                  Multiple mineral search.<br />(Press "reset" for new search.)<br />
+                  </div>
+                  <div id="single_mineral_search">
+                  <input type="text" id="txt_mineral" name="txt_mineral" value="ima" size="40" maxlength="255" />
+                  <a class="page_link_1" href="Javascript:MM_openBrWindow('https://rruff.info/index.php/r=lookup_minerals/calling_form=frm_sample_search/name_field=txt_mineral','MineralLookup','scrollbars=yes,width=800,height=600')">lookup</a>
+                  </div>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <input type="hidden" name="sel_chemistry_incl_bool" value="and" />
+            </td>
+            <th class="search_form">Chemistry Includes:</th>
+            <td>
+               <script type="text/javascript">
+                  function displayElementChooser() {  
+                     if(!$('div_periodic_table_contents').innerHTML.match(/Chemistry/)) {
+                        retrieveURL('https://rruff.info/index.php/r=element_chooser','div_periodic_table_contents','GET');
+                     }
+                     setTimeout("checkFormElements();","500");
+                     setTimeout("initPeriodicTable('searchChem');","500");
+                     new Effect.toggle('div_periodic_table','blind');
+                  }  
+               </script>
+               <input type="text" id="txt_chemistry_incl" name="txt_chemistry_incl" value="" size="40" maxlength="255" />
+               <a class="page_link_1" href="#" onclick="displayElementChooser();return false;">lookup</a>
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <input type="hidden" name="sel_chemistry_excl_bool" value="and" />
+            </td>
+            <th class="search_form">Chemistry Excludes:</th>
+            <td>
+               <input type="text" id="txt_chemistry_excl" name="txt_chemistry_excl" value="" size="40" maxlength="255" />
+            </td>
+         </tr>
+         <tr>
+            <td>
+               <input type="hidden" name="sel_general_bool" value="and" />
+            </td>
+            <th class="search_form">General:</th>
+            <td>
+               <input type="text" name="txt_general" value='' size="40" maxlength="255" />
+            </td>
+            <td>&nbsp;</td>
+         </tr>
+         <tr>
+            <td>&nbsp;</td>
+            <th class="search_form">Sort By:</th>
+            <td>
+               <select name="sel_sort" size="1">
+                  <option value="name" >Names</option>
+                  <option value="rruff_id" >RRUFF ID</option>
+                  <option value="chemistry" >Ideal Chemistry</option>
+                  <option value="source" >Source</option>
+                  <option value="locality" >Locality</option>
+               </select>
+               <select name="sel_sort_dir" size="1">
+                  <option value="asc" >asc</option>
+                  <option value="desc" >desc</option>
+               </select> 
+            </td>
+            <th>
+               <input name="limit" type="hidden" value="100000" />
+            </th>
+         </tr>
+                                    <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>
+               <input type="hidden" name="offset" value="0" />&nbsp;
+               <input type="hidden" name="r" value="sample_search" />&nbsp;
+                              <input type="hidden" name="modify_sample_search" value="1" />&nbsp;
+                              <input type="submit" value="search" />&nbsp;
+               <input type="button" name="rset_sample_search" value="reset" onclick="javascript:clearElements('periodic_table', this.form.name);reset_button(this.form);" />
+               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a class="page_link_1" href="#" onclick="new Effect.toggle('div_display_options','blind');return false;">display options</a>
+            </td>
+         </tr>
+         <tr>
+            <td colspan="3">
+<div id="div_display_options" style="display: none">
+<div id="div_display_options_contents" style="padding-top: 10px;">
+<span class="title">Display Options</span><br />
+   <ul>
+      <li><input type="radio" id="display" name="display" value="default" checked="checked"> Default display - Name, RRUFF ID, Ideal Chemistry, Source, Locality.</li>
+      <li><input type="radio" id="display" name="display" value="picture" /> Display pictures with the search results (limited to 100 per page).</li>
+      <li><input type="radio" id="display" name="display" value="raman" /> Display Raman Spectra with the search results (limited to 100 per page).</li>
+                  <li><input type="checkbox" id="save_as_default" name="save_as_default" value="true" /> Save these options as your default search options.</li>
+      <li>
+      <script type="text/javascript">
+
+         function checkFilters(toggle) {
+            if(toggle.checked) {
+               $("unoriented_raman_filter_0").enable();
+               $("unoriented_raman_filter_1").enable();
+               $("unoriented_raman_filter_2").enable();
+               $("unoriented_raman_filter_3").enable();
+               $("unoriented_raman_filter_4").enable();
+            }
+            else {
+               $("unoriented_raman_filter_0").disable();
+               $("unoriented_raman_filter_1").disable();
+               $("unoriented_raman_filter_2").disable();
+               $("unoriented_raman_filter_3").disable();
+               $("unoriented_raman_filter_4").disable();
+            }
+         }
+
+      </script> 
+         <input type="checkbox" id="unoriented_raman_filter_enabled" name="unoriented_raman_filter_enabled" value="false" onclick="checkFilters(this);" />
+Unoriented Raman Quality:&nbsp;&nbsp;&nbsp;<br />
+         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="unoriented_raman_filter_checkbox" type="checkbox" id="unoriented_raman_filter_0" name="unoriented_raman_filter[]" value="2"  disabled="disabled" /> Excellent&nbsp;&nbsp;&nbsp;
+         <input class="unoriented_raman_filter_checkbox" type="checkbox" id="unoriented_raman_filter_1" name="unoriented_raman_filter[]" value="1"  disabled="disabled" /> Fair&nbsp;&nbsp;&nbsp;
+         <input class="unoriented_raman_filter_checkbox" type="checkbox" id="unoriented_raman_filter_2" name="unoriented_raman_filter[]" value="0"  disabled="disabled" /> Poor&nbsp;&nbsp;&nbsp;
+         <input class="unoriented_raman_filter_checkbox" type="checkbox" id="unoriented_raman_filter_3" name="unoriented_raman_filter[]" value="-1"  disabled="disabled" /> Unrated&nbsp;&nbsp;&nbsp;
+         <input class="unoriented_raman_filter_checkbox" type="checkbox" id="unoriented_raman_filter_4" name="unoriented_raman_filter[]" value="-2"  disabled="disabled" /> Ignore&nbsp;&nbsp;&nbsp;
+      <script type="text/javascript">
+         checkFilters($("unoriented_raman_filter_enabled"));
+      </script> 
+      </li>
+   </ul>
+</div>
+</div>   
+            </td>
+         </tr>
+      </table>
+</form>
+<div id="div_periodic_table" style="display: none">
+<div id="div_periodic_table_contents" style="min-height: 200px; padding-top: 10px;">
+</div>
+</div>   
+<div id="disclaimer" style="position: relative;">
+<a name="disclaimer">
+</div>
+<script type="text/javascript">
+      if($('txt_chemistry_incl').value != '' || $('txt_chemistry_excl').value != '') {
+      displayElementChooser();
+   }
+</script><br/>
+<br/>
+        <!-- <div id="copyright">&copy; 2005 UA Mineralogy</div> -->
+<div id="debug"></div>
+</body>
+</html>

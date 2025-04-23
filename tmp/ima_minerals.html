@@ -1,0 +1,798 @@
+<?xml version="1.0" encoding="utf-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!--<title></title>-->
+<title>IMA Mineral List with Database of Mineral Properties</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <link href="https://rruff.info/css/rruff_2.css" rel="stylesheet" type="text/css" />
+  <link href="https://rruff.info/css/color.css" rel="stylesheet" type="text/css" />
+  <link href="https://rruff.info/css/entity.css" rel="stylesheet" type="text/css" />
+  <style type="text/css">@import url(https://rruff.info/libs/calendar/calendar-brown.css);</style>
+  <link rel="shortcut icon" href="https://rruff.info/favicon.ico">
+  <style type="text/css" media="screen">
+     @import 'https://rruff.info/css/style.css';
+  </style>     
+  <script language="javascript" src="https://rruff.info/scripts/CheckboxFunctions.js" type="text/javascript"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/rruff_lib.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/script.aculo.us/lib/prototype.js"></script> 
+  <script type="text/javascript" src="https://rruff.info/libs/script.aculo.us/src/scriptaculous.js"></script> 
+  <script type="text/javascript" src="https://rruff.info/libs/moo.fx.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/moo.fx.pack.js"></script>
+  <script type="text/javascript" src="https://rruff.info/libs/scroll.js"></script>
+  <script src="/mint/?js" type="text/javascript"></script>
+  <script type="text/javascript">
+     var baseurl = "https://rruff.info";
+  </script>
+  <!-- BEGIN Google Analytics Code -->
+  <script src="http://www.google-analytics.com/urchin.js" type="text/javascript"></script>
+  <script type="text/javascript">
+     _uacct = "UA-462201-1";
+     urchinTracker();
+  </script>
+  <!-- END Google Analytics Code -->
+</head>
+<body >
+<script type="text/javascript" src="https://rruff.info/libs/entity.js"></script>
+<table width="100%" border="0" cellspacing="0" cellpadding="2">
+   <tr class="ml_page_link_bar">
+      <td colspan="2" align="left" valign="top" class="ml_page_link_bar"><span style="margin-top: 20px; margin-left: 10px;font-size: 14px; font-weight: bold">IMA Database of Mineral Properties</span><br /><span style="margin-left: 10px;">Created and maintained by the RRUFF Project in partnership with the IMA.</span></td>
+      <td class="page_link_bar" align="right" valign="top">
+         &nbsp;<a href="https://rruff.info/about/about_IMA_list.php" class="page_link_bar" target="_blank">Introduction</a>&nbsp;&nbsp;|
+         &nbsp;<a href="http://www.ima-mineralogy.org" class="page_link_bar" target="_blank">IMA</a>&nbsp;&nbsp;|
+         &nbsp;<a href="https://rruff.info/index.php" class="page_link_bar" target="_blank">RRUFF Project</a>&nbsp;&nbsp;|
+         &nbsp;<a href="http://www.geo.arizona.edu/xtal/group/index.htm" class="page_link_bar" target="_blank">UA Mineralogy</a>&nbsp;&nbsp;
+         <a href="https://rruff.info/constructor.php?r=loginform&return=aHR0cHM6Ly9ycnVmZi5pbmZvL2ltYQ==">login</a>      </td>
+   </tr>
+</table>
+<div id="overlay"></div>
+
+<div id="loading_box">
+    <center>
+        <span style="font-size: 16px;">IMA Mineral List</span>
+        </br></br>
+        <img src="https://rruff.info/images/loading.gif" /><br /><br />Please wait for the database to download.<br /><br />
+    </center>
+</div>
+
+<script type="text/javascript" src="https://rruff.info/libs/dhtmlxTree/js/dhtmlXCommon.js"></script>
+<script type="text/javascript" src="https://rruff.info/libs/dhtmlxTree/js/dhtmlXTree.js"></script>
+<script type="text/javascript" src="https://rruff.info/libs/selectbox_functions.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/tag_data.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/libs/mineral_list.js"></script>
+
+<div id="ml_content">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%"><tr>
+        <td valign="top">
+            <form name="form_periodic_table_1" id="form_periodic_table_1" onsubmit="submitTheForm('form_periodic_table_1')">
+                <div id="ml_search_box_1" class="ml_search_box">
+                    <div class="ml_select_wrapper">
+                        <p>
+<span style="margin-left: 10px; font-weight: bold">Search: </span>&nbsp;<input id="txt_mineral_name" name = "txt_mineral_name" type="text" onkeyup="txtchange(this.form);"> <!--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style="padding: 1px" type="button" name="export" value="EXPORT DATA" onclick="exportData(this.form);" />&nbsp;&nbsp; 
+<br >
+<input style="padding: 1px" type="button" name="rruff_export_button" value="EXPORT TO RRUFF" onclick="exportToRruff(this.form);" /> -->
+</p>
+<p><input type="checkbox" name="ima_only" value="1" checked="checked" onclick=setTimeout("clearAll('form_periodic_table_1')","50")> IMA Approved Minerals Only</a>                    </div>
+
+                    <table width="100%"><tr>
+                        <td valign="top">
+                            <div id="form_periodic_table_1_mineral_select_div" style="float: left; margin:5px;"></div>
+                        </td>
+                        <td valign="top">
+                            <p style="margin-top: 0px; margin-left: 10px; font-weight: bold;">Minerals found:
+                                <span id="result_form_periodic_table_1">&nbsp;</span>
+                            </p>
+                            <p>
+                                <input style="margin-left: 10px;" type="button" onclick="removeSelectedMineral();" value="Hide Selected Minerals" />
+                            </p>
+                            <p>
+                                <input style="margin-left: 10px;" type="button" onclick="removeUnselectedMinerals();" value="Hide Unselected Minerals" />
+                            </p>
+                            <p style="margin-top: 0px; margin-left: 10px; font-weight: bold;">Search Tags:&nbsp;&nbsp;
+                                <a href="#" onclick="clearAll('form_periodic_table_1');" style="font-weight: normal" title="Resets the IMA list, but does not reset the cell parameter search.">[ clear all ]</a>
+                            </p>
+                            <div id="form_periodic_table_1_search_tags_display" class="ml_search_tags" style="margin-left: 10px"></div>
+                            <div id="cellparams_tags_div" class="ml_search_tags" style="margin-left: 10px"></div>
+                        </td>
+                    </tr></table>
+
+                    <table><tr>
+                        <td>
+                            <div id="search_tags_1_title">
+                                <a href="#" onclick="setTimeout('loadTags();',250);$('search_tags_1').show();">SEARCH TAGS</a>
+                                &nbsp;&nbsp;
+                                <a href="#" onclick="clearTags('form_periodic_table_1');" style="font-weight: normal">[ clear tags ]</a>
+                                </br>
+                            </div>
+                            <div id="search_tags_1" style="display: none; z-index: 99; width: 40em; position: absolute; border: 1px solid #222; background: #eee;">
+                                <div id="search_tags_1_close" style="float: right">
+                                    <a href="#" onclick="$('search_tags_1').hide();">[ close ]</a>
+                                </div>
+                                <div id="form_periodic_table_1_global_tag_select">
+                                    </br></br>
+                                    <center>... loading please wait ...</center>
+                                    </br></br></br>
+                                </div>
+                            </div>
+                        </td>
+                        <td>&nbsp;&nbsp;</td>
+                        <td></td>
+                    </tr></table>
+
+                    <table align="center">
+                        <tr>
+                            <td colspan="3" align="center">Mineral Chemistry Includes:</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:center; font-weight:bold;">ALL OF:</td>
+                            <td style="text-align:center; font-weight:bold;">AT LEAST ONE OF:</td>
+                            <td style="text-align:center; font-weight:bold;">NONE OF:</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" disabled="disabled" name="txt_chemistry_incl" value="" size="20" maxlength="30" />
+                            </td>
+                            <td>
+                                <input type="text" disabled="disabled" id="txt_chemistry_incl_OR" name="txt_chemistry_incl_OR" value="" size="20" maxlength="30" />
+                            </td>
+                            <td>
+                                <input type="text" disabled="disabled" name="txt_chemistry_excl" value="" size="20" maxlength="30" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align:center; font-weight:bold;">
+                                Contains the string <span style="cursor:pointer;" onclick="exportData(this.form,'chem_help');"><u>?</u></span> :
+                            </td>
+                            <td colspan="2">
+                                <input type="text" id="txt_chemistry_general" name="txt_chemistry_general" value="" size="42" maxlength="60" onkeyup="fillSelectBox('form_periodic_table_1');" />
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table border="0" cellpadding="0" cellspacing="0" align="center">
+<tr>
+<td><div style="display: block; text-align:center; cursor: pointer;  background:#a0ffa0;" class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_H">H</div></td>
+<td colspan="16" align="center">Click an element once to include, twice to exclude.</td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_He">He</div></div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Li" >Li</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Be" >Be</div></td>
+<td colspan="1"></td>
+<td colspan="9">
+<div style="width: 90%;text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_clear" >Clear Chemistry</div>
+</td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_B">B</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_C" >C</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_N" >N</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_O" >O</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_F" >F</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ne" >Ne</div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Na" >Na</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Mg" >Mg</div></td>
+<td colspan="1"></td>
+<td colspan="9">
+<div style="width: 90%;text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_all" >Exclude&nbsp;all&nbsp;non-selected</div>
+</td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Al" >Al</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Si" >Si</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_P" >P</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_S" >S</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cl" >Cl</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ar" >Ar</div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_K" >K</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ca" >Ca</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sc" >Sc</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ti" >Ti</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_V" >V</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cr" >Cr</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Mn" >Mn</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Fe" >Fe</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Co" >Co</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ni" >Ni</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cu" >Cu</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Zn" >Zn</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ga" >Ga</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ge" >Ge</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_As" >As</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#a0ffa0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Se" >Se</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Br" >Br</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Kr" >Kr</div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Rb" >Rb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sr" >Sr</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Y" >Y</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Zr" >Zr</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Nb" >Nb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Mo" >Mo</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Tc" >Tc</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ru" >Ru</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Rh" >Rh</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pd" >Pd</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ag" >Ag</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cd" >Cd</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_In" >In</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sn" >Sn</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sb" >Sb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#cccc99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Te" >Te</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_I" >I</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Xe" >Xe</div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cs" >Cs</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ba" >Ba</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888; font-style: italic;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_lanthanides" title="Shortcut for the lanthanide elements." >Ln</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Hf" >Hf</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ta" >Ta</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_W" >W</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Re" >Re</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Os" >Os</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ir" >Ir</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pt" >Pt</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Au" >Au</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Hg" >Hg</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Tl" >Tl</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pb" >Pb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Bi" >Bi</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Po" >Po</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_At" >At</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Rn" >Rn</div></td>
+</tr>
+<tr>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Fr" >Fr</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffdead;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ra" >Ra</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ff99cc; font-style: italic;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_actinides" title="Shortcut for the actinide elements." >An</div></td>
+<!-- <td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Rf" >104<br />Rf</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Db" >105<br />Db</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sg" >106<br />Sg</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Bh" >107<br />Bh</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Hs" >108<br />Hs</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Mt" >109<br />Mt</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ds" >110<br />Ds</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ra" >111<br />Rg</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffc0c0;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uub" >112<br />Uub</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uut" >113<br />Uut</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uuq" >114<br />Uuq</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uup" >115<br />Uup</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffbbdd;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uuh" >116<br />Uuh</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffff99;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uus" >117<br />Uus</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#c0ffff;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Uuo">118<br />Uuo</div></td> -->
+</tr>
+<tr>
+<td colspan="2" style="text-align:right; font-size: 10px;">&nbsp;</b></td>
+<td><div style="text-align:center; cursor: pointer; font-style: italic;"     class="periodic_table_1"                     id="periodic_table_1_lanthanides_alt" title="Shortcut for the lanthanide elements." >Ln</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_La" >La</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ce" >Ce</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pr" >Pr</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Nd" >Nd</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pm" >Pm</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Sm" >Sm</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Eu" >Eu</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Gd" >Gd</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Tb" >Tb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Dy" >Dy</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ho" >Ho</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Er" >Er</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Tm" >Tm</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Yb" >Yb</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ffb888;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Lu" >Lu</div></td>
+</tr>
+<tr>
+<td colspan="2" style="text-align:right; font-size: 10px;">&nbsp;</b></td>
+<td><div style="text-align:center; cursor: pointer; font-style: italic;"     class="periodic_table_1"                     id="periodic_table_1_actinides_alt" title="Shortcut for the actinide elements." >An</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Ac" >Ac</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Th" >Th</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pa" >Pa</div></td>
+<td><div style="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_U" >U</div></td>
+<!-- <td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Np" >Np</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Pu" >94<br />Pu</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Am" >95<br />Am</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cu" >96<br />Cm</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Bk" >97<br />Bk</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Cf" >98<br />Cf</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Es" >99<br />Es</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Fm" >100<br />Fm</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Md" >101<br />Md</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_No" >102<br />No</div></td>
+<td syle="text-align:center; cursor: pointer;  background:#ff99cc;"    class="periodic_table_1 chem_ele_unselected" id="periodic_table_1_Lr" >103<br />Lr</div></td> -->
+</tr>
+</table>
+<br /></p>
+
+                    <p>
+                        The IMA Mineral List uses the <a href="http://www.ima-mineralogy.org/Minlist.htm" target="_blank">CNMNC Mineral List</a></br>
+                        To report an error, contact: <a href="mailto:rdowns@u.arizona.edu">Bob Downs</a></br>
+                        <a target="_blank" href="https://rruff.info/index.php/r=rruff_log_display">Report of Changes to IMA Mineral List</a>
+                    </p>
+
+                    <div id="rruff_additional_tools" style="margin-left: 5px;">
+                        <table>
+                            <tr>
+                                <td><input style="padding: 1px" type="button" name="rruff_export_button" value="EXPORT TO RRUFF" onclick="exportToRruff(this.form);" />&nbsp;&nbsp;</td>
+                                <td></td>
+                                                            </tr>
+                            <tr>
+                                <td><input style="padding: 1px" type="button" name="evo_export_button" value="EXPORT TO EVOLUTION" onclick="exportToEvolution();" />&nbsp;&nbsp;</td>
+                                <td><input style="padding: 1px" type="button" name="locality_count_button" value="GET LOCALITY COUNTS" onclick="getMineralLocalityCounts();" />&nbsp;&nbsp;</td>
+                            </tr> 
+                        </table>
+
+                        <hr>
+
+                        <div id="export_options_header">
+                            <span style="font-size:1.2em; font-weight:bold; display:inline-block; width:90%;">Export Options</span>
+                            <span id="export_options_header_action" style="cursor:pointer; display:inline-block; width:10%; text-decoration:underline;" onclick="toggleExportOptionsDiv();">Hide</span>
+                        </div>
+                        <div id="export_options_content">
+                            <table>
+                                <tr>
+                                    <td>
+                                        <span title="Export the unformatted IMA mineral name (ASCII characters only)">
+                                            <input type="checkbox" name="export_mineral_name_plain" />
+                                            Mineral Name (plain)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the IMA mineral name with its non-ASCII characters replaced by HTML entities">
+                                            <input type="checkbox" name="export_mineral_name_html" />
+                                            Mineral Name (HTML)
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the standard view of the RRUFF chemistry for these minerals">
+                                            <input type="checkbox" name="export_rruff_chemistry_plain" />
+                                            RRUFF Chemistry (plain)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the standard view of the IMA chemistry for these minerals">
+                                            <input type="checkbox" name="export_ima_chemistry_plain" />
+                                            IMA Chemistry (plain)
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export a version of the RRUFF chemistry where the &lt;sub&gt; tag is replaced by the underscore (_) character and the &lt;sup&gt; tag is replaced by the caret (^) character for these minerals">
+                                            <input type="checkbox" name="export_rruff_chemistry_concise" />
+                                            RRUFF Chemistry (concise)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export a version of the IMA chemistry where the &lt;sub&gt; tag is replaced by the underscore (_) character and the &lt;sup&gt; tag is replaced by the caret (^) character for these minerals">
+                                            <input type="checkbox" name="export_ima_chemistry_concise" />
+                                            IMA Chemistry (concise)
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export a version of the RRUFF chemistry formula that displays the &lt;sub&gt; and &lt;sup&gt; HTML tags for these minerals">
+                                            <input type="checkbox" name="export_rruff_chemistry_html" />
+                                            RRUFF Chemistry (HTML)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export a version of the IMA chemistry formula that displays the &lt;sub&gt; and &lt;sup&gt; HTML tags for these minerals">
+                                            <input type="checkbox" name="export_ima_chemistry_html" />
+                                            IMA Chemistry (HTML)
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Extract and export the individual elements with valence states from the RRUFF chemical formula for these minerals">
+                                            <input type="checkbox" name="export_valence_elements" />
+                                            Valence Elements
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Extract and export each individual element from the IMA chemical formula for these minerals">
+                                            <input type="checkbox" name="display_elements" />
+                                            Chemical Elements
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the structural group for minerals as stated by the IMA">
+                                            <input type="checkbox" name="export_groupname_structural" />
+                                            Structural Groupname
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the structural group for minerals as stated by the 2008 Fleischers Glossary of Mineral Species">
+                                            <input type="checkbox" name="export_groupname_fleischers" />
+                                            Fleischers Groupname
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the official identification number assigned to these minerals by the IMA">
+                                            <input type="checkbox" name="export_ima_number" />
+                                            IMA Number
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the IDs for any samples of these minerals posessed by the RRUFF project">
+                                            <input type="checkbox" name="export_rruff_ids" />
+                                            RRUFF IDs
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the official status assigned to these minerals by the IMA">
+                                            <input type="checkbox" name="export_ima_status" />
+                                            IMA Status
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the numbers used internally by rruff.info to identify these minerals">
+                                            <input type="checkbox" name="export_database_id" />
+                                            Database ID
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="">
+                                            <input type="checkbox" name="export_comments" />
+                                            Status Notes
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the Type Locality country for these minerals">
+                                            <input type="checkbox" name="export_type_locality_country" />
+                                            Country
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the year these minerals were first officially described">
+                                            <input type="checkbox" name="export_year_first_published" />
+                                            Year First Published
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the official abbreviation for this mineral.">
+                                            <input type="checkbox" name="export_mineral_abbrev" />
+                                            IMA Mineral Symbol
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the known crystal systems for this mineral, in descending order by amount of data">
+                                            <input type="checkbox" name="export_crystal_systems" />
+                                            Crystal Systems
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export all Space Groups for this mineral">
+                                            <input type="checkbox" name="export_space_groups" />
+                                            Space Groups
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span title="Export the oldest known age for this mineral, based on data from the MED">
+                                            <input type="checkbox" name="export_first_occurrence" />
+                                            Oldest Known Age (Ma)
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span title="Export the Paragenetic Mode tags for this mineral">
+                                            <input type="checkbox" name="export_paragenetic_modes" />
+                                            Paragenetic Modes
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td><input style="padding: 1px" type="button" name="export" value="DOWNLOAD CSV" onclick="exportData(this.form,'default');" />&nbsp;&nbsp;</td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <input style="padding: 1px" type="button" name="export_table" value="VIEW IN TABLE FORMAT" onclick="exportData(this.form,'table');">
+                                    </td>
+                                    <td>
+                                        <input style="padding: 1px" type="button" name="export_list" value="VIEW AS BULLETED LIST" onclick="exportData(this.form,'list');">
+                                    </td>
+                                </tr>
+                            </table>
+                        </div><!-- end of #export_options_content -->
+
+                        <hr>
+
+                        <div id="cellparams_div">
+                            <input type="hidden" id="mineral_name" name="mineral_name" value="">
+                            <input type="hidden" id="search_entire_list" name="search_entire_list" value="false">
+                            <input type="hidden" id="block_cellparam_search" name="block_cellparam_search" value="false">
+                            <input type="hidden" id="cell_param_id" name="cell_param_id">
+                            <input type="hidden" id="crystal_system_name" name="crystal_system_name" value="">
+                            <input type="hidden" id="point_group" name="point_group" value="">
+                            <input type="hidden" id="space_group" name="space_group" value="">
+                            <input type="hidden" id="lattice" name="lattice" value="">
+                            <table class="paramsearch" style="width: 100%;">
+                                <tr>
+                                    <td colspan="4" style="text-align:center;"><b>Cell Parameter Search Controls</b></td>
+                                    <td style="text-align:right; cursor: pointer;" onclick="$('display_cellparams').checked=false;theFormula( $('form_periodic_table_1') );"><u>Hide</u></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2"><input type="checkbox" id="use_parameters" value="1" checked="checked">Use Search Controls</td>
+                                    <td colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td>Crystal system:</td>
+                                    <td>
+                                        <select id="field__crystal_system_select" onchange="changed_CrystalSystem()">
+                                            <option value=""></option>
+                                            <option value="cubic">cubic</option>
+                                            <option value="hexagonal">hexagonal</option>
+                                            <!-- <option value="rhombohedral">rhombohedral</option> -->
+                                            <option value="tetragonal">tetragonal</option>
+                                            <option value="orthorhombic">orthorhombic</option>
+                                            <option value="monoclinic">monoclinic</option>
+                                            <option value="triclinic">triclinic</option>
+                                            <option value="amorphous">amorphous</option>
+                                            <option value="unknown">unknown</option>
+                                        </select>
+                                    </td>
+                                    <td>Lattice:</td>
+                                    <td>
+                                        <select id="lattice_select">
+                                            <option value=""></option>
+                                            <option value="P">P</option>
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="F">F</option>
+                                            <option value="I">I</option>
+                                            <option value="R">R</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Point group:</td>
+                                    <td><select id="field__point_group_select" onchange="changed_PointGroup()" style="width:100%"><option value=""></option></select></td>
+                                    <td>Space group:</td>
+                                    <td><select id="field__space_group_select" onchange="changed_SpaceGroup()"></select></td>
+                                    <td><a target="_blank" href="https://rruff.info/mineral_list/index.php/action=sg_list">SG List</a></td>
+                                </tr>
+                            </table>
+                            <table class="paramsearch" style="width: 100%;">
+                                <tr>
+                                    <td>a:</td><td><input type="text" id="a" name="a" size="10"></td>
+                                    <td>b:</td><td><input type="text" id="b" name="b" size="10"></td>
+                                    <td>c:</td><td><input type="text" id="c" name="c" size="10"></td>
+                                    <td><button type="button" onclick="setTimeout('doTolerances(0.01)',50);">1% Tol</button></td>
+                                </tr>
+                                <tr>
+                                    <td>&#945;:</td><td><input type="text" id="alpha" name="alpha" size="10"></td>
+                                    <td>&#946;:</td><td><input type="text" id="beta" name="beta" size="10"></td>
+                                    <td>&#947;:</td><td><input type="text" id="gamma" name="gamma" size="10"></td>
+                                    <td><button type="button" onclick="setTimeout('doTolerances(0.1)',50);">10% Tol</button></td>
+                                </tr>
+                                <tr>
+                                    <td>volume:</td><td><input type="text" id="volume" name="volume" size="10"></td>
+                                </tr>
+                            </table>
+                            <table class="paramsearch">
+                                <tr>
+                                    <td><input type="checkbox" id="use_literature" value="1" checked="checked" onclick="setTimeout('parameterSearch(\'normal_search\')',50);">Use Literature</td>
+                                    <td><input type="checkbox" id="use_rruff" value="1" checked="checked" onclick="setTimeout('parameterSearch(\'normal_search\')',50);">Use RRUFF</td>
+                                    <td><input type="checkbox" id="use_amcsd" value="1" checked="checked" onclick="setTimeout('parameterSearch(\'normal_search\')',50);">Use AMCSD</td>
+                                </tr>
+                            </table>
+                            <table class="paramsearch">
+                                <tr>
+                                    <td><button type="button" onclick="showOverlay();$('mineral_name').value='';$('search_entire_list').value='true';setTimeout('parameterSearch(\'pre_search\')',50);">Search Entire List</button></td>
+                                    <td><button type="button" onclick="clearFormValues();$('search_entire_list').value='false';theFormula( $('form_periodic_table_1') );"id="reset" title="Resets the cell parameter search, but does not reset the IMA list.">Reset</button></td>
+                                </tr>
+                            </table>
+
+                            <hr>
+
+                            <table class="paramsearch" style="width: 100%;">
+                                <tr>
+                                    <td colspan="3" style="text-align:center;"><b>Display Columns</b></td>
+                                    <td style="text-align:right; cursor: pointer" onclick="$('display_cellparams').checked=false;theFormula( $('form_periodic_table_1') );"><u>Hide</u></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="display_ideal_chemistry" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Ideal Chemistry</td>
+                                    <td><input type="checkbox" id="display_chemistry" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Chemistry</td>
+                                    <td><input type="checkbox" id="display_parameters" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Cell Parameters</td>
+                                    <td><input type="checkbox" id="display_volume" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Volume</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="display_pressure" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Pressure</td>
+                                    <td><input type="checkbox" id="display_temperature" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Temperature</td>
+                                    <td><input type="checkbox" id="display_cite_text" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Citation Text</td>
+                                    <td><input type="checkbox" id="display_cite_link" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Citation links</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="display_crystal_system" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Crystal System</td>
+                                    <td><input type="checkbox" id="display_point_group" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Point Group</td>
+                                    <td><input type="checkbox" id="display_space_group" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Space Group</td>
+                                    <td><input type="checkbox" id="display_lattice" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Lattice</td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" id="display_notes" onclick="saveDisplayPreferences();parameterSearch('cache_search');" checked>Notes</td>
+                                    <td><input type="checkbox" id="strip_errors" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Strip Errors</td>
+                                    <td title="Only display entries where pressure below 0.1 GPa and temperature between 10C and 30C"><input type="checkbox" id="strip_p_and_t" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Strip P &amp; T</td>
+                                    <td title="Displays all temperature in Kelvin and pressure in GPa"><input type="checkbox" id="normalize_p_and_t" onclick="saveDisplayPreferences();parameterSearch('cache_search');" >Normalize P &amp; T</td>
+                                </tr>
+                            </table>
+                            <table class="paramsearch">
+                                <tr>
+                                    <td><button type="button" onclick="exportTable();" id="export_table" title="Opens the current table of Cell Parameters in a new window.">Export Cell Parameters Table</button></td>
+                                    <td><button type="button" onclick="removeHighlightedRows();" title="Hides all rows in the table that are currently highlighted.  Click anywhere in a row to highlight it.">Remove Highlighted Rows</button></td>
+                                </tr>
+                                <tr>
+                                    <td><button type="button" onclick="restoreHiddenRows();" >Restore Hidden Rows</button></td>
+                                    <td><button type="button" onclick="unhighlightRows();" >Clear Highlights</button></td>
+                                </tr>
+                             </table>
+
+                            <hr>
+                        </div><!-- end of #cellparams_div -->
+                    </div><!-- end of #rruff_additional_tools -->
+                </div><!-- end of #ml_search_box_1 -->
+
+            <!--</form>--><!-- end of #form_periodic_table_1 --><!-- should be here, but mineral_list.js requires it to be later in document... -->
+
+        </td>
+        <td valign="top">
+            <table id="ml_dynamic_width" border="0" width="100%">
+                <tr>
+                    <td>
+                        <table width="500" align="center" border="0" valign="top"><tr>
+                            <td valign="top" align="center">
+                                <div align="center"><br>
+Chemistry :
+<input type="checkbox" id="display_ideal" name="display_ideal" onclick="saveDisplayPreferences();theFormula(this.form);">RRUFF
+<input type="checkbox" id="display_ima" name="display_ima" onclick="saveDisplayPreferences();theFormula(this.form);" checked>IMA
+<!--<input type="checkbox" id="display_valence" name="display_valence" onclick="saveDisplayPreferences();theFormula(this.form);" >Valence-->
+<!--<input type="checkbox" id="display_fleischer" name="display_fleischer" onclick="saveDisplayPreferences();theFormula(this.form);">Fleischer-->
+<input type="checkbox" name="display_cellparams" id="display_cellparams" onclick="saveDisplayPreferences();theFormula(this.form);" >Cell Parameters
+</div>
+<input type="hidden" name="Mineral" id="Mineral">
+<table>
+<tr>
+<td><input style="padding: 1px" type="button" name="hom" id="hom" value="HOM" onclick="displayHOM(this.form);" disabled="disabled"></td>
+<td><input style="padding: 1px" type="button" name="amcsd" id="amcsd" value="AMCSD" onclick="displayAmcsd(this.form);" disabled="disabled"></td>
+<td><input style="padding: 1px" type="button" name="rruff" id="rruff" value="RRUFF" onclick="displayrruff(this.form);" disabled="disabled"></td>
+<td><input style="padding: 1px" type="button" name="ref" id="ref" value="REFERENCES" onclick="displayrruffref(this.form);" disabled="disabled"></td>
+<!--
+<td><input style="padding: 1px" type="button" name="google" id="google" value="GOOGLE" onclick="google_open(this.form);" disabled="disabled"></td>
+<td><input style="padding: 1px" type="button" name="evolution" id="evolution" value="EVOLUTION" onclick="evolution_open(this.form);" ></td>
+<td><input style="padding: 1px" type="button" name="mindat" id="mindat" value="MINDAT" onclick="displaymindat(this.form);" disabled="disabled"></td>
+<td><input style="padding: 1px" type="button" name="webmin" id="webmin" value="WEBMIN" onclick="displaywebmin(this.form);" disabled="disabled"></td>
+-->
+</tr>
+</table>
+<div align="center" id="custom_search_boxes"></div>
+
+                            </td>
+                        </tr></table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table align="center" border="0" valign="top"><tr>
+                            <td>
+                               <h4><span id="form_periodic_table_1_ideal_name"></span></h4>
+                               <h4><span id="form_periodic_table_1_ideal_formula"></span></h4>
+                            </td>
+                        </tr></table>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table><tr>
+                            <td valign="top">
+                                <div id="form_periodic_table_1_tags" class="ml_search_tags_mineral"></div>
+                            </td>
+                            <td valign="top">
+                                <div id="form_periodic_table_1_comments" class="comments"></div>
+                               </br>
+                               <input type="hidden" id="mineral_id" value="" />
+                            </td>
+                        </tr></table>
+                    </td>
+                </tr>
+            </table><!-- end of #ml_dynamic_width -->
+
+            <table border="0" width="100%">
+                <tr>
+                    <td valign="top" colspan="2"></br><div id="debug"></div></td>                
+                </tr>
+                <tr>
+                    <td valign="top" colspan="2"></br><div id="result_count"></div></td>                
+                </tr>
+                <tr>
+                    <td valign="top" colspan="2"></br><div id="result"></div></td>                
+                </tr>
+            </table>
+        </td>
+
+    </tr></table>
+
+</form><!-- end of #form_periodic_table_1...required for #export_to_rruff_form to render properly -->
+
+</div><!-- end of #ml_content -->
+
+<style>
+
+    #export_options_content span {
+        cursor:pointer;
+    }
+
+</style>
+
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/cellparams_data.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/cellparams_range.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/cellparams_synonyms.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/first_occurrences.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/libs/cellparams.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/libs/new_sort.js"></script>
+<script type="text/javascript" src="https://rruff.info/mineral_list/libs/rruff_cookie.js"></script>
+
+<!-- this should be the last imported javascript file -->
+<script type="text/javascript" src="https://rruff.info/mineral_list/data_cache/mineral_data.js"></script>
+
+<script type="text/javascript">
+   $('txt_mineral_name').focus();
+
+    function ima_pageSetup() {
+//        setupMineralArray();
+        initPeriodicTable('mineralList','periodic_table_1');
+        checkFormElements('periodic_table_1');
+        clearElements('periodic_table_1','form_periodic_table_1');   
+        fillSelectBox('form_periodic_table_1');
+
+        removeOverlay();
+
+        // IE 8 fix
+        if (typeof String.prototype.trim !== 'function') {
+            String.prototype.trim = function() {
+                return this.replace(/^\s+|\s+$/g, ''); 
+            }
+        }
+    }
+
+    // Read the cell parameter display cookie
+    loadDisplayPreferences();
+    // Read the search box cookie
+    readSearchPreferences();
+
+    ima_pageSetup();
+    getQueryMineral( $('form_periodic_table_1') );
+//    theFormula( $('form_periodic_table_1') );
+
+    changed_CrystalSystem();
+
+</script> 
+
+<div id="export_to_rruff" style="display:none;">
+    <form id="export_to_rruff_form" action="https://rruff.info/constructor.php" method="POST">
+        <input type="checkbox" name="chemistry_mode" value="false" />
+        <input type="checkbox" name="tracking_mode" value="false" />
+        <input type="hidden" name="r" value="sample_search" />
+        <input type="hidden" name="mineral_ids" value="" />
+    </form>
+</div>        <!-- <div id="copyright">&copy; 2005 UA Mineralogy</div> -->
+<div id="debug"></div>
+</body>
+</html>
