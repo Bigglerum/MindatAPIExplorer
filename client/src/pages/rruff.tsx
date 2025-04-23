@@ -58,7 +58,7 @@ export default function RruffPage() {
       // Construct query parameters
       const params = new URLSearchParams();
       if (searchTerm) params.append("name", searchTerm);
-      if (crystalSystem) params.append("crystalSystem", crystalSystem);
+      if (crystalSystem && crystalSystem !== "any") params.append("crystalSystem", crystalSystem);
       
       const response = await fetch(`/api/rruff/minerals?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch data");
@@ -142,7 +142,7 @@ export default function RruffPage() {
                         <SelectValue placeholder="Any crystal system" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any</SelectItem>
+                        <SelectItem value="any">Any</SelectItem>
                         <SelectItem value="cubic">Cubic</SelectItem>
                         <SelectItem value="tetragonal">Tetragonal</SelectItem>
                         <SelectItem value="hexagonal">Hexagonal</SelectItem>
