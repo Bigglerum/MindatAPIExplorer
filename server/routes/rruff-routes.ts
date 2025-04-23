@@ -63,6 +63,37 @@ export const validateRruffApiKey = async (req: Request, res: Response, next: Fun
 /**
  * Register RRUFF API routes
  */
+// Global import progress tracking variable
+let globalImportProgress = {
+  total: 5997,
+  completed: 0,
+  inProgress: false,
+  startTime: null as Date | null,
+  lastUpdateTime: null as Date | null
+};
+
+// Function to update import progress
+export function updateImportProgress(completed: number, inProgress: boolean = true) {
+  globalImportProgress.completed = completed;
+  globalImportProgress.inProgress = inProgress;
+  globalImportProgress.lastUpdateTime = new Date();
+  
+  if (inProgress && globalImportProgress.startTime === null) {
+    globalImportProgress.startTime = new Date();
+  }
+  
+  // Calculate estimated completion
+  if (inProgress && globalImportProgress.startTime && completed > 0) {
+    const elapsedMs = new Date().getTime() - globalImportProgress.startTime.getTime();
+    const msPerRecord = elapsedMs / completed;
+    const remainingRecords = globalImportProgress.total - completed;
+    const estimatedRemainingMs = msPerRecord * remainingRecords;
+    
+    console.log(`Import progress: ${completed}/${globalImportProgress.total} (${Math.round(completed/globalImportProgress.total*100)}%)`);
+    console.log(`Estimated remaining time: ${Math.round(estimatedRemainingMs/1000/60)} minutes`);
+  }
+}
+
 export function registerRruffRoutes(app: any) {
   // Public endpoints (no API key required)
   
@@ -312,6 +343,46 @@ export function registerRruffRoutes(app: any) {
   
   // --- Admin endpoints ---
   
+  // Get import progress
+  app.get('/api/rruff/import-progress', async (req: Request, res: Response) => {
+    try {
+      // Count minerals in database for real-time progress
+      const [countResult] = await db.select({ count: sql<number>`count(*)` }).from(rruffMinerals);
+      const currentCount = countResult?.count || 0;
+      
+      // If import is running, update the progress
+      if (globalImportProgress.inProgress) {
+        updateImportProgress(currentCount);
+      } else if (currentCount > globalImportProgress.completed) {
+        // If we have more minerals than last recorded but import not marked as running,
+        // update the completed count but keep inProgress false
+        globalImportProgress.completed = currentCount;
+        globalImportProgress.lastUpdateTime = new Date();
+      }
+      
+      // Calculate percentage and estimated time
+      const percentage = Math.round((globalImportProgress.completed / globalImportProgress.total) * 100);
+      let estimatedTimeRemaining = null;
+      
+      if (globalImportProgress.inProgress && globalImportProgress.startTime && globalImportProgress.completed > 0) {
+        const elapsedMs = new Date().getTime() - globalImportProgress.startTime.getTime();
+        const msPerRecord = elapsedMs / globalImportProgress.completed;
+        const remainingRecords = globalImportProgress.total - globalImportProgress.completed;
+        estimatedTimeRemaining = Math.round(msPerRecord * remainingRecords / 1000 / 60); // in minutes
+      }
+      
+      return res.json({
+        ...globalImportProgress,
+        percentage,
+        estimatedTimeRemaining,
+        currentCount
+      });
+    } catch (error) {
+      console.error('Error fetching import progress:', error);
+      return res.status(500).json({ error: 'Failed to fetch import progress' });
+    }
+  });
+
   // Manually trigger the data import process (admin only)
   app.post('/api/rruff/admin/import', async (req: Request, res: Response) => {
     try {

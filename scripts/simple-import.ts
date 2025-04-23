@@ -6,6 +6,7 @@ import { parse } from 'csv-parse';
 import { db } from '../server/db';
 import { rruffMinerals } from '../shared/rruff-schema';
 import { sql } from 'drizzle-orm';
+import { updateImportProgress } from '../server/routes/rruff-routes';
 
 // Path to the CSV file
 const MINERALS_CSV_PATH = '/home/runner/workspace/attached_assets/RRUFF_Export_20250423_072811.csv';
@@ -49,12 +50,17 @@ async function simpleImport() {
     console.log('Importing minerals...');
     let successCount = 0;
     
+    // Mark import as in progress for the progress tracker
+    updateImportProgress(0, true);
+    
     for (let i = 0; i < records.length; i++) {
       const record = records[i];
       
       // Log progress every 100 records
       if (i % 100 === 0 || i === records.length - 1) {
         console.log(`Processing ${i+1}/${records.length} (${Math.round((i+1)/records.length*100)}%)`);
+        // Update the progress counter
+        updateImportProgress(successCount);
       }
       
       try {
@@ -93,6 +99,9 @@ async function simpleImport() {
     // Final count
     const result = await db.execute(sql`SELECT COUNT(*) FROM rruff_minerals`);
     console.log(`Total minerals in database: ${result.rows[0].count}`);
+    
+    // Mark import as complete
+    updateImportProgress(successCount, false);
     
   } catch (error) {
     console.error(`Import failed: ${error.message}`);

@@ -73,6 +73,17 @@ export interface RruffMineralDetailResponse {
   spectra: RruffSpectra[];
 }
 
+export interface ImportProgress {
+  total: number;
+  completed: number;
+  inProgress: boolean;
+  percentage: number;
+  estimatedTimeRemaining: number | null;
+  startTime: string | null;
+  lastUpdateTime: string | null;
+  currentCount: number;
+}
+
 /**
  * Search for minerals in the RRUFF database
  * @param params Search parameters
@@ -184,6 +195,31 @@ export async function searchRruffByKeyword(
  * @param type Optional spectra type filter
  * @returns Spectra data
  */
+/**
+ * Get current import progress information
+ * @returns Import progress status
+ */
+export async function getImportProgress(): Promise<ImportProgress> {
+  try {
+    const response = await fetch('/api/rruff/import-progress', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || `${response.status}: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting import progress:', error);
+    throw error;
+  }
+}
+
 export async function getMineralSpectra(
   mineralId: number,
   type?: string
