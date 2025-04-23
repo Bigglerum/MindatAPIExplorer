@@ -11,7 +11,7 @@ import { rruffMinerals, rruffDataImportLogs } from '../shared/rruff-schema';
 import { eq, sql } from 'drizzle-orm';
 
 // Path to the CSV file
-const MINERALS_CSV_PATH = path.join(process.cwd(), 'attached_assets', 'RRUFF_Export_20250423_072811.csv');
+const MINERALS_CSV_PATH = '/home/runner/workspace/attached_assets/RRUFF_Export_20250423_072811.csv';
 
 /**
  * Main function to import IMA mineral data from CSV
@@ -76,7 +76,10 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
     let importedCount = 0;
     for (const record of records) {
       try {
-        console.log(`Processing ${record["Mineral Name"]}...`);
+        // Only log every 100 minerals to reduce console output
+        if (importedCount % 100 === 0) {
+          console.log(`Processing mineral ${importedCount + 1} of ${records.length}: ${record["Mineral Name"]}...`);
+        }
         
         // Extract elements from chemical formulas (using the plain version)
         const chemicalFormula = record["IMA Chemistry (plain)"] || record["RRUFF Chemistry (plain)"] || '';
@@ -116,11 +119,11 @@ async function importMineralsFromCsv(csvPath: string = MINERALS_CSV_PATH) {
         }
         
         // Parse year if available
-        let yearPublished = null;
+        let yearPublished: number | null = null;
         if (record["Year First Published"]) {
           const yearMatch = record["Year First Published"].match(/\d{4}/);
           if (yearMatch) {
-            yearPublished = parseInt(yearMatch[0]);
+            yearPublished = parseInt(yearMatch[0], 10);
           }
         }
         
