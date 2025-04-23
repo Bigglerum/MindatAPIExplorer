@@ -98,22 +98,25 @@ export function registerRruffRoutes(app: any) {
         sortOrder = 'asc'
       } = req.query;
       
+      console.log('Search request:', { name, elements, crystalSystem, page, limit });
+      
       const offset = (Number(page) - 1) * Number(limit);
       
       // Build query conditions
       const conditions = [];
       
       if (name) {
+        // Use case-insensitive search with ilike
         conditions.push(ilike(rruffMinerals.mineralName, `%${name}%`));
       }
       
-      if (crystalSystem) {
-        conditions.push(eq(rruffMinerals.crystalSystem, crystalSystem as string));
+      if (crystalSystem && crystalSystem !== 'any') {
+        // Use case-insensitive search for crystal system
+        conditions.push(ilike(rruffMinerals.crystalSystem, `%${crystalSystem}%`));
       }
       
       if (elements) {
-        // This is a simplified approach - actual implementation would need
-        // a more complex query or post-processing to filter by element composition
+        // This is a simplified approach for element composition search
         const elementList = (elements as string).split(',');
         elementList.forEach(element => {
           conditions.push(sql`${rruffMinerals.elementComposition}::text ILIKE ${'%' + element.trim() + '%'}`);
@@ -142,6 +145,7 @@ export function registerRruffRoutes(app: any) {
       }
       
       const minerals = await query;
+      console.log(`Found ${minerals.length} minerals matching the criteria`);
       
       // Count total matching records for pagination
       const countQuery = db.select({ count: sql<number>`count(*)` })
@@ -173,6 +177,7 @@ export function registerRruffRoutes(app: any) {
   app.get('/api/rruff/minerals/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      console.log(`Fetching mineral with ID: ${id}`);
       
       // Get the mineral data
       const [mineral] = await db.select()
@@ -184,12 +189,35 @@ export function registerRruffRoutes(app: any) {
         return res.status(404).json({ error: 'Mineral not found' });
       }
       
+      console.log(`Found mineral: ${mineral.mineralName}`);
+      
+      // Update the mineral object to use camelCase for frontend compatibility
+      const mineralForClient = {
+        id: mineral.id,
+        mineralName: mineral.mineralName,
+        rruffId: mineral.rruffId,
+        chemicalFormula: mineral.chemicalFormula,
+        imaStatus: mineral.imaStatus,
+        crystalSystem: mineral.crystalSystem,
+        crystalClass: mineral.crystalClass,
+        spaceGroup: mineral.spaceGroup,
+        unitCell: mineral.unitCell,
+        color: mineral.color,
+        density: mineral.density,
+        hardness: mineral.hardness,
+        elementComposition: mineral.elementComposition,
+        yearFirstPublished: mineral.yearFirstPublished,
+        comments: mineral.comments,
+        url: mineral.url,
+        isActive: mineral.isActive
+      };
+      
       // Get related spectra
       const spectra = await db.select()
         .from(rruffSpectra)
         .where(eq(rruffSpectra.mineralId, mineral.id));
       
-      return res.json({ mineral, spectra });
+      return res.json({ mineral: mineralForClient, spectra });
     } catch (error) {
       console.error(`Error fetching mineral with ID ${req.params.id}:`, error);
       return res.status(500).json({ error: 'Internal server error' });
