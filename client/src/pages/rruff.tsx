@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "../components/layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -8,8 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Search, Database, Filter, ExternalLink, AlertCircle, Loader2 } from "lucide-react";
-import { searchRruffMinerals, searchRruffByKeyword, getRruffMineralById, RruffMineral } from "../lib/rruff-service";
+import { Search, Database, Filter, ExternalLink, AlertCircle, Loader2, Clock } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { 
+  searchRruffMinerals, 
+  searchRruffByKeyword, 
+  getRruffMineralById, 
+  getImportProgress,
+  RruffMineral, 
+  ImportProgress 
+} from "../lib/rruff-service";
 
 export default function RruffPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,6 +27,28 @@ export default function RruffPage() {
   const [selectedMineral, setSelectedMineral] = useState<RruffMineral | null>(null);
   const [loading, setLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
+  const [importProgress, setImportProgress] = useState<ImportProgress | null>(null);
+  // Load import progress on component mount
+  useEffect(() => {
+    // Function to fetch import progress
+    const fetchImportProgress = async () => {
+      try {
+        const progress = await getImportProgress();
+        setImportProgress(progress);
+      } catch (error) {
+        console.error("Error fetching import progress:", error);
+      }
+    };
+    
+    // Initial fetch of import progress
+    fetchImportProgress();
+    
+    // Set up polling every 5 seconds
+    const intervalId = setInterval(fetchImportProgress, 5000);
+    
+    // Clean up on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   const handleSearch = async () => {
     if (!searchTerm && !elements && (!crystalSystem || crystalSystem === "any")) {
@@ -105,19 +135,45 @@ export default function RruffPage() {
           the RRUFF Project's IMA mineral list. Search for minerals by name, crystal system, or element composition.
         </p>
         
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6 flex items-start">
-          <div className="text-blue-500 mr-3 mt-0.5">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
-          <div>
-            <h3 className="text-blue-800 font-medium">Database Loading in Progress</h3>
-            <p className="text-blue-700 text-sm">
-              The full mineral database is currently being populated in the background. Common minerals 
-              like quartz, calcite, and actinolite should be available now. If you don't find a specific 
-              mineral, please try again in a few minutes.
+        {importProgress && (
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+            <div className="flex items-start mb-3">
+              <div className="text-blue-500 mr-3 mt-0.5">
+                {importProgress.inProgress ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Database className="h-5 w-5" />
+                )}
+              </div>
+              <div>
+                <h3 className="text-blue-800 font-medium">
+                  {importProgress.inProgress 
+                    ? "Database Import in Progress" 
+                    : "Database Import Status"}
+                </h3>
+                <p className="text-blue-700 text-sm">
+                  {importProgress.currentCount} of {importProgress.total} minerals imported 
+                  ({importProgress.percentage}% complete)
+                </p>
+                {importProgress.estimatedTimeRemaining !== null && importProgress.inProgress && (
+                  <p className="text-blue-600 text-xs mt-1">
+                    <Clock className="h-3 w-3 inline-block mr-1" />
+                    Estimated time remaining: {importProgress.estimatedTimeRemaining} minutes
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            <div className="w-full">
+              <Progress value={importProgress.percentage} className="h-2" />
+            </div>
+            
+            <p className="text-blue-700 text-xs mt-2">
+              Common minerals like quartz, calcite, and fluorite should be available now.
+              If you don't find a specific mineral, please try again in a few minutes.
             </p>
           </div>
-        </div>
+        )}
         
         <Tabs defaultValue="search">
           <TabsList className="grid w-full grid-cols-1">
