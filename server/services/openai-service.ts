@@ -7,6 +7,9 @@ import {
   findTypeLocalityForMineral,
   getMineralsAtLocality 
 } from "../mindat-api";
+import { db } from '../db';
+import { rruffMinerals, rruffSpectra } from '@shared/rruff-schema';
+import { eq, ilike, and, or, sql } from 'drizzle-orm';
 
 // Initialize the OpenAI client with API key from environment variables
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -15,7 +18,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const MODEL = "gpt-4o";
 
 interface SearchParams {
-  type: 'mineral' | 'locality';
+  type: 'mineral' | 'locality' | 'rruff';
   searchTerms: {
     name?: string;
     formula?: string;
@@ -23,6 +26,7 @@ interface SearchParams {
     country?: string;
     region?: string;
     id?: number;
+    crystalSystem?: string;
   };
   action: 'search' | 'details';
 }
@@ -38,22 +42,25 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
     const systemPrompt = {
       role: "system",
       content: "You are a tool that extracts search parameters from user questions about minerals and localities. " +
-      "Given a question about mineralogical data, extract parameters for searching the Mindat API. " +
+      "Given a question about mineralogical data, extract parameters for searching either the Mindat API or the RRUFF database. " +
       "Response format must be valid JSON with the following structure:\n" +
       "{\n" +
-      "  \"type\": \"mineral\" or \"locality\",\n" +
+      "  \"type\": \"mineral\" or \"locality\" or \"rruff\",\n" +
       "  \"searchTerms\": {\n" +
       "    \"name\": optional string,\n" +
       "    \"formula\": optional string,\n" +
       "    \"elements\": optional array of strings,\n" +
       "    \"country\": optional string,\n" +
       "    \"region\": optional string,\n" +
-      "    \"id\": optional number\n" +
+      "    \"id\": optional number,\n" +
+      "    \"crystalSystem\": optional string\n" +
       "  },\n" +
       "  \"action\": \"search\" or \"details\"\n" +
       "}\n" +
       "If the user is asking about a specific mineral, set type to \"mineral\".\n" +
       "If the user is asking about a specific location, set type to \"locality\".\n" +
+      "If the user is specifically asking about spectral or crystallographic RRUFF data, set type to \"rruff\".\n" +
+      "If the user mentions crystal systems (cubic, tetragonal, hexagonal, trigonal, orthorhombic, monoclinic, triclinic), include crystalSystem field.\n" +
       "If the user is requesting details about a specific item, set action to \"details\".\n" +
       "If the user is searching for items that match criteria, set action to \"search\".\n" +
       "Include only fields that are relevant to the search, omit others."
@@ -254,6 +261,17 @@ export async function generateChatResponse(message: string, history: any[] = [])
       }
     }
     
+    // Check for RRUFF database specific questions
+    const rruffRegex = /(?:what|where|how|can you).*(?:rruff|spectral|spectroscopy|crystal system|crystal class).*(?:\?)?/i;
+    if (rruffRegex.test(message)) {
+      console.log('Detected RRUFF database question');
+      const rruffParams = await determineSearchParams(message);
+      
+      if (rruffParams && (rruffParams.type === 'rruff' || rruffParams.searchTerms.crystalSystem)) {
+        return await searchRruffDatabase(message, rruffParams);
+      }
+    }
+
     // First, determine what the user is asking for with the general approach
     const searchParams = await determineSearchParams(message);
     
@@ -440,6 +458,184 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
   } catch (error) {
     console.error("Error generating API info response:", error);
     throw new Error("Failed to generate AI response");
+  }
+}
+
+/**
+ * Search the RRUFF database for mineral information
+ * @param message - User's original question
+ * @param searchParams - Extracted search parameters
+ * @returns AI-generated response with RRUFF data
+ */
+async function searchRruffDatabase(message: string, searchParams: SearchParams): Promise<string> {
+  try {
+    console.log('Searching RRUFF database with params:', searchParams);
+    
+    // Build query conditions
+    const conditions = [];
+    
+    if (searchParams.searchTerms.name) {
+      conditions.push(ilike(rruffMinerals.mineralName, `%${searchParams.searchTerms.name}%`));
+    }
+    
+    if (searchParams.searchTerms.formula) {
+      conditions.push(ilike(rruffMinerals.chemicalFormula, `%${searchParams.searchTerms.formula}%`));
+    }
+    
+    if (searchParams.searchTerms.elements && searchParams.searchTerms.elements.length > 0) {
+      // Handle element filtering
+      searchParams.searchTerms.elements.forEach(element => {
+        conditions.push(sql`${rruffMinerals.elementComposition}::text ILIKE ${'%' + element + '%'}`);
+      });
+    }
+    
+    if (searchParams.searchTerms.crystalSystem) {
+      conditions.push(ilike(rruffMinerals.crystalSystem, `%${searchParams.searchTerms.crystalSystem}%`));
+    }
+    
+    // Execute the database query
+    let minerals;
+    
+    if (conditions.length > 0) {
+      minerals = await db.select()
+        .from(rruffMinerals)
+        .where(and(...conditions))
+        .limit(10);
+    } else {
+      // If no specific conditions, return top minerals
+      minerals = await db.select()
+        .from(rruffMinerals)
+        .limit(10);
+    }
+    
+    if (!minerals || minerals.length === 0) {
+      return "I couldn't find any minerals in the RRUFF database matching your criteria. The RRUFF database may not have this information, or there might be an alternative spelling.";
+    }
+    
+    // If we're looking for details about a specific mineral
+    if (searchParams.action === 'details' && searchParams.searchTerms.name && minerals.length > 0) {
+      // Find the closest match for the mineral name
+      const closestMatch = minerals.find(m => 
+        m.mineralName.toLowerCase() === searchParams.searchTerms.name?.toLowerCase()
+      ) || minerals[0];
+      
+      // Get spectra for this mineral
+      const spectra = await db.select()
+        .from(rruffSpectra)
+        .where(eq(rruffSpectra.mineralId, closestMatch.id));
+      
+      // Enhanced mineral data with RRUFF information
+      return await generateRruffMineralResponse(message, closestMatch, spectra);
+    }
+    
+    // For search results, generate a summary response
+    return await generateRruffSearchResponse(message, minerals);
+  } catch (error) {
+    console.error("Error searching RRUFF database:", error);
+    return "I encountered an error while searching the RRUFF database. Please try again with a more specific query.";
+  }
+}
+
+/**
+ * Generate a detailed response for a specific mineral from RRUFF data
+ */
+async function generateRruffMineralResponse(message: string, mineral: any, spectra: any[]): Promise<string> {
+  // Create a system prompt for crafting mineral details
+  const systemPrompt = {
+    role: "system",
+    content: "You are a mineralogist specializing in spectroscopy and crystallography. " +
+    "Create a detailed, informative response about this mineral using the RRUFF database information provided. " +
+    "Format the response nicely with proper headers, emphasis, and structure. " +
+    "Focus on crystallographic data and any spectroscopic information. " +
+    "If the mineral has spectral data available, highlight this fact. " +
+    "Be scientific but accessible in your explanation."
+  };
+  
+  // Create a detailed description of the mineral and its spectra
+  let mineralDetails = `
+## ${mineral.mineralName}
+
+**Chemical Formula**: ${mineral.chemicalFormula || 'Not specified'}
+**Crystal System**: ${mineral.crystalSystem || 'Not specified'}
+**Crystal Class**: ${mineral.crystalClass || 'Not specified'}
+**Space Group**: ${mineral.spaceGroup || 'Not specified'}
+**Color**: ${mineral.color || 'Not specified'}
+**Density**: ${mineral.density || 'Not specified'}
+**Hardness**: ${mineral.hardness || 'Not specified'}
+**Year First Published**: ${mineral.yearFirstPublished || 'Not specified'}
+
+### Unit Cell Parameters
+${mineral.unitCell ? JSON.stringify(mineral.unitCell, null, 2) : 'No unit cell data available'}
+
+### Spectral Data
+${spectra.length > 0 ? 
+  `This mineral has ${spectra.length} spectra available in the RRUFF database:\n` + 
+  spectra.map(s => `- ${s.spectraType} spectrum (Sample ID: ${s.sampleId}, Orientation: ${s.orientation || 'Not specified'}, Wavelength: ${s.wavelength || 'Not specified'})`).join('\n')
+  : 
+  'No spectral data available in the RRUFF database for this mineral.'}
+
+### Elements
+${mineral.elementComposition ? 'Contains: ' + mineral.elementComposition.join(', ') : 'Element composition not specified'}
+`;
+
+  try {
+    // Make the request to OpenAI
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: systemPrompt.content },
+        { role: "user", content: `Question: ${message}\n\nRRUFF Database Information:\n${mineralDetails}` }
+      ],
+      temperature: 0.7,
+      max_tokens: 600,
+    });
+    
+    return completion.choices[0].message.content || "I couldn't generate a detailed response about this mineral.";
+  } catch (error) {
+    console.error("Error generating RRUFF mineral response:", error);
+    return mineralDetails; // Fallback to the raw data if AI generation fails
+  }
+}
+
+/**
+ * Generate a response summarizing search results from RRUFF
+ */
+async function generateRruffSearchResponse(message: string, minerals: any[]): Promise<string> {
+  // Create a system prompt for search results
+  const systemPrompt = {
+    role: "system",
+    content: "You are a mineralogist specializing in crystallography. " +
+    "Create a response summarizing the mineral search results from the RRUFF database. " +
+    "Format the response as a well-structured summary with a table of the minerals found. " +
+    "Focus on explaining the crystal systems and properties that are common among the results. " +
+    "Be scientific but accessible."
+  };
+  
+  // Create a table of search results
+  let mineralTable = "| Mineral | Formula | Crystal System | Class |\n|---------|---------|---------------|-------|\n";
+  
+  minerals.forEach(m => {
+    mineralTable += `| ${m.mineralName} | ${m.chemicalFormula || 'N/A'} | ${m.crystalSystem || 'N/A'} | ${m.crystalClass || 'N/A'} |\n`;
+  });
+  
+  try {
+    // Make the request to OpenAI
+    const completion = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: systemPrompt.content },
+        { role: "user", content: `Question: ${message}\n\nRRUFF Search Results (${minerals.length} minerals found):\n${mineralTable}` }
+      ],
+      temperature: 0.7,
+      max_tokens: 600,
+    });
+    
+    return completion.choices[0].message.content || "I couldn't generate a summary of the search results.";
+  } catch (error) {
+    console.error("Error generating RRUFF search response:", error);
+    
+    // Fallback to basic response if AI generation fails
+    return `I found ${minerals.length} minerals in the RRUFF database that match your search criteria:\n\n${mineralTable}`;
   }
 }
 
