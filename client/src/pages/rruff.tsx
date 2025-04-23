@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Search, Database, Download } from "lucide-react";
+import { Search, Database, Filter, ExternalLink } from "lucide-react";
 
-// Types for RRUFF minerals
+// Types for IMA minerals
 interface UnitCell {
   a?: number;
   b?: number;
@@ -18,31 +18,27 @@ interface UnitCell {
   alpha?: number;
   beta?: number;
   gamma?: number;
+  z?: number;
+  volume?: number;
 }
 
 interface RruffMineral {
   id: number;
+  rruffId: string;
   mineralName: string;
   chemicalFormula?: string;
+  imaStatus?: string;
   crystalSystem?: string;
   crystalClass?: string;
   spaceGroup?: string;
   unitCell?: UnitCell;
   color?: string;
-  density?: number;
+  density?: string;
   hardness?: string;
   yearFirstPublished?: number;
   elementComposition?: string[];
-  spectra?: RruffSpectrum[];
-}
-
-interface RruffSpectrum {
-  id: number;
-  mineralId: number;
-  sampleId: string;
-  spectraType: string;
-  orientation?: string;
-  wavelength?: string;
+  comments?: string;
+  url?: string;
 }
 
 export default function RruffPage() {
@@ -80,15 +76,7 @@ export default function RruffPage() {
       if (!response.ok) throw new Error("Failed to fetch mineral details");
       
       const data = await response.json();
-      
-      // Also fetch spectra if available
-      const spectraResponse = await fetch(`/api/rruff/minerals/${mineralId}/spectra`);
-      if (spectraResponse.ok) {
-        const spectraData = await spectraResponse.json();
-        setSelectedMineral({ ...data.mineral, spectra: spectraData.spectra || [] });
-      } else {
-        setSelectedMineral({ ...data.mineral, spectra: [] });
-      }
+      setSelectedMineral(data.mineral);
     } catch (error) {
       console.error("Error fetching mineral details:", error);
     } finally {
@@ -101,26 +89,25 @@ export default function RruffPage() {
       <div className="container py-6">
         <div className="flex items-center mb-6">
           <Database className="mr-2 h-6 w-6" />
-          <h1 className="text-3xl font-bold">RRUFF Database Explorer</h1>
+          <h1 className="text-3xl font-bold">IMA Minerals Database</h1>
         </div>
         
         <p className="text-muted-foreground mb-6">
-          The RRUFF Project is a database of spectral data (Raman, infrared, and XRD) for minerals.
-          This tool allows you to search and explore crystallographic and spectral data from the RRUFF database.
+          This database contains IMA-approved minerals and their properties. Data is sourced from 
+          the RRUFF Project's IMA mineral list. Search for minerals by name or crystal system.
         </p>
         
         <Tabs defaultValue="search">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-1">
             <TabsTrigger value="search">Search Minerals</TabsTrigger>
-            <TabsTrigger value="spectra">Spectral Data</TabsTrigger>
           </TabsList>
           
           <TabsContent value="search" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Search RRUFF Database</CardTitle>
+                <CardTitle>Search IMA Minerals</CardTitle>
                 <CardDescription>
-                  Search for minerals by name, formula, or crystal system
+                  Search for IMA-approved minerals by name or crystal system
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -305,32 +292,24 @@ export default function RruffPage() {
                         <Separator />
                         
                         <div>
-                          <h4 className="font-medium mb-2">Spectral Data</h4>
-                          {selectedMineral.spectra && selectedMineral.spectra.length > 0 ? (
-                            <div className="space-y-2">
-                              {selectedMineral.spectra.map((spectrum, idx) => (
-                                <div 
-                                  key={idx}
-                                  className="p-2 border rounded-md text-sm"
-                                >
-                                  <p>Type: {spectrum.spectraType}</p>
-                                  <p>Sample ID: {spectrum.sampleId}</p>
-                                  {spectrum.orientation && <p>Orientation: {spectrum.orientation}</p>}
-                                  {spectrum.wavelength && <p>Wavelength: {spectrum.wavelength}</p>}
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm" 
-                                    className="mt-2"
-                                    onClick={() => window.open(`/api/rruff/spectra/${spectrum.id}/download`, '_blank')}
-                                  >
-                                    <Download className="h-3 w-3 mr-1" />
-                                    Download
-                                  </Button>
-                                </div>
-                              ))}
+                          <h4 className="font-medium mb-2">RRUFF Database Reference</h4>
+                          {selectedMineral.url ? (
+                            <div className="mt-2">
+                              <Button 
+                                variant="outline"
+                                className="w-full justify-between"
+                                onClick={() => window.open(selectedMineral.url, '_blank')}
+                              >
+                                <span>View on RRUFF.info</span>
+                                <ExternalLink className="h-4 w-4 ml-2" />
+                              </Button>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Visit the RRUFF project website for additional data on this mineral, 
+                                including spectral information, references, and related samples.
+                              </p>
                             </div>
                           ) : (
-                            <p className="text-muted-foreground">No spectral data available</p>
+                            <p className="text-muted-foreground">No RRUFF reference available</p>
                           )}
                         </div>
                       </div>
@@ -343,24 +322,6 @@ export default function RruffPage() {
                 </CardContent>
               </Card>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="spectra">
-            <Card>
-              <CardHeader>
-                <CardTitle>Spectral Data</CardTitle>
-                <CardDescription>
-                  Search for and visualize spectral data from the RRUFF database
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    Coming soon: Advanced spectral search and visualization features for RRUFF data
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
         </Tabs>
       </div>
