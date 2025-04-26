@@ -72,12 +72,14 @@ export default function MineralReference() {
         </div>
 
         <Tabs defaultValue="crystal-classes" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-2">
-            <TabsTrigger value="crystal-classes" className="text-xs sm:text-sm">Crystal Classes</TabsTrigger>
-            <TabsTrigger value="space-groups" className="text-xs sm:text-sm">Space Groups</TabsTrigger>
-            <TabsTrigger value="dana" className="text-xs sm:text-sm">Dana Class</TabsTrigger>
-            <TabsTrigger value="strunz" className="text-xs sm:text-sm">Strunz Class</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto pb-2">
+            <TabsList className="grid w-full min-w-[600px] grid-cols-4 mb-2">
+              <TabsTrigger value="crystal-classes" className="text-xs sm:text-sm">Crystal Classes</TabsTrigger>
+              <TabsTrigger value="space-groups" className="text-xs sm:text-sm">Space Groups</TabsTrigger>
+              <TabsTrigger value="dana" className="text-xs sm:text-sm">Dana Class</TabsTrigger>
+              <TabsTrigger value="strunz" className="text-xs sm:text-sm">Strunz Class</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="crystal-classes">
             <CrystalClassesTab />
@@ -221,7 +223,7 @@ function CrystalClassesTab() {
         <CardContent>
           <div className="rounded border">
             <ScrollArea className="w-full overflow-auto">
-              <Table>
+              <Table className="min-w-[650px]">
                 <TableCaption>Crystal classes from the Mindat API</TableCaption>
                 <TableHeader>
                   <TableRow>
@@ -490,7 +492,7 @@ function SpaceGroupsTab() {
         <CardContent>
           <div className="rounded border">
             <ScrollArea className="w-full overflow-auto">
-              <Table>
+              <Table className="min-w-[750px]">
                 <TableCaption>Space groups from the Mindat API</TableCaption>
                 <TableHeader>
                   <TableRow>
@@ -747,7 +749,7 @@ function DanaClassificationTab() {
         <CardContent>
           <div className="rounded border">
             <ScrollArea className="w-full overflow-auto">
-              <Table>
+              <Table className="min-w-[650px]">
                 <TableCaption>Dana Classification from the Mindat API</TableCaption>
                 <TableHeader>
                   <TableRow>
@@ -978,7 +980,7 @@ function StrunzClassificationTab() {
         <CardContent>
           <div className="rounded border">
             <ScrollArea className="w-full overflow-auto">
-              <Table>
+              <Table className="min-w-[650px]">
                 <TableCaption>Nickel-Strunz Classification from the Mindat API</TableCaption>
                 <TableHeader>
                   <TableRow>
