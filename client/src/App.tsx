@@ -19,6 +19,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/explorer" component={Explorer} />
+      <Route path="/additional-mapping" component={MineralReference} />
       <Route path="/knowledge-base" component={KnowledgeBase} />
       <Route path="/saved-requests" component={SavedRequests} />
       <Route path="/search" component={Search} />
