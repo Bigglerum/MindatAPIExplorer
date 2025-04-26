@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiStatusIndicator } from "@/components/ui/api-status-indicator";
+import { MineralSpeciesSearch } from "@/components/mineral-species-search";
 import { 
   getCrystalClasses, 
   getSpaceGroups,
@@ -70,12 +71,17 @@ export default function MineralReference() {
         </div>
         
         <Tabs defaultValue="crystal-classes">
-          <TabsList className="mb-4">
+          <TabsList className="mb-4 flex flex-wrap">
+            <TabsTrigger value="species">Mineral Species</TabsTrigger>
             <TabsTrigger value="crystal-classes">Crystal Classes</TabsTrigger>
             <TabsTrigger value="space-groups">Space Groups</TabsTrigger>
             <TabsTrigger value="dana">Dana Classification</TabsTrigger>
             <TabsTrigger value="strunz">Strunz Classification</TabsTrigger>
           </TabsList>
+          
+          <TabsContent value="species">
+            <MineralSpeciesTab />
+          </TabsContent>
           
           <TabsContent value="crystal-classes">
             <CrystalClassesTab />

@@ -41,17 +41,13 @@ export async function proxyApiRequest(
     } else if (path.startsWith('/spacegroups')) {
       adjustedPath = '/spacegroups';
     } 
-    // Handle Dana classification with various formats
-    else if (path.startsWith('/dana/')) {
-      adjustedPath = '/dana'; // Try simplified endpoint first
-    } else if (path.startsWith('/dana-8')) {
-      adjustedPath = '/dana8'; // API sometimes uses dana8 instead of dana-8
+    // Handle Dana classification - keep original paths as they should work
+    else if (path.startsWith('/dana/') || path.startsWith('/dana-8')) {
+      adjustedPath = path; // Keep original path, it should work properly
     } 
-    // Handle Strunz classification with various formats
-    else if (path.startsWith('/strunz/')) {
-      adjustedPath = '/strunz'; // Try simplified endpoint first
-    } else if (path.startsWith('/nickel-strunz-10')) {
-      adjustedPath = '/nickelstrunz10'; // API sometimes uses nickelstrunz10 instead of nickel-strunz-10
+    // Handle Strunz classification - keep original paths as they should work
+    else if (path.startsWith('/strunz/') || path.startsWith('/nickel-strunz-10')) {
+      adjustedPath = path; // Keep original path, it should work properly
     }
     
     // Build the URL with base Mindat API endpoint
