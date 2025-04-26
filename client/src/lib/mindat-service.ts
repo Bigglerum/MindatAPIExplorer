@@ -192,7 +192,14 @@ export async function getMineralById(id: number) {
       parameters: {}
     });
 
-    return await response.json();
+    const result = await response.json();
+    
+    // Extract data from the nested response structure
+    if (result?.data) {
+      return result.data;
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
   } catch (error) {
     console.error(`Error getting mineral #${id}:`, error);
     throw error;
@@ -207,12 +214,19 @@ export async function getMineralById(id: number) {
 export async function getLocalityById(id: number) {
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: `/localities/${id}`,
+      path: `/localities/${id}/`,
       method: 'GET',
       parameters: {}
     });
 
-    return await response.json();
+    const result = await response.json();
+    
+    // Extract data from the nested response structure
+    if (result?.data) {
+      return result.data;
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
   } catch (error) {
     console.error(`Error getting locality #${id}:`, error);
     throw error;
