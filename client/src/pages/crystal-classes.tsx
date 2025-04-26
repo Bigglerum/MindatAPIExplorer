@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/dialog";
 
 const CrystalSystemOptions = [
-  { value: "", label: "All Crystal Systems" },
+  { value: "all", label: "All Crystal Systems" },
   { value: "Amorphous", label: "Amorphous" },
   { value: "Hexagonal", label: "Hexagonal" },
   { value: "Icosahedral", label: "Icosahedral" },
@@ -57,7 +57,7 @@ const CrystalSystemOptions = [
 ];
 
 export default function CrystalClasses() {
-  const [system, setSystem] = useState("");
+  const [system, setSystem] = useState("all");
   const [symbol, setSymbol] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 25;
@@ -67,7 +67,12 @@ export default function CrystalClasses() {
   // Query to fetch crystal classes list
   const { data, isLoading, error } = useQuery({
     queryKey: ['crystalClasses', system, symbol, page, pageSize],
-    queryFn: () => getCrystalClasses({ system, symbol, page, pageSize }),
+    queryFn: () => getCrystalClasses({ 
+      system: system === 'all' ? '' : system, 
+      symbol, 
+      page, 
+      pageSize 
+    }),
   });
   
   // Query to fetch details of a selected crystal class
