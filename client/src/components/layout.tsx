@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3, Book, Menu, X } from "lucide-react";
+import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3, Book, Menu, X, Map } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/explorer", label: "API Explorer", icon: Code },
+  { path: "/mineral-reference", label: "Additional Mapping", icon: Map },
   { path: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
   { path: "/saved-requests", label: "Saved Requests", icon: Newspaper },
   { path: "/search", label: "Search", icon: Search },
   { path: "/rruff", label: "RRUFF Database", icon: Database },
   { path: "/crystal-classes", label: "Crystal Classes", icon: Grid3X3 },
-  { path: "/mineral-reference", label: "Reference Data", icon: Book },
 ];
 
 interface LayoutProps {
