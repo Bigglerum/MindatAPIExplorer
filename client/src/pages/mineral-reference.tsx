@@ -65,11 +65,11 @@ export default function MineralReference() {
       </div>
 
       <Tabs defaultValue="crystal-classes" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="crystal-classes">Crystal Classes</TabsTrigger>
-          <TabsTrigger value="space-groups">Space Groups</TabsTrigger>
-          <TabsTrigger value="dana">Dana</TabsTrigger>
-          <TabsTrigger value="strunz">Strunz</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-2">
+          <TabsTrigger value="crystal-classes" className="text-xs sm:text-sm">Crystal Classes</TabsTrigger>
+          <TabsTrigger value="space-groups" className="text-xs sm:text-sm">Space Groups</TabsTrigger>
+          <TabsTrigger value="dana" className="text-xs sm:text-sm">Dana Class</TabsTrigger>
+          <TabsTrigger value="strunz" className="text-xs sm:text-sm">Strunz Class</TabsTrigger>
         </TabsList>
         
         <TabsContent value="crystal-classes">
