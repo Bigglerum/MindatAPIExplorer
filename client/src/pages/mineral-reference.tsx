@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
 import { 
   Card, 
   CardContent, 
@@ -53,7 +53,12 @@ export default function MineralReference() {
   const [activeTab, setActiveTab] = useState("crystal-classes");
   
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 relative">
+      {/* Chat Bubble positioned at bottom right */}
+      <a href="/knowledge-base" className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all">
+        <MessageCircle className="h-6 w-6" />
+      </a>
+      
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Mineral Reference Data</h1>
