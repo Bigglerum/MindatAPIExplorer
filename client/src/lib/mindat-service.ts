@@ -535,7 +535,7 @@ export async function getDanaClassification(params?: {
 
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/dana-8/',
+      path: '/dana-8/', // This will be converted to /dana8/ in the API proxy
       method: 'GET',
       parameters: queryParams
     });
@@ -624,7 +624,7 @@ export async function getStrunzClassification(params?: {
 
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/nickel-strunz-10/',
+      path: '/nickel-strunz-10/', // This will be converted to /nickelstrunz10/ in the API proxy
       method: 'GET',
       parameters: queryParams
     });

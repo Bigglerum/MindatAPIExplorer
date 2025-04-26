@@ -11,7 +11,7 @@ export async function proxyApiRequest(
   path: string,
   method: string,
   parameters: Record<string, any>,
-  credentials: any,
+  credentials: string | { username: string, password: string } | any,
   useBasicAuth: boolean = false
 ): Promise<any> {
   try {
@@ -33,6 +33,17 @@ export async function proxyApiRequest(
       adjustedPath = '/geomaterials/';
     } else if (path.startsWith('/localities') && !path.includes('list')) {
       adjustedPath = path.replace('/localities', '/localities');
+    } 
+    
+    // Handle special classification endpoints
+    else if (path.startsWith('/crystalclasses')) {
+      adjustedPath = '/crystalclasses';
+    } else if (path.startsWith('/spacegroups')) {
+      adjustedPath = '/spacegroups';
+    } else if (path.startsWith('/dana-8')) {
+      adjustedPath = '/dana8'; // API sometimes uses dana8 instead of dana-8
+    } else if (path.startsWith('/nickel-strunz-10')) {
+      adjustedPath = '/nickelstrunz10'; // API sometimes uses nickelstrunz10 instead of nickel-strunz-10
     }
     
     // Build the URL with base Mindat API endpoint
@@ -45,6 +56,10 @@ export async function proxyApiRequest(
       'Accept': 'application/json',
       'User-Agent': 'MindatExplorer/1.0'
     };
+    
+    // Variables to track if we need to add API key to URL
+    let apiKeyParam = '';
+    let needsApiKey = false;
     
     // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
@@ -60,7 +75,14 @@ export async function proxyApiRequest(
       // Token authentication is used when we have an API key
       const apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
       headers['Authorization'] = `Token ${apiKey}`;
-      console.log('Using Mindat API key for Token authentication');
+      console.log(`Using Mindat API key for Token authentication (key length: ${apiKey.length})`);
+      
+      // For Mindat API, we also need to add the API key as a query parameter for some endpoints
+      // We'll store this to add after building the final URL with the base path
+      apiKeyParam = `api_key=${apiKey}`;
+      
+      // Check if we already have an api_key parameter
+      needsApiKey = !url.includes('api_key=') && !parameters.api_key;
     }
 
     // Prepare request options
@@ -130,6 +152,11 @@ export async function proxyApiRequest(
       
       // Construct URL with the current base URL
       url = `${baseUrl}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}${queryString}`;
+      
+      // Add API key to URL if needed and if we're using token auth
+      if (needsApiKey && !useBasicAuth) {
+        url += url.includes('?') ? `&${apiKeyParam}` : `?${apiKeyParam}`;
+      }
       
       console.log(`Trying API URL: ${url}`);
       

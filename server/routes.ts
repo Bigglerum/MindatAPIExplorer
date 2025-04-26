@@ -119,7 +119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Path is required' });
       }
       
-      let credentials: string;
+      let credentials: any; // Use 'any' type to support both string and object
       let useBasicAuth: boolean = false;
       
       // Prioritize API key authentication as per Mindat documentation
