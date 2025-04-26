@@ -72,18 +72,13 @@ export default function MineralReference() {
           <ApiStatusIndicator />
         </div>
         
-        <Tabs defaultValue="species">
+        <Tabs defaultValue="crystal-classes">
           <TabsList className="mb-4 flex flex-wrap">
-            <TabsTrigger value="species">Mineral Species</TabsTrigger>
             <TabsTrigger value="crystal-classes">Crystal Classes</TabsTrigger>
             <TabsTrigger value="space-groups">Space Groups</TabsTrigger>
             <TabsTrigger value="dana">Dana Classification</TabsTrigger>
             <TabsTrigger value="strunz">Strunz Classification</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="species">
-            <MineralSpeciesTab />
-          </TabsContent>
           
           <TabsContent value="crystal-classes">
             <CrystalClassesTab />
@@ -230,6 +225,17 @@ function CrystalClassesTab() {
   const pageSize = 25;
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Mineral search and details state
+  const [selectedMineral, setSelectedMineral] = useState<any>(null);
+  const [mineralDialogOpen, setMineralDialogOpen] = useState(false);
+  
+  // Query to fetch details of a selected mineral
+  const { data: mineralDetails, isLoading: isLoadingMineralDetails } = useQuery({
+    queryKey: ['mineral', selectedMineral?.id],
+    queryFn: () => selectedMineral?.id ? getMineralById(selectedMineral.id) : null,
+    enabled: !!selectedMineral?.id && mineralDialogOpen,
+  });
 
   // Crystal system options
   const CrystalSystemOptions = [
@@ -271,7 +277,25 @@ function CrystalClassesTab() {
 
   return (
     <div>
-      {/* Filters */}
+      {/* Mineral Species Search Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Search Mineral Species</CardTitle>
+          <CardDescription>
+            Search for minerals by name, formula, or other attributes
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MineralSpeciesSearch 
+            onSelect={(mineral) => {
+              setSelectedMineral(mineral);
+              setMineralDialogOpen(true);
+            }} 
+          />
+        </CardContent>
+      </Card>
+
+      {/* Crystal Classes Filters */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filter Crystal Classes</CardTitle>
@@ -469,6 +493,88 @@ function CrystalClassesTab() {
           )}
         </DialogContent>
       </Dialog>
+      
+      {/* Mineral Details Dialog */}
+      <Dialog open={mineralDialogOpen} onOpenChange={setMineralDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Mineral Details</DialogTitle>
+            <DialogDescription>
+              Information about the selected mineral species
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isLoadingMineralDetails ? (
+            <div className="flex items-center justify-center p-6">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : mineralDetails ? (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Mineral Name</h4>
+                <p className="text-lg font-bold">{mineralDetails.name}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Chemical Formula</h4>
+                <p className="font-mono">{mineralDetails.formula || mineralDetails.ima_formula || mineralDetails.mindat_formula || 'Not available'}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Crystal System</h4>
+                  <p>{mineralDetails.crystal_system || 'Not specified'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Crystal Class</h4>
+                  <p>{mineralDetails.crystal_class || 'Not specified'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">IMA Status</h4>
+                  <p>{mineralDetails.ima_status || 'Not specified'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Year First Published</h4>
+                  <p>{mineralDetails.year_first_published || 'Not specified'}</p>
+                </div>
+              </div>
+              
+              {mineralDetails.description && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Description</h4>
+                  <p className="text-sm">{mineralDetails.description}</p>
+                </div>
+              )}
+              
+              <div className="pt-4 flex justify-between">
+                <Button 
+                  variant="outline"
+                  onClick={() => setMineralDialogOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    if (selectedMineral?.id) {
+                      window.open(`https://www.mindat.org/min-${selectedMineral.id}.html`, '_blank');
+                    }
+                  }}
+                >
+                  View on Mindat.org
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center p-4 text-muted-foreground">
+              No details available for this mineral.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -482,6 +588,17 @@ function SpaceGroupsTab() {
   const pageSize = 25;
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Mineral search and details state
+  const [selectedMineral, setSelectedMineral] = useState<any>(null);
+  const [mineralDialogOpen, setMineralDialogOpen] = useState(false);
+  
+  // Query to fetch details of a selected mineral
+  const { data: mineralDetails, isLoading: isLoadingMineralDetails } = useQuery({
+    queryKey: ['mineral', selectedMineral?.id],
+    queryFn: () => selectedMineral?.id ? getMineralById(selectedMineral.id) : null,
+    enabled: !!selectedMineral?.id && mineralDialogOpen,
+  });
 
   // Crystal system options
   const CrystalSystemOptions = [
@@ -524,7 +641,25 @@ function SpaceGroupsTab() {
 
   return (
     <div>
-      {/* Filters */}
+      {/* Mineral Species Search Card */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Search Mineral Species</CardTitle>
+          <CardDescription>
+            Search for minerals by name, formula, or other attributes
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <MineralSpeciesSearch 
+            onSelect={(mineral) => {
+              setSelectedMineral(mineral);
+              setMineralDialogOpen(true);
+            }} 
+          />
+        </CardContent>
+      </Card>
+
+      {/* Space Groups Filters */}
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Filter Space Groups</CardTitle>
@@ -746,6 +881,88 @@ function SpaceGroupsTab() {
           ) : (
             <div className="text-center p-4 text-muted-foreground">
               No details available for this space group.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* Mineral Details Dialog */}
+      <Dialog open={mineralDialogOpen} onOpenChange={setMineralDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Mineral Details</DialogTitle>
+            <DialogDescription>
+              Information about the selected mineral species
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isLoadingMineralDetails ? (
+            <div className="flex items-center justify-center p-6">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : mineralDetails ? (
+            <div className="space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Mineral Name</h4>
+                <p className="text-lg font-bold">{mineralDetails.name}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Chemical Formula</h4>
+                <p className="font-mono">{mineralDetails.formula || mineralDetails.ima_formula || mineralDetails.mindat_formula || 'Not available'}</p>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Crystal System</h4>
+                  <p>{mineralDetails.crystal_system || 'Not specified'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Crystal Class</h4>
+                  <p>{mineralDetails.crystal_class || 'Not specified'}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">IMA Status</h4>
+                  <p>{mineralDetails.ima_status || 'Not specified'}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Year First Published</h4>
+                  <p>{mineralDetails.year_first_published || 'Not specified'}</p>
+                </div>
+              </div>
+              
+              {mineralDetails.description && (
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Description</h4>
+                  <p className="text-sm">{mineralDetails.description}</p>
+                </div>
+              )}
+              
+              <div className="pt-4 flex justify-between">
+                <Button 
+                  variant="outline"
+                  onClick={() => setMineralDialogOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    if (selectedMineral?.id) {
+                      window.open(`https://www.mindat.org/min-${selectedMineral.id}.html`, '_blank');
+                    }
+                  }}
+                >
+                  View on Mindat.org
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center p-4 text-muted-foreground">
+              No details available for this mineral.
             </div>
           )}
         </DialogContent>
