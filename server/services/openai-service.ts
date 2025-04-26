@@ -7,9 +7,6 @@ import {
   findTypeLocalityForMineral,
   getMineralsAtLocality 
 } from "../mindat-api";
-import { db } from '../db';
-import { rruffMinerals, rruffSpectra } from '@shared/rruff-schema';
-import { eq, ilike, and, or, sql } from 'drizzle-orm';
 
 // Initialize the OpenAI client with API key from environment variables
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -18,7 +15,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const MODEL = "gpt-4o";
 
 interface SearchParams {
-  type: 'mineral' | 'locality' | 'rruff';
+  type: 'mineral' | 'locality';
   searchTerms: {
     name?: string;
     formula?: string;
@@ -26,7 +23,6 @@ interface SearchParams {
     country?: string;
     region?: string;
     id?: number;
-    crystalSystem?: string;
   };
   action: 'search' | 'details';
 }
@@ -41,27 +37,23 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
     // Create system prompt specifically for extracting search parameters
     const systemPrompt = {
       role: "system",
-      content: "You are a tool that extracts search parameters from user questions about minerals, localities, and crystallography. " +
-      "Given a question about mineralogical data, extract parameters for searching either the Mindat API or the RRUFF database. " +
+      content: "You are a tool that extracts search parameters from user questions about minerals and localities. " +
+      "Given a question about mineralogical data, extract parameters for searching the Mindat API. " +
       "Response format must be valid JSON with the following structure:\n" +
       "{\n" +
-      "  \"type\": \"mineral\" or \"locality\" or \"rruff\",\n" +
+      "  \"type\": \"mineral\" or \"locality\",\n" +
       "  \"searchTerms\": {\n" +
       "    \"name\": optional string,\n" +
       "    \"formula\": optional string,\n" +
       "    \"elements\": optional array of strings,\n" +
       "    \"country\": optional string,\n" +
       "    \"region\": optional string,\n" +
-      "    \"id\": optional number,\n" +
-      "    \"crystalSystem\": optional string\n" +
+      "    \"id\": optional number\n" +
       "  },\n" +
       "  \"action\": \"search\" or \"details\"\n" +
       "}\n" +
       "If the user is asking about a specific mineral, set type to \"mineral\".\n" +
       "If the user is asking about a specific location, set type to \"locality\".\n" +
-      "If the user is specifically asking about spectral data, crystallographic data, crystal classes, space groups, crystal systems, Dana classification, or Nickel-Strunz classification, set type to \"rruff\".\n" +
-      "If the user mentions crystal systems (cubic/isometric, tetragonal, hexagonal, trigonal, orthorhombic, monoclinic, triclinic), include crystalSystem field.\n" +
-      "Note that 'cubic' and 'isometric' refer to the same crystal system - use 'cubic' for consistency.\n" +
       "If the user is requesting details about a specific item, set action to \"details\".\n" +
       "If the user is searching for items that match criteria, set action to \"search\".\n" +
       "Include only fields that are relevant to the search, omit others."
@@ -262,16 +254,7 @@ export async function generateChatResponse(message: string, history: any[] = [])
       }
     }
     
-    // Check for RRUFF database specific questions or crystal classification systems
-    const rruffRegex = /(?:what|where|how|can you).*(?:rruff|spectral|spectroscopy|crystal system|crystal class|space group|dana|strunz|symmetry|crystallography).*(?:\?)?/i;
-    if (rruffRegex.test(message)) {
-      console.log('Detected RRUFF database or crystallography question');
-      const rruffParams = await determineSearchParams(message);
-      
-      if (rruffParams && (rruffParams.type === 'rruff' || rruffParams.searchTerms.crystalSystem)) {
-        return await searchRruffDatabase(message, rruffParams);
-      }
-    }
+    // No RRUFF database integration in the chatbot
 
     // First, determine what the user is asking for with the general approach
     const searchParams = await determineSearchParams(message);
@@ -589,7 +572,11 @@ ${spectra.length > 0 ?
   'No spectral data available in the RRUFF database for this mineral.'}
 
 ### Elements
-${mineral.elementComposition ? 'Contains: ' + mineral.elementComposition.join(', ') : 'Element composition not specified'}
+${mineral.elementComposition ? 
+  Array.isArray(mineral.elementComposition) 
+    ? 'Contains: ' + mineral.elementComposition.join(', ') 
+    : 'Contains: ' + mineral.elementComposition
+  : 'Element composition not specified'}
 `;
 
   try {
