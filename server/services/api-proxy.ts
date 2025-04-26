@@ -60,6 +60,7 @@ export async function proxyApiRequest(
     // Variables to track if we need to add API key to URL
     let apiKeyParam = '';
     let needsApiKey = false;
+    let apiKey = '';
     
     // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
@@ -73,16 +74,15 @@ export async function proxyApiRequest(
       }
     } else {
       // Token authentication is used when we have an API key
-      const apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
+      apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
       headers['Authorization'] = `Token ${apiKey}`;
       console.log(`Using Mindat API key for Token authentication (key length: ${apiKey.length})`);
       
       // For Mindat API, we also need to add the API key as a query parameter for some endpoints
-      // We'll store this to add after building the final URL with the base path
       apiKeyParam = `api_key=${apiKey}`;
       
       // Check if we already have an api_key parameter
-      needsApiKey = !url.includes('api_key=') && !parameters.api_key;
+      needsApiKey = Boolean(!url.includes('api_key=') && !parameters.api_key && apiKey);
     }
 
     // Prepare request options

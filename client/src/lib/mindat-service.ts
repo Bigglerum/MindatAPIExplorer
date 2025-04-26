@@ -364,7 +364,7 @@ export async function getCrystalClasses(params?: {
 
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/crystalclasses/',
+      path: '/crystalclasses/', // Will be handled by the API proxy
       method: 'GET',
       parameters: queryParams
     });
