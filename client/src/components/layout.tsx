@@ -35,21 +35,24 @@ export default function Layout({ children }: LayoutProps) {
           </Link>
           
           {/* Desktop navigation */}
-          <nav className="hidden md:flex items-center space-x-4">
+          <nav className="hidden md:flex items-center space-x-2 overflow-x-auto">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
+              const isAdditionalMapping = item.path === "/additional-mapping";
               return (
                 <Link
                   key={item.path}
                   href={item.path}
                   className={`flex items-center px-3 py-2 rounded-md text-sm transition-colors ${
                     isActive
-                      ? "bg-secondary text-secondary-foreground"
-                      : "hover:bg-secondary/50"
+                      ? "bg-secondary text-secondary-foreground font-medium"
+                      : isAdditionalMapping
+                        ? "bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium border-2 border-blue-300"
+                        : "hover:bg-secondary/50"
                   }`}
                 >
-                  <Icon className="mr-1 h-4 w-4" />
+                  <Icon className={`mr-1 h-4 w-4 ${isAdditionalMapping ? "text-blue-600" : ""}`} />
                   {item.label}
                 </Link>
               );
@@ -71,6 +74,7 @@ export default function Layout({ children }: LayoutProps) {
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location === item.path;
+                  const isAdditionalMapping = item.path === "/additional-mapping";
                   return (
                     <Link
                       key={item.path}
@@ -80,10 +84,12 @@ export default function Layout({ children }: LayoutProps) {
                         "flex items-center rounded-l-md px-4 py-3 font-medium transition-colors",
                         isActive 
                           ? "bg-secondary text-secondary-foreground"
-                          : "hover:bg-muted hover:text-foreground"
+                          : isAdditionalMapping
+                            ? "bg-blue-100 text-blue-800 border-l-4 border-blue-500"
+                            : "hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="mr-3 h-5 w-5" />
+                      <Icon className={`mr-3 h-5 w-5 ${isAdditionalMapping ? "text-blue-600" : ""}`} />
                       {item.label}
                     </Link>
                   );
