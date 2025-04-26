@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { searchMineralsByStrunzClass, getStrunzClassById } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  searchMineralsByStrunzClass 
-} from "@/lib/mindat-service";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
 
 interface StrunzSearchProps {
   onSelect: (mineral: any) => void;
@@ -34,6 +25,18 @@ export function StrunzSearch({ onSelect, selectedStrunzClass = "" }: StrunzSearc
     }),
     enabled: isSearching && searchTerm.length > 2
   });
+
+  // Query to fetch mapped data
+  const { data: mappedData, isLoading: isLoadingMappedData } = useQuery({
+    queryKey: ['mapped-data', mineralSearchResults?.results?.map(mineral => mineral.id)],
+    queryFn: () => {
+      if (!mineralSearchResults || !mineralSearchResults.results) return {};
+      return Promise.all(mineralSearchResults.results.map(mineral => getStrunzClassById(mineral.id)))
+        .then(results => results.reduce((acc, curr) => ({...acc, [curr.id]: curr.strunz_class}), {}));
+    },
+    enabled: !!mineralSearchResults && mineralSearchResults.results.length > 0
+  })
+
 
   // Function to handle mineral search
   const handleSearch = () => {
@@ -59,14 +62,14 @@ export function StrunzSearch({ onSelect, selectedStrunzClass = "" }: StrunzSearc
           Search
         </Button>
       </div>
-      
+
       {isLoadingMineralSearch && (
         <div className="flex items-center space-x-2 py-2">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Searching minerals...</span>
         </div>
       )}
-      
+
       {isSearching && mineralSearchResults && (
         <div className="rounded border overflow-hidden">
           <Table>
@@ -89,9 +92,9 @@ export function StrunzSearch({ onSelect, selectedStrunzClass = "" }: StrunzSearc
                   <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer"
                     onClick={() => onSelect(mineral)}
                   >
-                    <TableCell className="font-medium">{mineral.name}</TableCell>
-                    <TableCell>{mineral.strunz_classification || 'Not specified'}</TableCell>
-                    <TableCell>{mineral.crystal_system || 'Not specified'}</TableCell>
+                    <TableCell>{mineral.name}</TableCell>
+                    <TableCell>{mappedData?.[mineral.id] || mineral.strunz_class || "-"}</TableCell>
+                    <TableCell>{mineral.crystal_system || "-"}</TableCell>
                   </TableRow>
                 ))
               )}

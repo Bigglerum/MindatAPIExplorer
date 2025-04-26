@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { searchMineralsByCrystalSystem, getCrystalClassById } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  searchMineralsByCrystalSystem 
-} from "@/lib/mindat-service";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
 
 interface CrystalSystemSearchProps {
   onSelect: (mineral: any) => void;
@@ -35,12 +26,30 @@ export function CrystalSystemSearch({ onSelect, selectedSystem = "" }: CrystalSy
     enabled: isSearching && searchTerm.length > 2
   });
 
+  const { data: mappedData, isLoading: isLoadingMappedData } = useQuery({
+    queryKey: ['mapped-data', mineralSearchResults?.results?.map(mineral => mineral.id)],
+    queryFn: () => {
+      if (!mineralSearchResults?.results) return {};
+      return Promise.all(mineralSearchResults.results.map(mineral => getCrystalClassById(mineral.id)));
+    },
+    enabled: !!mineralSearchResults?.results
+  })
+
   // Function to handle mineral search
   const handleSearch = () => {
     if (searchTerm.length > 2) {
       setIsSearching(true);
     }
   };
+
+  if (isLoadingMineralSearch || isLoadingMappedData) {
+    return (
+      <div className="flex items-center space-x-2 py-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span className="text-sm">Searching minerals...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -59,14 +68,7 @@ export function CrystalSystemSearch({ onSelect, selectedSystem = "" }: CrystalSy
           Search
         </Button>
       </div>
-      
-      {isLoadingMineralSearch && (
-        <div className="flex items-center space-x-2 py-2">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Searching minerals...</span>
-        </div>
-      )}
-      
+
       {isSearching && mineralSearchResults && (
         <div className="rounded border overflow-hidden">
           <Table>
@@ -89,9 +91,9 @@ export function CrystalSystemSearch({ onSelect, selectedSystem = "" }: CrystalSy
                   <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer"
                     onClick={() => onSelect(mineral)}
                   >
-                    <TableCell className="font-medium">{mineral.name}</TableCell>
-                    <TableCell>{mineral.crystal_system || 'Not specified'}</TableCell>
-                    <TableCell>{mineral.crystal_class || 'Not specified'}</TableCell>
+                    <TableCell>{mineral.name}</TableCell>
+                    <TableCell>{mineral.crystal_system || "-"}</TableCell>
+                    <TableCell>{mappedData?.find(item => item.id === mineral.id)?.crystal_class || mineral.crystal_class || "-"}</TableCell>
                   </TableRow>
                 ))
               )}

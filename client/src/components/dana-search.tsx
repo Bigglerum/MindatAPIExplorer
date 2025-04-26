@@ -1,19 +1,10 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { searchMineralsByDanaClass, getDanaClassById } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { 
-  searchMineralsByDanaClass 
-} from "@/lib/mindat-service";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Loader2 } from "lucide-react";
 
 interface DanaSearchProps {
   onSelect: (mineral: any) => void;
@@ -34,6 +25,13 @@ export function DanaSearch({ onSelect, selectedDanaClass = "" }: DanaSearchProps
     }),
     enabled: isSearching && searchTerm.length > 2
   });
+
+  // Query to fetch mapped data
+  const { data: mappedData, isLoading: isLoadingMappedData } = useQuery({
+    queryKey: ['mapped-data'],
+    queryFn: () => getDanaClassById(),
+    enabled: !!mineralSearchResults
+  })
 
   // Function to handle mineral search
   const handleSearch = () => {
@@ -59,14 +57,14 @@ export function DanaSearch({ onSelect, selectedDanaClass = "" }: DanaSearchProps
           Search
         </Button>
       </div>
-      
+
       {isLoadingMineralSearch && (
         <div className="flex items-center space-x-2 py-2">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Searching minerals...</span>
         </div>
       )}
-      
+
       {isSearching && mineralSearchResults && (
         <div className="rounded border overflow-hidden">
           <Table>
@@ -74,7 +72,7 @@ export function DanaSearch({ onSelect, selectedDanaClass = "" }: DanaSearchProps
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Dana Classification</TableHead>
-                <TableHead>Crystal System</TableHead>
+                <TableHead>Formula</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -89,9 +87,9 @@ export function DanaSearch({ onSelect, selectedDanaClass = "" }: DanaSearchProps
                   <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer"
                     onClick={() => onSelect(mineral)}
                   >
-                    <TableCell className="font-medium">{mineral.name}</TableCell>
-                    <TableCell>{mineral.dana_classification || 'Not specified'}</TableCell>
-                    <TableCell>{mineral.crystal_system || 'Not specified'}</TableCell>
+                    <TableCell>{mineral.name}</TableCell>
+                    <TableCell>{mappedData ? mappedData[mineral.id] || mineral.dana_class || '-' : mineral.dana_class || '-'}</TableCell>
+                    <TableCell>{mineral.formula || mineral.mindat_formula || "-"}</TableCell>
                   </TableRow>
                 ))
               )}
