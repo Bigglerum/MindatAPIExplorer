@@ -107,7 +107,7 @@ function CrystalClassesTab() {
     { value: "Amorphous", label: "Amorphous" },
     { value: "Hexagonal", label: "Hexagonal" },
     { value: "Icosahedral", label: "Icosahedral" },
-    { value: "Isometric", label: "Isometric" },
+    { value: "Isometric", label: "Isometric (Cubic)" },
     { value: "Monoclinic", label: "Monoclinic" },
     { value: "Orthorhombic", label: "Orthorhombic" },
     { value: "Tetragonal", label: "Tetragonal" },
@@ -173,6 +173,7 @@ function CrystalClassesTab() {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">Note: The cubic crystal system is called "Isometric" in crystallography.</p>
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Symbol</label>
