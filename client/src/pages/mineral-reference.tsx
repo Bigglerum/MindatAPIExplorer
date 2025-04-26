@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, MessageCircle } from "lucide-react";
+import Layout from "@/components/layout";
 import { 
   Card, 
   CardContent, 
@@ -53,21 +54,22 @@ export default function MineralReference() {
   const [activeTab, setActiveTab] = useState("crystal-classes");
   
   return (
-    <div className="container mx-auto py-8 relative">
-      {/* Chat Bubble positioned at bottom right */}
-      <a href="/knowledge-base" className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all">
-        <MessageCircle className="h-6 w-6" />
-      </a>
-      
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Mineral Reference Data</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Explore mineral classification systems and crystallographic data from the Mindat database
-          </p>
+    <Layout>
+      <div className="container mx-auto py-8 relative">
+        {/* Chat Bubble positioned at bottom right */}
+        <a href="/knowledge-base" className="fixed bottom-6 right-6 z-50 bg-primary text-primary-foreground p-4 rounded-full shadow-lg hover:bg-primary/90 transition-all">
+          <MessageCircle className="h-6 w-6" />
+        </a>
+        
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Mineral Reference Data</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Explore mineral classification systems and crystallographic data from the Mindat database
+            </p>
+          </div>
+          <ApiStatusIndicator />
         </div>
-        <ApiStatusIndicator />
-      </div>
 
       <Tabs defaultValue="crystal-classes" onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 mb-2">
@@ -94,6 +96,7 @@ export default function MineralReference() {
         </TabsContent>
       </Tabs>
     </div>
+    </Layout>
   );
 }
 
