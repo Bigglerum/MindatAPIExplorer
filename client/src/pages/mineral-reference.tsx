@@ -997,9 +997,9 @@ function StrunzClassificationTab() {
                     }}
                   >
                     <TableCell>{strunzClass.id}</TableCell>
-                    <TableCell className="font-mono">{strunzClass.number}</TableCell>
-                    <TableCell>{strunzClass.primary_classification}</TableCell>
-                    <TableCell>{strunzClass.name}</TableCell>
+                    <TableCell className="font-mono">{strunzClass.code}</TableCell>
+                    <TableCell>{strunzClass.name.split(' - ')[0]}</TableCell>
+                    <TableCell>{strunzClass.name.split(' - ')[1] || strunzClass.name}</TableCell>
                   </TableRow>
                 ))
               )}
