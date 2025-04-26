@@ -7,13 +7,12 @@ import { cn } from "@/lib/utils";
 const menuItems = [
   { path: "/", label: "Home", icon: Home },
   { path: "/explorer", label: "API Explorer", icon: Code },
-  { path: "/additional-mapping", label: "Additional Mapping", icon: Map },
+  { path: "/mineral-reference", label: "Additional Mapping", icon: Map },
   { path: "/knowledge-base", label: "Knowledge Base", icon: BookOpen },
   { path: "/saved-requests", label: "Saved Requests", icon: Newspaper },
   { path: "/search", label: "Search", icon: Search },
   { path: "/rruff", label: "RRUFF Database", icon: Database },
   { path: "/crystal-classes", label: "Crystal Classes", icon: Grid3X3 },
-  { path: "/mineral-reference", label: "Reference Data", icon: Book },
 ];
 
 interface LayoutProps {
@@ -36,20 +35,10 @@ export default function Layout({ children }: LayoutProps) {
           
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-2 overflow-x-auto">
-            <Link 
-              href="/additional-mapping" 
-              className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-4 py-2 rounded-md border-2 border-blue-300 flex items-center"
-            >
-              <Map className="mr-1 h-5 w-5 text-blue-600" />
-              Additional Mapping
-            </Link>
-            
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = location === item.path;
-              const isAdditionalMapping = item.path === "/additional-mapping";
-              // Skip rendering the Additional Mapping item since we added it separately above
-              if (isAdditionalMapping) return null;
+              const isAdditionalMapping = item.path === "/mineral-reference" && item.label === "Additional Mapping";
               
               return (
                 <Link
@@ -58,10 +47,12 @@ export default function Layout({ children }: LayoutProps) {
                   className={`flex items-center px-3 py-2 rounded-md text-sm transition-colors ${
                     isActive
                       ? "bg-secondary text-secondary-foreground font-medium"
-                      : "hover:bg-secondary/50"
+                      : isAdditionalMapping
+                        ? "bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold px-4 py-2 rounded-md border-2 border-blue-300"
+                        : "hover:bg-secondary/50"
                   }`}
                 >
-                  <Icon className="mr-1 h-4 w-4" />
+                  <Icon className={`mr-1 h-4 w-4 ${isAdditionalMapping ? "text-blue-600" : ""}`} />
                   {item.label}
                 </Link>
               );
@@ -80,24 +71,10 @@ export default function Layout({ children }: LayoutProps) {
             </SheetTrigger>
             <SheetContent side="right" className="w-72 md:w-80 pr-0">
               <div className="flex flex-col space-y-1 pt-6 pb-10">
-                <Link
-                  href="/additional-mapping"
-                  onClick={() => setMobileOpen(false)}
-                  className="flex items-center rounded-md px-4 py-3 font-bold bg-blue-100 text-blue-800 border-2 border-blue-300 mb-3"
-                >
-                  <Map className="mr-3 h-6 w-6 text-blue-600" />
-                  Additional Mapping
-                </Link>
-                
-                <div className="border-b border-gray-200 my-2"></div>
-                
                 {menuItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = location === item.path;
-                  const isAdditionalMapping = item.path === "/additional-mapping";
-                  
-                  // Skip rendering the Additional Mapping item since we added it separately above
-                  if (isAdditionalMapping) return null;
+                  const isAdditionalMapping = item.path === "/mineral-reference" && item.label === "Additional Mapping";
                   
                   return (
                     <Link
@@ -108,10 +85,12 @@ export default function Layout({ children }: LayoutProps) {
                         "flex items-center rounded-l-md px-4 py-3 font-medium transition-colors",
                         isActive 
                           ? "bg-secondary text-secondary-foreground"
-                          : "hover:bg-muted hover:text-foreground"
+                          : isAdditionalMapping
+                            ? "bg-blue-100 text-blue-800 font-bold border-2 border-blue-300 rounded-md"
+                            : "hover:bg-muted hover:text-foreground"
                       )}
                     >
-                      <Icon className="mr-3 h-5 w-5" />
+                      <Icon className={`mr-3 h-5 w-5 ${isAdditionalMapping ? "text-blue-600" : ""}`} />
                       {item.label}
                     </Link>
                   );
