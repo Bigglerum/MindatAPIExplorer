@@ -359,6 +359,10 @@ async function generateResponseFromApiData(
       "\nMake tables well-structured with proper headers and aligned data." +
       "\nProvide useful mineral or locality information in a concise, educational manner." +
       "\nUse mineral formulas exactly as they appear in the API, preserving any formatting." +
+      "\n\nWhen answering questions about minerals, ALWAYS include crystallographic information such as:" +
+      "\n- Crystal Class (include class ID number, e.g., 'Crystal Class: Hexagonal-Rhombohedral (class 8)')" +
+      "\n- Space Group (include space group symbol and number, e.g., 'Space Group: P21/c (No. 14)')" +
+      "\n- Classification systems (include Dana and/or Nickel-Strunz codes if available)" +
       "\n\nREMEMBER: You are NOT allowed to use ANY information that isn't explicitly provided in the API data below."
     };
 

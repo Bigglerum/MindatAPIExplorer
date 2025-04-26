@@ -11,6 +11,7 @@ import SavedRequests from "@/pages/saved-requests";
 import Search from "@/pages/search";
 import RruffPage from "@/pages/rruff";
 import CrystalClasses from "@/pages/crystal-classes";
+import MineralReference from "@/pages/mineral-reference";
 import { useEffect } from "react";
 
 function Router() {
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/search" component={Search} />
       <Route path="/rruff" component={RruffPage} />
       <Route path="/crystal-classes" component={CrystalClasses} />
+      <Route path="/mineral-reference" component={MineralReference} />
       <Route component={NotFound} />
     </Switch>
   );

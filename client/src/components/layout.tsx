@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3 } from "lucide-react";
+import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3, Book } from "lucide-react";
 
 const menuItems = [
   { path: "/", label: "Home", icon: Home },
@@ -9,6 +9,7 @@ const menuItems = [
   { path: "/search", label: "Search", icon: Search },
   { path: "/rruff", label: "RRUFF Database", icon: Database },
   { path: "/crystal-classes", label: "Crystal Classes", icon: Grid3X3 },
+  { path: "/mineral-reference", label: "Reference Data", icon: Book },
 ];
 
 interface LayoutProps {
