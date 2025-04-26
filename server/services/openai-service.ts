@@ -27,42 +27,42 @@ const CRYSTAL_SYSTEMS = {
   "Trigonal": "Three equal axes inclined at angles other than 90 degrees"
 };
 
-// Crystal Class Mapping with Hermann-Mauguin and Class Name
-// This includes proper mappings for each crystal class ID
+// Crystal Class Mapping - Values directly from Mindat API (crystal_class endpoint)
+// These are the exact values as returned from the API
 const CRYSTAL_CLASSES = {
-  1: "1 - Pedial (Triclinic)",
-  2: "-1 - Pinacoidal (Triclinic)",
-  3: "m - Domatic (Monoclinic)",
-  4: "2/m - Prismatic (Monoclinic)",
-  5: "2/m - Prismatic (Monoclinic)", // Fixed: Liroconite belongs to this class 
-  6: "mmm - Orthorhombic-Dipyramidal",
-  7: "222 - Orthorhombic-Disphenoidal",
-  8: "mm2 - Orthorhombic-Pyramidal",
-  9: "4 - Tetragonal-Pyramidal",
-  10: "-4 - Tetragonal-Disphenoidal",
-  11: "4/m - Tetragonal-Dipyramidal",
-  12: "422 - Tetragonal-Trapezohedral",
-  13: "4mm - Tetragonal-Pyramidal",
-  14: "-42m - Tetragonal-Scalenohedral",
-  15: "4/mmm - Ditetragonal-Dipyramidal",
-  16: "3 - Trigonal-Pyramidal",
-  17: "-3 - Trigonal-Rhombohedral",
-  18: "32 - Trigonal-Trapezohedral",
-  19: "3m - Trigonal-Pyramidal",
-  20: "-3m - Ditrigonal-Scalenohedral",
-  21: "6 - Hexagonal-Pyramidal",
-  22: "-6 - Trigonal-Dipyramidal",
-  23: "6/m - Hexagonal-Dipyramidal",
-  24: "622 - Hexagonal-Trapezohedral",
-  25: "6mm - Hexagonal-Pyramidal",
-  26: "-6m2 - Ditrigonal-Dipyramidal",
-  27: "6/mmm - Dihexagonal-Dipyramidal",
-  28: "23 - Tetartoidal (Cubic)",
-  29: "m-3 - Diploidal (Cubic)",
-  30: "432 - Gyroidal (Cubic)",
-  31: "-43m - Hextetrahedral (Cubic)",
-  32: "m-3m - Hexoctahedral (Cubic)",
-  33: "Icosahedral"
+  1: "Pedial (Triclinic)",           // Symbol: 1
+  2: "Pinacoidal (Triclinic)",       // Symbol: -1
+  3: "Sphenoidal (Monoclinic)",      // Symbol: 2
+  4: "Domatic (Monoclinic)",         // Symbol: m
+  5: "Prismatic (Monoclinic)",       // Symbol: 2/m
+  6: "Rhombic-disphenoidal (Orthorhombic)", // Symbol: 222
+  7: "Rhombic-pyramidal (Orthorhombic)",   // Symbol: mm2
+  8: "Rhombic-dipyramidal (Orthorhombic)", // Symbol: mmm
+  9: "Tetragonal-pyramidal (Tetragonal)",  // Symbol: 4
+  10: "Tetragonal-disphenoidal (Tetragonal)", // Symbol: -4
+  11: "Tetragonal-dipyramidal (Tetragonal)",  // Symbol: 4/m
+  12: "Tetragonal-trapezohedral (Tetragonal)", // Symbol: 422
+  13: "Ditetragonal-pyramidal (Tetragonal)",   // Symbol: 4mm
+  14: "Tetragonal-scalenohedral (Tetragonal)", // Symbol: -42m
+  15: "Ditetragonal-dipyramidal (Tetragonal)", // Symbol: 4/mmm
+  16: "Trigonal-pyramidal (Trigonal)",      // Symbol: 3
+  17: "Rhombohedral (Trigonal)",           // Symbol: -3
+  18: "Trigonal-trapezohedral (Trigonal)",  // Symbol: 32 
+  19: "Ditrigonal-pyramidal (Trigonal)",    // Symbol: 3m
+  20: "Ditrigonal-scalenohedral (Trigonal)", // Symbol: -3m
+  21: "Hexagonal-pyramidal (Hexagonal)",    // Symbol: 6
+  22: "Trigonal-dipyramidal (Hexagonal)",   // Symbol: -6
+  23: "Hexagonal-dipyramidal (Hexagonal)",  // Symbol: 6/m
+  24: "Hexagonal-trapezohedral (Hexagonal)", // Symbol: 622
+  25: "Dihexagonal-pyramidal (Hexagonal)",   // Symbol: 6mm
+  26: "Ditrigonal-dipyramidal (Hexagonal)",  // Symbol: -6m2
+  27: "Dihexagonal-dipyramidal (Hexagonal)", // Symbol: 6/mmm
+  28: "Tetartoidal (Cubic)",                // Symbol: 23
+  29: "Dyakis-dodecahedral (Cubic)",        // Symbol: m-3
+  30: "Gyroidal (Cubic)",                   // Symbol: 432 
+  31: "Hextetrahedral (Cubic)",             // Symbol: -43m
+  32: "Hexoctahedral (Cubic)",              // Symbol: m-3m
+  33: "Icosahedral"                         // Symbol: 235
 };
 
 // Space Group Symbols
@@ -490,31 +490,31 @@ async function generateResponseFromApiData(
       // If we have results for minerals
       if (Array.isArray(apiData.results) && apiData.results.length > 0) {
         // Loop through the results to enhance with mapped data
-        enhancedData.results = apiData.results.map(mineral => {
+        enhancedData.results = apiData.results.map((mineral: any) => {
           const enhanced = { ...mineral };
           
           // Crystal class mapping
           if (mineral.crystal_class_id || mineral.crystal_class) {
-            const classId = mineral.crystal_class_id || parseInt(mineral.crystal_class);
-            if (classId && CRYSTAL_CLASSES[classId]) {
-              enhanced.crystal_class_name = CRYSTAL_CLASSES[classId];
-              enhanced.crystal_class_description = `Crystal Class ${classId}: ${CRYSTAL_CLASSES[classId]}`;
+            const classId = mineral.crystal_class_id || parseInt(String(mineral.crystal_class));
+            if (classId && CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES]) {
+              enhanced.crystal_class_name = CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES];
+              enhanced.crystal_class_description = `Crystal Class ${classId}: ${CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES]}`;
             }
           }
           
           // Crystal system mapping
           if (mineral.crystal_system) {
-            const system = mineral.crystal_system;
-            if (CRYSTAL_SYSTEMS[system]) {
-              enhanced.crystal_system_description = CRYSTAL_SYSTEMS[system];
+            const system = String(mineral.crystal_system);
+            if (system in CRYSTAL_SYSTEMS) {
+              enhanced.crystal_system_description = CRYSTAL_SYSTEMS[system as keyof typeof CRYSTAL_SYSTEMS];
             }
           }
           
           // Space group mapping
           if (mineral.space_group) {
-            const group = mineral.space_group;
-            if (SPACE_GROUP_SYMBOLS[group]) {
-              enhanced.space_group_description = SPACE_GROUP_SYMBOLS[group];
+            const group = String(mineral.space_group);
+            if (group in SPACE_GROUP_SYMBOLS) {
+              enhanced.space_group_description = SPACE_GROUP_SYMBOLS[group as keyof typeof SPACE_GROUP_SYMBOLS];
             }
           }
           
@@ -523,9 +523,9 @@ async function generateResponseFromApiData(
             const danaCode = mineral.dana_code || mineral.dana_classification;
             if (danaCode) {
               // Extract the main Dana class (first number)
-              const mainClass = danaCode.split('.')[0];
-              if (DANA_CLASSIFICATIONS[mainClass]) {
-                enhanced.dana_classification_name = DANA_CLASSIFICATIONS[mainClass];
+              const mainClass = String(danaCode).split('.')[0];
+              if (mainClass in DANA_CLASSIFICATIONS) {
+                enhanced.dana_classification_name = DANA_CLASSIFICATIONS[mainClass as keyof typeof DANA_CLASSIFICATIONS];
               }
             }
           }
@@ -535,9 +535,9 @@ async function generateResponseFromApiData(
             const strunzCode = mineral.strunz_code || mineral.strunz_classification;
             if (strunzCode) {
               // Extract the main Strunz class (first number)
-              const mainClass = strunzCode.split('.')[0];
-              if (STRUNZ_CLASSIFICATIONS[mainClass]) {
-                enhanced.strunz_classification_name = STRUNZ_CLASSIFICATIONS[mainClass];
+              const mainClass = String(strunzCode).split('.')[0];
+              if (mainClass in STRUNZ_CLASSIFICATIONS) {
+                enhanced.strunz_classification_name = STRUNZ_CLASSIFICATIONS[mainClass as keyof typeof STRUNZ_CLASSIFICATIONS];
               }
             }
           }
