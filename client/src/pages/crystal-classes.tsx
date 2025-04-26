@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { 
   CrystalClass, 
   CrystalClassResponse, 
-  getCrystalClasses 
+  getCrystalClasses,
+  getCrystalClassById
 } from '@/lib/mindat-service';
 import {
   Select,
@@ -34,6 +35,13 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ApiStatusIndicator } from '@/components/ui/api-status-indicator';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const CrystalSystemOptions = [
   { value: "", label: "All Crystal Systems" },
@@ -53,11 +61,20 @@ export default function CrystalClasses() {
   const [symbol, setSymbol] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 25;
+  const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Query to fetch crystal classes
+  // Query to fetch crystal classes list
   const { data, isLoading, error } = useQuery({
     queryKey: ['crystalClasses', system, symbol, page, pageSize],
     queryFn: () => getCrystalClasses({ system, symbol, page, pageSize }),
+  });
+  
+  // Query to fetch details of a selected crystal class
+  const { data: classDetails, isLoading: isLoadingDetails } = useQuery({
+    queryKey: ['crystalClass', selectedClassId],
+    queryFn: () => selectedClassId ? getCrystalClassById(selectedClassId) : null,
+    enabled: !!selectedClassId && dialogOpen,
   });
 
   // Check if we can go to the next/previous page
@@ -176,7 +193,13 @@ export default function CrystalClasses() {
                   </TableRow>
                 ) : (
                   data?.results.map((crystalClass: CrystalClass) => (
-                    <TableRow key={crystalClass.id}>
+                    <TableRow key={crystalClass.id} className="hover:bg-muted/50 cursor-pointer" 
+                      onClick={() => {
+                        // Show crystal class details in dialog
+                        setSelectedClassId(crystalClass.id);
+                        setDialogOpen(true);
+                      }}
+                    >
                       <TableCell>{crystalClass.id}</TableCell>
                       <TableCell>{crystalClass.system}</TableCell>
                       <TableCell className="font-mono">{crystalClass.symbol}</TableCell>
@@ -208,6 +231,70 @@ export default function CrystalClasses() {
           </Button>
         </CardFooter>
       </Card>
+
+      {/* Crystal Class Details Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Crystal Class Details</DialogTitle>
+            <DialogDescription>
+              Information about the selected crystal class
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isLoadingDetails ? (
+            <div className="flex items-center justify-center p-6">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : classDetails ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">ID</h4>
+                  <p>{classDetails.id}</p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">System</h4>
+                  <p>{classDetails.system}</p>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Symbol</h4>
+                <p className="font-mono text-lg">{classDetails.symbol}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-muted-foreground">Name</h4>
+                <p className="text-lg">{classDetails.name}</p>
+              </div>
+              
+              <div className="pt-4 flex justify-between">
+                <Button 
+                  variant="outline"
+                  onClick={() => setDialogOpen(false)}
+                >
+                  Close
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={() => {
+                    if (selectedClassId) {
+                      window.open(`https://api.mindat.org/crystalclasses/${selectedClassId}/`, '_blank');
+                    }
+                  }}
+                >
+                  View in API
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center p-4 text-muted-foreground">
+              No details available for this crystal class.
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
