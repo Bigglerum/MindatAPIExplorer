@@ -14,6 +14,164 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const MODEL = "gpt-4o";
 
+// Crystal System Mapping
+const CRYSTAL_SYSTEMS = {
+  "Amorphous": "No crystalline structure",
+  "Hexagonal": "Six-fold symmetry with equal axes in the horizontal plane and a different vertical axis",
+  "Icosahedral": "Twenty-fold symmetry, typically seen in quasicrystals",
+  "Isometric": "Also known as cubic, with three equal axes at right angles",
+  "Monoclinic": "Three unequal axes with one oblique intersection",
+  "Orthorhombic": "Three unequal axes at right angles",
+  "Tetragonal": "Three axes at right angles, two of equal length",
+  "Triclinic": "Three unequal axes with oblique intersections",
+  "Trigonal": "Three equal axes inclined at angles other than 90 degrees"
+};
+
+// Crystal Class Mapping
+const CRYSTAL_CLASSES = {
+  1: "Pedial (Triclinic)",
+  2: "Pinacoidal (Triclinic)",
+  3: "Domatic (Monoclinic)",
+  4: "Prismatic (Monoclinic)",
+  5: "Orthorhombic-Pyramidal",
+  6: "Orthorhombic-Bipyramidal",
+  7: "Orthorhombic-Disphenoidal",
+  8: "Orthorhombic-Dipyramidal",
+  9: "Tetragonal-Pyramidal",
+  10: "Tetragonal-Disphenoidal",
+  11: "Tetragonal-Dipyramidal",
+  12: "Tetragonal-Scalenohedral",
+  13: "Ditetragonal-Pyramidal",
+  14: "Ditetragonal-Dipyramidal",
+  15: "Trigonal-Pyramidal",
+  16: "Trigonal-Rhombohedral",
+  17: "Trigonal-Trapezohedral",
+  18: "Ditrigonal-Pyramidal",
+  19: "Ditrigonal-Scalenohedral",
+  20: "Hexagonal-Pyramidal",
+  21: "Hexagonal-Dipyramidal",
+  22: "Hexagonal-Trapezohedral",
+  23: "Ditrigonal-Dipyramidal",
+  24: "Dihexagonal-Pyramidal",
+  25: "Dihexagonal-Dipyramidal",
+  26: "Tetartoidal (Cubic)",
+  27: "Diploidal (Cubic)",
+  28: "Gyroidal (Cubic)",
+  29: "Hextetrahedral (Cubic)",
+  30: "Hexoctahedral (Cubic)",
+  31: "Hexakisoctahedral (Cubic)",
+  32: "Icosahedral"
+};
+
+// Space Group Symbols
+const SPACE_GROUP_SYMBOLS = {
+  "P1": "Primitive, no symmetry (triclinic)",
+  "P21/c": "Monoclinic with 2-fold screw axis and c-glide plane",
+  "Pnma": "Orthorhombic with n-glide, mirror, and a-glide",
+  "Fm-3m": "Face-centered cubic with highest symmetry",
+  "I41/amd": "Body-centered tetragonal with 4-fold screw axis"
+  // Add more as needed
+};
+
+// Dana Classification
+const DANA_CLASSIFICATIONS = {
+  "1": "Native Elements",
+  "2": "Sulfides",
+  "3": "Sulfosalts",
+  "4": "Simple Oxides",
+  "5": "Oxides Containing Uranium",
+  "6": "Hydroxides and Oxides",
+  "7": "Multiple Oxides",
+  "8": "Multiple Oxides with Nb, Ta, and Ti",
+  "9": "Anhydrous and Hydrated Halides",
+  "10": "Oxyhalides and Hydroxyhalides",
+  "11": "Halide Complexes",
+  "12": "Compound Halides",
+  "13": "Acid Carbonates",
+  "14": "Anhydrous Carbonates",
+  "15": "Hydrated Carbonates",
+  "16": "Carbonates with Hydroxyl or Halogen",
+  "17": "Compound Carbonates",
+  "18": "Anhydrous Nitrates",
+  "19": "Nitrates with Hydroxyl or Halogen",
+  "20": "Compound Nitrates",
+  "21": "Anhydrous Iodates",
+  "22": "Iodates with Hydroxyl or Halogen",
+  "23": "Compound Iodates",
+  "24": "Anhydrous Borates",
+  "25": "Anhydrous Borates with Hydroxyl or Halogen",
+  "26": "Hydrated Borates",
+  "27": "Compound Borates",
+  "28": "Anhydrous Acid Phosphates",
+  "29": "Anhydrous Phosphates",
+  "30": "Hydrated Acid Phosphates",
+  "31": "Hydrated Phosphates",
+  "32": "Anhydrous Phosphates with Hydroxyl or Halogen",
+  "33": "Phosphates with Hydroxyl or Halogen",
+  "34": "Compound Phosphates",
+  "35": "Anhydrous Acid Arsenates",
+  "36": "Anhydrous Arsenates",
+  "37": "Hydrated Acid Arsenates",
+  "38": "Hydrated Arsenates",
+  "39": "Anhydrous Arsenates with Hydroxyl or Halogen",
+  "40": "Arsenates with Hydroxyl or Halogen",
+  "41": "Compound Arsenates",
+  "42": "Anhydrous Acid Vanadates",
+  "43": "Anhydrous Vanadates",
+  "44": "Hydrated Acid Vanadates",
+  "45": "Hydrated Vanadates",
+  "46": "Anhydrous Vanadates with Hydroxyl or Halogen",
+  "47": "Vanadates with Hydroxyl or Halogen",
+  "48": "Compound Vanadates",
+  "49": "Anhydrous Acid Antimonates",
+  "50": "Anhydrous Antimonates",
+  "51": "Hydrated Acid Antimonates",
+  "52": "Anhydrous Molybdates and Tungstates",
+  "53": "Hydrated Molybdates and Tungstates",
+  "54": "Molybdates and Tungstates with Hydroxyl or Halogen",
+  "55": "Compound Molybdates and Tungstates",
+  "56": "Anhydrous Selenites and Tellurites",
+  "57": "Hydrated Selenites and Tellurites",
+  "58": "Selenites and Tellurites with Hydroxyl or Halogen",
+  "59": "Compound Selenites and Tellurites",
+  "60": "Anhydrous Sulfates",
+  "61": "Hydrated Acid Sulfates",
+  "62": "Hydrated Sulfates",
+  "63": "Anhydrous Sulfates with Hydroxyl or Halogen",
+  "64": "Sulfates with Hydroxyl or Halogen",
+  "65": "Compound Sulfates",
+  "66": "Anhydrous Chromates",
+  "67": "Chromates with Hydroxyl or Halogen",
+  "68": "Compound Chromates",
+  "69": "Anhydrous Acid Selenates and Tellurates",
+  "70": "Anhydrous Selenates and Tellurates",
+  "71": "Hydrated Acid Selenates and Tellurates",
+  "72": "Hydrated Selenates and Tellurates",
+  "73": "Selenates and Tellurates with Hydroxyl or Halogen",
+  "74": "Compound Selenates and Tellurates",
+  "75": "Anhydrous Uranyl Sulfates",
+  "76": "Hydrated Uranyl Sulfates",
+  "77": "Uranyl Sulfates with Hydroxyl or Halogen",
+  "78": "Compound Uranyl Sulfates",
+  "79": "Nesosilicates with Insular SiO4 Groups"
+  // Additional Dana classes would be added here
+};
+
+// Strunz Classification
+const STRUNZ_CLASSIFICATIONS = {
+  "1": "Elements",
+  "2": "Sulfides and Sulfosalts",
+  "3": "Halides",
+  "4": "Oxides and Hydroxides",
+  "5": "Carbonates and Nitrates",
+  "6": "Borates",
+  "7": "Sulfates, Chromates, Molybdates, and Tungstates",
+  "8": "Phosphates, Arsenates, and Vanadates",
+  "9": "Silicates",
+  "10": "Organic Compounds"
+  // Additional Strunz classes would be added here
+};
+
 interface SearchParams {
   type: 'mineral' | 'locality';
   searchTerms: {
@@ -324,7 +482,91 @@ async function generateResponseFromApiData(
       context += "No data was found in the Mindat API for this query.";
       return "I couldn't find any information about that in the Mindat database. Could you try a different search term or be more specific?";
     } else {
-      context += "Here's the data from the Mindat API:\n" + JSON.stringify(apiData, null, 2);
+      // Process the API data to enhance with crystal class mappings
+      let enhancedData = apiData;
+      
+      // If we have results for minerals
+      if (Array.isArray(apiData.results) && apiData.results.length > 0) {
+        // Loop through the results to enhance with mapped data
+        enhancedData.results = apiData.results.map(mineral => {
+          const enhanced = { ...mineral };
+          
+          // Crystal class mapping
+          if (mineral.crystal_class_id || mineral.crystal_class) {
+            const classId = mineral.crystal_class_id || parseInt(mineral.crystal_class);
+            if (classId && CRYSTAL_CLASSES[classId]) {
+              enhanced.crystal_class_name = CRYSTAL_CLASSES[classId];
+              enhanced.crystal_class_description = `Crystal Class ${classId}: ${CRYSTAL_CLASSES[classId]}`;
+            }
+          }
+          
+          // Crystal system mapping
+          if (mineral.crystal_system) {
+            const system = mineral.crystal_system;
+            if (CRYSTAL_SYSTEMS[system]) {
+              enhanced.crystal_system_description = CRYSTAL_SYSTEMS[system];
+            }
+          }
+          
+          // Space group mapping
+          if (mineral.space_group) {
+            const group = mineral.space_group;
+            if (SPACE_GROUP_SYMBOLS[group]) {
+              enhanced.space_group_description = SPACE_GROUP_SYMBOLS[group];
+            }
+          }
+          
+          // Dana classification mapping
+          if (mineral.dana_code || mineral.dana_classification) {
+            const danaCode = mineral.dana_code || mineral.dana_classification;
+            if (danaCode) {
+              // Extract the main Dana class (first number)
+              const mainClass = danaCode.split('.')[0];
+              if (DANA_CLASSIFICATIONS[mainClass]) {
+                enhanced.dana_classification_name = DANA_CLASSIFICATIONS[mainClass];
+              }
+            }
+          }
+          
+          // Strunz classification mapping
+          if (mineral.strunz_code || mineral.strunz_classification) {
+            const strunzCode = mineral.strunz_code || mineral.strunz_classification;
+            if (strunzCode) {
+              // Extract the main Strunz class (first number)
+              const mainClass = strunzCode.split('.')[0];
+              if (STRUNZ_CLASSIFICATIONS[mainClass]) {
+                enhanced.strunz_classification_name = STRUNZ_CLASSIFICATIONS[mainClass];
+              }
+            }
+          }
+          
+          return enhanced;
+        });
+      }
+      
+      // Add enhanced mapping information to the API data context
+      context += "Here's the data from the Mindat API (enhanced with crystal class, space group, and classification mappings):\n" + JSON.stringify(enhancedData, null, 2);
+      
+      // Add explicit mappings for reference
+      context += "\n\nCRYSTAL CLASS REFERENCE:\n";
+      for (const [id, name] of Object.entries(CRYSTAL_CLASSES)) {
+        context += `Class ${id}: ${name}\n`;
+      }
+      
+      context += "\n\nCRYSTAL SYSTEM REFERENCE:\n";
+      for (const [system, description] of Object.entries(CRYSTAL_SYSTEMS)) {
+        context += `${system}: ${description}\n`;
+      }
+      
+      context += "\n\nDANA CLASSIFICATION REFERENCE:\n";
+      for (const [id, name] of Object.entries(DANA_CLASSIFICATIONS)) {
+        context += `${id}: ${name}\n`;
+      }
+      
+      context += "\n\nSTRUNZ CLASSIFICATION REFERENCE:\n";
+      for (const [id, name] of Object.entries(STRUNZ_CLASSIFICATIONS)) {
+        context += `${id}: ${name}\n`;
+      }
     }
     
     // Create system prompt for generating the final response
@@ -446,200 +688,6 @@ async function generateApiInfoResponse(message: string, history: any[] = []): Pr
   } catch (error) {
     console.error("Error generating API info response:", error);
     throw new Error("Failed to generate AI response");
-  }
-}
-
-/**
- * Search the RRUFF database for mineral information
- * @param message - User's original question
- * @param searchParams - Extracted search parameters
- * @returns AI-generated response with RRUFF data
- */
-async function searchRruffDatabase(message: string, searchParams: SearchParams): Promise<string> {
-  try {
-    console.log('Searching RRUFF database with params:', searchParams);
-    
-    // Build query conditions
-    const conditions = [];
-    
-    if (searchParams.searchTerms.name) {
-      conditions.push(ilike(rruffMinerals.mineralName, `%${searchParams.searchTerms.name}%`));
-    }
-    
-    if (searchParams.searchTerms.formula) {
-      conditions.push(ilike(rruffMinerals.chemicalFormula, `%${searchParams.searchTerms.formula}%`));
-    }
-    
-    if (searchParams.searchTerms.elements && searchParams.searchTerms.elements.length > 0) {
-      // Handle element filtering
-      searchParams.searchTerms.elements.forEach(element => {
-        // Using a simpler approach for element filtering
-        conditions.push(ilike(sql`${rruffMinerals.elementComposition}::text`, `%${element}%`));
-      });
-    }
-    
-    if (searchParams.searchTerms.crystalSystem) {
-      conditions.push(ilike(rruffMinerals.crystalSystem, `%${searchParams.searchTerms.crystalSystem}%`));
-    }
-    
-    // Execute the database query
-    let minerals;
-    
-    if (conditions.length > 0) {
-      minerals = await db.select()
-        .from(rruffMinerals)
-        .where(and(...conditions))
-        .limit(10);
-    } else {
-      // If no specific conditions, return top minerals
-      minerals = await db.select()
-        .from(rruffMinerals)
-        .limit(10);
-    }
-    
-    if (!minerals || minerals.length === 0) {
-      return "I couldn't find any minerals in the RRUFF database matching your criteria. The RRUFF database may not have this information, or there might be an alternative spelling.";
-    }
-    
-    // If we're looking for details about a specific mineral
-    if (searchParams.action === 'details' && searchParams.searchTerms.name && minerals.length > 0) {
-      // Find the closest match for the mineral name
-      const closestMatch = minerals.find(m => 
-        m.mineralName.toLowerCase() === searchParams.searchTerms.name?.toLowerCase()
-      ) || minerals[0];
-      
-      // Get spectra for this mineral
-      const spectra = await db.select()
-        .from(rruffSpectra)
-        .where(eq(rruffSpectra.mineralId, closestMatch.id));
-      
-      // Enhanced mineral data with RRUFF information
-      return await generateRruffMineralResponse(message, closestMatch, spectra);
-    }
-    
-    // For search results, generate a summary response
-    return await generateRruffSearchResponse(message, minerals);
-  } catch (error) {
-    console.error("Error searching RRUFF database:", error);
-    return "I encountered an error while searching the RRUFF database. Please try again with a more specific query.";
-  }
-}
-
-/**
- * Generate a detailed response for a specific mineral from RRUFF data
- */
-async function generateRruffMineralResponse(message: string, mineral: any, spectra: any[]): Promise<string> {
-  // Create a system prompt for crafting mineral details
-  const systemPrompt = {
-    role: "system",
-    content: "You are a mineralogist specializing in spectroscopy and crystallography, with expertise in crystal classification systems. " +
-    "Create a detailed, informative response about this mineral using the RRUFF database information provided. " +
-    "Format the response nicely with proper headers, emphasis, and structure. " +
-    "Focus on crystallographic data (crystal system, crystal class, space group) and any spectroscopic information. " +
-    "Explain the significance of the crystal system and crystal class when appropriate. " +
-    "If the mineral has spectral data available, highlight this fact. " +
-    "For crystallographic data, note that 'cubic' and 'isometric' are equivalent terms for the same crystal system. " +
-    "Relate crystal systems to symmetry properties where possible. " +
-    "Mention Dana and Nickel-Strunz classification system codes when available. " +
-    "Be scientific but accessible in your explanation using the provided data only."
-  };
-  
-  // Create a detailed description of the mineral and its spectra
-  let mineralDetails = `
-## ${mineral.mineralName}
-
-**Chemical Formula**: ${mineral.chemicalFormula || 'Not specified'}
-**Crystal System**: ${mineral.crystalSystem || 'Not specified'}
-**Crystal Class**: ${mineral.crystalClass || 'Not specified'}
-**Space Group**: ${mineral.spaceGroup || 'Not specified'}
-**Color**: ${mineral.color || 'Not specified'}
-**Density**: ${mineral.density || 'Not specified'}
-**Hardness**: ${mineral.hardness || 'Not specified'}
-**Year First Published**: ${mineral.yearFirstPublished || 'Not specified'}
-
-### Classification Systems
-**Dana Classification**: ${mineral.danaCode || mineral.danaClassification || 'Not specified'}
-**Nickel-Strunz Classification**: ${mineral.strunzCode || mineral.strunzClassification || 'Not specified'}
-
-### Unit Cell Parameters
-${mineral.unitCell ? JSON.stringify(mineral.unitCell, null, 2) : 'No unit cell data available'}
-
-### Spectral Data
-${spectra.length > 0 ? 
-  `This mineral has ${spectra.length} spectra available in the RRUFF database:\n` + 
-  spectra.map(s => `- ${s.spectraType} spectrum (Sample ID: ${s.sampleId}, Orientation: ${s.orientation || 'Not specified'}, Wavelength: ${s.wavelength || 'Not specified'})`).join('\n')
-  : 
-  'No spectral data available in the RRUFF database for this mineral.'}
-
-### Elements
-${mineral.elementComposition ? 
-  Array.isArray(mineral.elementComposition) 
-    ? 'Contains: ' + mineral.elementComposition.join(', ') 
-    : 'Contains: ' + mineral.elementComposition
-  : 'Element composition not specified'}
-`;
-
-  try {
-    // Make the request to OpenAI
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemPrompt.content },
-        { role: "user", content: `Question: ${message}\n\nRRUFF Database Information:\n${mineralDetails}` }
-      ],
-      temperature: 0.7,
-      max_tokens: 600,
-    });
-    
-    return completion.choices[0].message.content || "I couldn't generate a detailed response about this mineral.";
-  } catch (error) {
-    console.error("Error generating RRUFF mineral response:", error);
-    return mineralDetails; // Fallback to the raw data if AI generation fails
-  }
-}
-
-/**
- * Generate a response summarizing search results from RRUFF
- */
-async function generateRruffSearchResponse(message: string, minerals: any[]): Promise<string> {
-  // Create a system prompt for search results
-  const systemPrompt = {
-    role: "system",
-    content: "You are a mineralogist specializing in crystallography and crystal classification systems. " +
-    "Create a response summarizing the mineral search results from the RRUFF database. " +
-    "Format the response as a well-structured summary with a table of the minerals found. " +
-    "Focus on explaining the crystal systems, classes, and classification systems that are common among the results. " +
-    "Note that 'cubic' and 'isometric' refer to the same crystal system. " +
-    "Explain the significance of crystal systems and classes in terms of symmetry when appropriate. " +
-    "Refer to Dana and Nickel-Strunz classification codes when available. " +
-    "Be scientific but accessible in your explanation."
-  };
-  
-  // Create a table of search results
-  let mineralTable = "| Mineral | Formula | Crystal System | Crystal Class | Dana | Strunz |\n|---------|---------|---------------|--------------|------|--------|\n";
-  
-  minerals.forEach(m => {
-    mineralTable += `| ${m.mineralName} | ${m.chemicalFormula || 'N/A'} | ${m.crystalSystem || 'N/A'} | ${m.crystalClass || 'N/A'} | ${m.danaCode || m.danaClassification || 'N/A'} | ${m.strunzCode || m.strunzClassification || 'N/A'} |\n`;
-  });
-  
-  try {
-    // Make the request to OpenAI
-    const completion = await openai.chat.completions.create({
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemPrompt.content },
-        { role: "user", content: `Question: ${message}\n\nRRUFF Search Results (${minerals.length} minerals found):\n${mineralTable}` }
-      ],
-      temperature: 0.7,
-      max_tokens: 600,
-    });
-    
-    return completion.choices[0].message.content || "I couldn't generate a summary of the search results.";
-  } catch (error) {
-    console.error("Error generating RRUFF search response:", error);
-    
-    // Fallback to basic response if AI generation fails
-    return `I found ${minerals.length} minerals in the RRUFF database that match your search criteria:\n\n${mineralTable}`;
   }
 }
 
