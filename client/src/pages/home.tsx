@@ -20,7 +20,7 @@ export default function Home() {
           A self-service application to explore, learn, and generate code for the Mindat API based on Swagger documentation.
         </p>
         
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-5">
           <Button
             size="lg"
             className="bg-primary hover:bg-indigo-700 text-white text-lg px-8"
@@ -44,6 +44,16 @@ export default function Home() {
           >
             Direct Search
           </Button>
+        </div>
+        
+        <div className="flex items-center justify-center mb-6">
+          <a
+            href="/additional-mapping"
+            className="bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-6 rounded-md border-2 border-blue-300 flex items-center text-lg"
+          >
+            <span className="mr-2">Additional Mapping</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-map"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+          </a>
         </div>
       </div>
       
