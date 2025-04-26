@@ -257,6 +257,48 @@ export async function getMineralFormula(name: string): Promise<string | null> {
 }
 
 /**
+ * Search for mineral species in the Mindat database
+ * @param searchTerm The mineral name or partial name to search for
+ * @returns Search results with mineral details
+ */
+export async function searchMineralSpecies(searchTerm: string) {
+  try {
+    // Use the direct mineral search with the 'q' parameter
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: { 
+        q: searchTerm,
+        limit: 25 
+      }
+    });
+    
+    const data = await response.json();
+    
+    // Transform the response to a consistent format
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error searching mineral species:', error);
+    // Return empty result rather than crashing
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+}
+
+/**
  * Get coordinates for a locality by name
  * @param name The name of the locality or ID as a string
  * @returns The coordinates if found
