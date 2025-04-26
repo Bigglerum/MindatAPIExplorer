@@ -36,6 +36,25 @@ export interface CrystalClassResponse {
   results: CrystalClass[];
 }
 
+export interface SpaceGroup {
+  id: number;
+  system: string;
+  setting?: string;
+  symbol_h_m?: string;
+  symbol_hall?: string;
+  symbol_schoenflies?: string;
+  symbol_cctbx?: string;
+  number?: number;
+  name?: string;
+}
+
+export interface SpaceGroupResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SpaceGroup[];
+}
+
 /**
  * Search for minerals in the Mindat database
  * @param params Search parameters
@@ -401,6 +420,261 @@ export async function getCrystalClassById(id: number): Promise<CrystalClass> {
  * Check if the Mindat API is available
  * @returns True if the API is available, false otherwise
  */
+/**
+ * Get space groups from the Mindat API
+ * 
+ * @param params Optional parameters for filtering space groups
+ * @returns Space group data
+ */
+export async function getSpaceGroups(params?: {
+  system?: string; // Filter by crystal system
+  number?: number; // Filter by space group number
+  symbol_h_m?: string; // Filter by Hermann-Mauguin symbol
+  page?: number;
+  pageSize?: number;
+}): Promise<SpaceGroupResponse> {
+  const queryParams: Record<string, any> = {
+    limit: params?.pageSize || 50,
+    page: params?.page || 1
+  };
+
+  // Add optional filters
+  if (params?.system) queryParams.system = params.system;
+  if (params?.number) queryParams.number = params.number;
+  if (params?.symbol_h_m) queryParams.symbol_h_m = params.symbol_h_m;
+
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/spacegroups/',
+      method: 'GET',
+      parameters: queryParams
+    });
+
+    const data = await response.json();
+    
+    // Transform the response to match our interface
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error fetching space groups:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific space group by ID
+ * 
+ * @param id The ID of the space group to retrieve
+ * @returns The space group data
+ */
+export async function getSpaceGroupById(id: number): Promise<SpaceGroup> {
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: `/spacegroups/${id}/`,
+      method: 'GET',
+      parameters: {}
+    });
+
+    const data = await response.json();
+    
+    // Return the space group data
+    if (data?.data) {
+      return data.data;
+    }
+    
+    throw new Error(`Space group with ID ${id} not found`);
+  } catch (error) {
+    console.error(`Error fetching space group #${id}:`, error);
+    throw error;
+  }
+}
+
+// Interface for Dana Classification data
+export interface DanaClass {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+}
+
+export interface DanaClassResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DanaClass[];
+}
+
+/**
+ * Get Dana Classification entries from the Mindat API
+ * 
+ * @param params Optional parameters for filtering 
+ * @returns Dana Classification data
+ */
+export async function getDanaClassification(params?: {
+  code?: string; // Filter by Dana code
+  name?: string; // Filter by name
+  page?: number;
+  pageSize?: number;
+}): Promise<DanaClassResponse> {
+  const queryParams: Record<string, any> = {
+    limit: params?.pageSize || 50,
+    page: params?.page || 1
+  };
+
+  // Add optional filters
+  if (params?.code) queryParams.code = params.code;
+  if (params?.name) queryParams.name = params.name;
+
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/dana-8/',
+      method: 'GET',
+      parameters: queryParams
+    });
+
+    const data = await response.json();
+    
+    // Transform the response to match our interface
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error fetching Dana Classification:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific Dana Classification entry by ID
+ * 
+ * @param id The ID of the Dana entry to retrieve
+ * @returns The Dana Classification data
+ */
+export async function getDanaClassById(id: number): Promise<DanaClass> {
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: `/dana-8/${id}/`,
+      method: 'GET',
+      parameters: {}
+    });
+
+    const data = await response.json();
+    
+    if (data?.data) {
+      return data.data;
+    }
+    
+    throw new Error(`Dana Classification with ID ${id} not found`);
+  } catch (error) {
+    console.error(`Error fetching Dana Classification #${id}:`, error);
+    throw error;
+  }
+}
+
+// Interface for Nickel-Strunz Classification data
+export interface StrunzClass {
+  id: number;
+  code: string;
+  name: string;
+  description?: string;
+}
+
+export interface StrunzClassResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: StrunzClass[];
+}
+
+/**
+ * Get Nickel-Strunz Classification entries from the Mindat API
+ * 
+ * @param params Optional parameters for filtering 
+ * @returns Nickel-Strunz Classification data
+ */
+export async function getStrunzClassification(params?: {
+  code?: string; // Filter by Strunz code
+  name?: string; // Filter by name
+  page?: number;
+  pageSize?: number;
+}): Promise<StrunzClassResponse> {
+  const queryParams: Record<string, any> = {
+    limit: params?.pageSize || 50,
+    page: params?.page || 1
+  };
+
+  // Add optional filters
+  if (params?.code) queryParams.code = params.code;
+  if (params?.name) queryParams.name = params.name;
+
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/nickel-strunz-10/',
+      method: 'GET',
+      parameters: queryParams
+    });
+
+    const data = await response.json();
+    
+    // Transform the response to match our interface
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error fetching Nickel-Strunz Classification:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific Nickel-Strunz Classification entry by ID
+ * 
+ * @param id The ID of the Strunz entry to retrieve
+ * @returns The Nickel-Strunz Classification data
+ */
+export async function getStrunzClassById(id: number): Promise<StrunzClass> {
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: `/nickel-strunz-10/${id}/`,
+      method: 'GET',
+      parameters: {}
+    });
+
+    const data = await response.json();
+    
+    if (data?.data) {
+      return data.data;
+    }
+    
+    throw new Error(`Nickel-Strunz Classification with ID ${id} not found`);
+  } catch (error) {
+    console.error(`Error fetching Nickel-Strunz Classification #${id}:`, error);
+    throw error;
+  }
+}
+
 export async function checkApiAvailability(): Promise<boolean> {
   try {
     // Try a simple request to check if the API is available
