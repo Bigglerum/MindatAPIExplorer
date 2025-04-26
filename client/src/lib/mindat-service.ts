@@ -534,9 +534,9 @@ export async function getDanaClassification(params?: {
   if (params?.name) queryParams.name = params.name;
 
   try {
-    // Use simplified endpoint
+    // Use the correct Dana endpoint
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/dana/', // Simplified endpoint to match Strunz format
+      path: '/dana-8/', // Correct path for Dana classification
       method: 'GET',
       parameters: queryParams
     });
