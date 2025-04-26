@@ -534,8 +534,9 @@ export async function getDanaClassification(params?: {
   if (params?.name) queryParams.name = params.name;
 
   try {
+    // Try all possible endpoint variations for Dana classification
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/dana-8/', // This will be converted to /dana8/ in the API proxy
+      path: '/dana-8/', // The correct endpoint format
       method: 'GET',
       parameters: queryParams
     });
@@ -623,8 +624,9 @@ export async function getStrunzClassification(params?: {
   if (params?.name) queryParams.name = params.name;
 
   try {
+    // Try the expected endpoint format first
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/nickel-strunz-10/', // This will be converted to /nickelstrunz10/ in the API proxy
+      path: '/nickel-strunz-10/', // Try with hyphen format
       method: 'GET',
       parameters: queryParams
     });
@@ -644,6 +646,31 @@ export async function getStrunzClassification(params?: {
     throw new Error('Invalid response format from Mindat API');
   } catch (error) {
     console.error('Error fetching Nickel-Strunz Classification:', error);
+    
+    // Try an alternative endpoint format as a fallback
+    try {
+      console.log('Trying alternative format for Strunz classification');
+      const altResponse = await apiRequest('POST', '/api/proxy', {
+        path: '/nickelstrunz10/', // Try without hyphen
+        method: 'GET',
+        parameters: queryParams
+      });
+      
+      const altData = await altResponse.json();
+      
+      if (altData?.data) {
+        return {
+          count: altData.data.count || 0,
+          next: altData.data.next,
+          previous: altData.data.previous,
+          results: altData.data.results || []
+        };
+      }
+    } catch (fallbackError) {
+      console.error('Alternative API endpoint also failed:', fallbackError);
+    }
+    
+    // If we get here, both attempts failed
     throw error;
   }
 }
