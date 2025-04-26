@@ -22,6 +22,20 @@ export interface MindatLocalitySearchParams {
   offset?: number;
 }
 
+export interface CrystalClass {
+  id: number;
+  system: string;
+  symbol: string;
+  name: string;
+}
+
+export interface CrystalClassResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: CrystalClass[];
+}
+
 /**
  * Search for minerals in the Mindat database
  * @param params Search parameters
@@ -303,6 +317,83 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
   } catch (error) {
     console.error(`Error getting coordinates for ${name}:`, error);
     return null;
+  }
+}
+
+/**
+ * Get crystal classes from the Mindat API
+ * 
+ * @param params Optional parameters for filtering crystal classes
+ * @returns Crystal class data
+ */
+export async function getCrystalClasses(params?: {
+  system?: string; // Filter by crystal system (case-insensitive)
+  symbol?: string; // Filter by symbol (case-insensitive)
+  id_in?: number[]; // Filter by a list of IDs
+  page?: number;
+  pageSize?: number;
+}): Promise<CrystalClassResponse> {
+  const queryParams: Record<string, any> = {
+    limit: params?.pageSize || 50,
+    page: params?.page || 1
+  };
+
+  // Add optional filters
+  if (params?.system) queryParams.system = params.system;
+  if (params?.symbol) queryParams.symbol = params.symbol;
+  if (params?.id_in && params.id_in.length > 0) queryParams.id_in = params.id_in.join(',');
+
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/crystalclasses/',
+      method: 'GET',
+      parameters: queryParams
+    });
+
+    const data = await response.json();
+    
+    // Transform the response to match our interface
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error fetching crystal classes:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific crystal class by ID
+ * 
+ * @param id The ID of the crystal class to retrieve
+ * @returns The crystal class data
+ */
+export async function getCrystalClassById(id: number): Promise<CrystalClass> {
+  try {
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: `/crystalclasses/${id}/`,
+      method: 'GET',
+      parameters: {}
+    });
+
+    const data = await response.json();
+    
+    // Return the crystal class data
+    if (data?.data) {
+      return data.data;
+    }
+    
+    throw new Error(`Crystal class with ID ${id} not found`);
+  } catch (error) {
+    console.error(`Error fetching crystal class #${id}:`, error);
+    throw error;
   }
 }
 

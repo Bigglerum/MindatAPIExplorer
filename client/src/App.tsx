@@ -10,6 +10,7 @@ import KnowledgeBase from "@/pages/knowledge-base";
 import SavedRequests from "@/pages/saved-requests";
 import Search from "@/pages/search";
 import RruffPage from "@/pages/rruff";
+import CrystalClasses from "@/pages/crystal-classes";
 import { useEffect } from "react";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/saved-requests" component={SavedRequests} />
       <Route path="/search" component={Search} />
       <Route path="/rruff" component={RruffPage} />
+      <Route path="/crystal-classes" component={CrystalClasses} />
       <Route component={NotFound} />
     </Switch>
   );
