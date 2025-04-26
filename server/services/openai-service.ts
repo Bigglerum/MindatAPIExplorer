@@ -28,41 +28,41 @@ const CRYSTAL_SYSTEMS = {
 };
 
 // Crystal Class Mapping - Values directly from Mindat API (crystal_class endpoint)
-// These are the exact values as returned from the API
+// These are the exact values as returned from the API with symbols added for better representation
 const CRYSTAL_CLASSES = {
-  1: "Pedial (Triclinic)",           // Symbol: 1
-  2: "Pinacoidal (Triclinic)",       // Symbol: -1
-  3: "Sphenoidal (Monoclinic)",      // Symbol: 2
-  4: "Domatic (Monoclinic)",         // Symbol: m
-  5: "Prismatic (Monoclinic)",       // Symbol: 2/m
-  6: "Rhombic-disphenoidal (Orthorhombic)", // Symbol: 222
-  7: "Rhombic-pyramidal (Orthorhombic)",   // Symbol: mm2
-  8: "Rhombic-dipyramidal (Orthorhombic)", // Symbol: mmm
-  9: "Tetragonal-pyramidal (Tetragonal)",  // Symbol: 4
-  10: "Tetragonal-disphenoidal (Tetragonal)", // Symbol: -4
-  11: "Tetragonal-dipyramidal (Tetragonal)",  // Symbol: 4/m
-  12: "Tetragonal-trapezohedral (Tetragonal)", // Symbol: 422
-  13: "Ditetragonal-pyramidal (Tetragonal)",   // Symbol: 4mm
-  14: "Tetragonal-scalenohedral (Tetragonal)", // Symbol: -42m
-  15: "Ditetragonal-dipyramidal (Tetragonal)", // Symbol: 4/mmm
-  16: "Trigonal-pyramidal (Trigonal)",      // Symbol: 3
-  17: "Rhombohedral (Trigonal)",           // Symbol: -3
-  18: "Trigonal-trapezohedral (Trigonal)",  // Symbol: 32 
-  19: "Ditrigonal-pyramidal (Trigonal)",    // Symbol: 3m
-  20: "Ditrigonal-scalenohedral (Trigonal)", // Symbol: -3m
-  21: "Hexagonal-pyramidal (Hexagonal)",    // Symbol: 6
-  22: "Trigonal-dipyramidal (Hexagonal)",   // Symbol: -6
-  23: "Hexagonal-dipyramidal (Hexagonal)",  // Symbol: 6/m
-  24: "Hexagonal-trapezohedral (Hexagonal)", // Symbol: 622
-  25: "Dihexagonal-pyramidal (Hexagonal)",   // Symbol: 6mm
-  26: "Ditrigonal-dipyramidal (Hexagonal)",  // Symbol: -6m2
-  27: "Dihexagonal-dipyramidal (Hexagonal)", // Symbol: 6/mmm
-  28: "Tetartoidal (Cubic)",                // Symbol: 23
-  29: "Dyakis-dodecahedral (Cubic)",        // Symbol: m-3
-  30: "Gyroidal (Cubic)",                   // Symbol: 432 
-  31: "Hextetrahedral (Cubic)",             // Symbol: -43m
-  32: "Hexoctahedral (Cubic)",              // Symbol: m-3m
-  33: "Icosahedral"                         // Symbol: 235
+  1: "1 - Pedial (Triclinic)",
+  2: "-1 - Pinacoidal (Triclinic)",
+  3: "2 - Sphenoidal (Monoclinic)",
+  4: "m - Domatic (Monoclinic)",
+  5: "2/m - Prismatic (Monoclinic)",
+  6: "222 - Rhombic-disphenoidal (Orthorhombic)",
+  7: "mm2 - Rhombic-pyramidal (Orthorhombic)",
+  8: "mmm - Rhombic-dipyramidal (Orthorhombic)",
+  9: "4 - Tetragonal-pyramidal (Tetragonal)",
+  10: "-4 - Tetragonal-disphenoidal (Tetragonal)",
+  11: "4/m - Tetragonal-dipyramidal (Tetragonal)",
+  12: "422 - Tetragonal-trapezohedral (Tetragonal)",
+  13: "4mm - Ditetragonal-pyramidal (Tetragonal)",
+  14: "-42m - Tetragonal-scalenohedral (Tetragonal)",
+  15: "4/mmm - Ditetragonal-dipyramidal (Tetragonal)",
+  16: "3 - Trigonal-pyramidal (Trigonal)",
+  17: "-3 - Rhombohedral (Trigonal)",
+  18: "32 - Trigonal-trapezohedral (Trigonal)",
+  19: "3m - Ditrigonal-pyramidal (Trigonal)",
+  20: "-3m - Ditrigonal-scalenohedral (Trigonal)",
+  21: "6 - Hexagonal-pyramidal (Hexagonal)",
+  22: "-6 - Trigonal-dipyramidal (Hexagonal)",
+  23: "6/m - Hexagonal-dipyramidal (Hexagonal)",
+  24: "622 - Hexagonal-trapezohedral (Hexagonal)",
+  25: "6mm - Dihexagonal-pyramidal (Hexagonal)",
+  26: "-6m2 - Ditrigonal-dipyramidal (Hexagonal)",
+  27: "6/mmm - Dihexagonal-dipyramidal (Hexagonal)",
+  28: "23 - Tetartoidal (Cubic)",
+  29: "m-3 - Dyakis-dodecahedral (Cubic)",
+  30: "432 - Gyroidal (Cubic)",
+  31: "-43m - Hextetrahedral (Cubic)",
+  32: "m-3m - Hexoctahedral (Cubic)",
+  33: "235 - Icosahedral"
 };
 
 // Space Group Symbols
@@ -498,7 +498,8 @@ async function generateResponseFromApiData(
             const classId = mineral.crystal_class_id || parseInt(String(mineral.crystal_class));
             if (classId && CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES]) {
               enhanced.crystal_class_name = CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES];
-              enhanced.crystal_class_description = `Crystal Class ${classId}: ${CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES]}`;
+              // The class description already includes the symbol, so we don't need to add classId here
+              enhanced.crystal_class_description = `Crystal Class: ${CRYSTAL_CLASSES[classId as keyof typeof CRYSTAL_CLASSES]}`;
             }
           }
           
@@ -552,7 +553,7 @@ async function generateResponseFromApiData(
       // Add explicit mappings for reference
       context += "\n\nCRYSTAL CLASS REFERENCE:\n";
       for (const [id, name] of Object.entries(CRYSTAL_CLASSES)) {
-        context += `Class ${id}: ${name}\n`;
+        context += `${name}\n`;
       }
       
       context += "\n\nCRYSTAL SYSTEM REFERENCE:\n";
