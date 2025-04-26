@@ -41,7 +41,7 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
     // Create system prompt specifically for extracting search parameters
     const systemPrompt = {
       role: "system",
-      content: "You are a tool that extracts search parameters from user questions about minerals and localities. " +
+      content: "You are a tool that extracts search parameters from user questions about minerals, localities, and crystallography. " +
       "Given a question about mineralogical data, extract parameters for searching either the Mindat API or the RRUFF database. " +
       "Response format must be valid JSON with the following structure:\n" +
       "{\n" +
@@ -59,8 +59,9 @@ async function determineSearchParams(message: string): Promise<SearchParams | nu
       "}\n" +
       "If the user is asking about a specific mineral, set type to \"mineral\".\n" +
       "If the user is asking about a specific location, set type to \"locality\".\n" +
-      "If the user is specifically asking about spectral or crystallographic RRUFF data, set type to \"rruff\".\n" +
-      "If the user mentions crystal systems (cubic, tetragonal, hexagonal, trigonal, orthorhombic, monoclinic, triclinic), include crystalSystem field.\n" +
+      "If the user is specifically asking about spectral data, crystallographic data, crystal classes, space groups, crystal systems, Dana classification, or Nickel-Strunz classification, set type to \"rruff\".\n" +
+      "If the user mentions crystal systems (cubic/isometric, tetragonal, hexagonal, trigonal, orthorhombic, monoclinic, triclinic), include crystalSystem field.\n" +
+      "Note that 'cubic' and 'isometric' refer to the same crystal system - use 'cubic' for consistency.\n" +
       "If the user is requesting details about a specific item, set action to \"details\".\n" +
       "If the user is searching for items that match criteria, set action to \"search\".\n" +
       "Include only fields that are relevant to the search, omit others."
@@ -261,10 +262,10 @@ export async function generateChatResponse(message: string, history: any[] = [])
       }
     }
     
-    // Check for RRUFF database specific questions
-    const rruffRegex = /(?:what|where|how|can you).*(?:rruff|spectral|spectroscopy|crystal system|crystal class).*(?:\?)?/i;
+    // Check for RRUFF database specific questions or crystal classification systems
+    const rruffRegex = /(?:what|where|how|can you).*(?:rruff|spectral|spectroscopy|crystal system|crystal class|space group|dana|strunz|symmetry|crystallography).*(?:\?)?/i;
     if (rruffRegex.test(message)) {
-      console.log('Detected RRUFF database question');
+      console.log('Detected RRUFF database or crystallography question');
       const rruffParams = await determineSearchParams(message);
       
       if (rruffParams && (rruffParams.type === 'rruff' || rruffParams.searchTerms.crystalSystem)) {
