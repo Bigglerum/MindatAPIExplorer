@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import Header from '@/components/layout/header';
 import Sidebar from '@/components/layout/sidebar';
 import { ApiExplorer } from '@/components/explorer/api-explorer';
@@ -77,6 +77,11 @@ export default function Explorer() {
                 >
                   Saved Requests
                 </TabsTrigger>
+                <Link href="/mineral-explorer">
+                  <span className="px-2 sm:px-4 py-3 text-xs sm:text-sm whitespace-nowrap text-gray-600 dark:text-gray-300 hover:text-primary flex items-center border-b-2 border-transparent hover:border-primary/50">
+                    Mineral Explorer
+                  </span>
+                </Link>
               </TabsList>
             </Tabs>
           </div>
