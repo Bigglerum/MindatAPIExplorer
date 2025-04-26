@@ -643,7 +643,7 @@ function DanaClassificationTab() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['danaClassification', classNumber, className, page, pageSize],
     queryFn: () => getDanaClassification({ 
-      number: classNumber, 
+      code: classNumber, 
       name: className,
       page, 
       pageSize 
@@ -761,9 +761,9 @@ function DanaClassificationTab() {
                     }}
                   >
                     <TableCell>{danaClass.id}</TableCell>
-                    <TableCell className="font-mono">{danaClass.number}</TableCell>
-                    <TableCell>{danaClass.primary_classification}</TableCell>
-                    <TableCell>{danaClass.name}</TableCell>
+                    <TableCell className="font-mono">{danaClass.code}</TableCell>
+                    <TableCell>{danaClass.name.split(' - ')[0]}</TableCell>
+                    <TableCell>{danaClass.name.split(' - ')[1] || danaClass.name}</TableCell>
                   </TableRow>
                 ))
               )}
@@ -879,7 +879,7 @@ function StrunzClassificationTab() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['strunzClassification', classNumber, className, page, pageSize],
     queryFn: () => getStrunzClassification({ 
-      number: classNumber, 
+      code: classNumber, 
       name: className,
       page, 
       pageSize 
