@@ -576,7 +576,7 @@ export async function getDanaClassification(params?: {
 export async function getDanaClassById(id: number): Promise<DanaClass> {
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: `/dana/${id}/`,
+      path: `/dana-8/${id}/`,
       method: 'GET',
       parameters: {}
     });
@@ -638,9 +638,9 @@ export async function getStrunzClassification(params?: {
   if (params?.name) queryParams.name = params.name;
 
   try {
-    // Try the expected endpoint format with improved error handling
+    // Use the correct Strunz endpoint
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/strunz/', // Using shorter path that may work better
+      path: '/nickel-strunz-10/', // Correct path for Nickel-Strunz classification
       method: 'GET',
       parameters: queryParams
     });
@@ -680,7 +680,7 @@ export async function getStrunzClassification(params?: {
 export async function getStrunzClassById(id: number): Promise<StrunzClass> {
   try {
     const response = await apiRequest('POST', '/api/proxy', {
-      path: `/strunz/${id}/`,
+      path: `/nickel-strunz-10/${id}/`,
       method: 'GET',
       parameters: {}
     });
