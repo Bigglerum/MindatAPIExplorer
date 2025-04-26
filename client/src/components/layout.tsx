@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3, Book } from "lucide-react";
+import { Database, Newspaper, Code, BookOpen, Search, Home, Grid3X3, Book, Menu, X } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 const menuItems = [
   { path: "/", label: "Home", icon: Home },
@@ -18,6 +21,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   const [location] = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -28,6 +32,8 @@ export default function Layout({ children }: LayoutProps) {
               Mindat API Explorer
             </span>
           </Link>
+          
+          {/* Desktop navigation */}
           <nav className="hidden md:flex items-center space-x-4">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -48,10 +54,42 @@ export default function Layout({ children }: LayoutProps) {
               );
             })}
           </nav>
-          <div className="md:hidden">
-            {/* Mobile menu button could go here */}
-            <span>Menu</span>
-          </div>
+          
+          {/* Mobile menu */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <button 
+                className="flex items-center justify-center rounded-md p-2 transition-colors hover:bg-secondary"
+                aria-label="Open menu"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 md:w-80 pr-0">
+              <div className="flex flex-col space-y-1 pt-6 pb-10">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location === item.path;
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex items-center rounded-l-md px-4 py-3 font-medium transition-colors",
+                        isActive 
+                          ? "bg-secondary text-secondary-foreground"
+                          : "hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </header>
 

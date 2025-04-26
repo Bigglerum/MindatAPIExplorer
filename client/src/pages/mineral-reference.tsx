@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiStatusIndicator } from "@/components/ui/api-status-indicator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   getCrystalClasses, 
   getSpaceGroups,
@@ -64,11 +65,11 @@ export default function MineralReference() {
       </div>
 
       <Tabs defaultValue="crystal-classes" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           <TabsTrigger value="crystal-classes">Crystal Classes</TabsTrigger>
           <TabsTrigger value="space-groups">Space Groups</TabsTrigger>
-          <TabsTrigger value="dana">Dana Classification</TabsTrigger>
-          <TabsTrigger value="strunz">Nickel-Strunz</TabsTrigger>
+          <TabsTrigger value="dana">Dana</TabsTrigger>
+          <TabsTrigger value="strunz">Strunz</TabsTrigger>
         </TabsList>
         
         <TabsContent value="crystal-classes">
@@ -210,50 +211,52 @@ function CrystalClassesTab() {
         </CardHeader>
         <CardContent>
           <div className="rounded border">
-            <Table>
-              <TableCaption>Crystal classes from the Mindat API</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">ID</TableHead>
-                  <TableHead>Crystal System</TableHead>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead>Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
+            <ScrollArea className="w-full overflow-auto">
+              <Table>
+                <TableCaption>Crystal classes from the Mindat API</TableCaption>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10">
-                      <div className="flex items-center justify-center space-x-2">
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        <span>Loading crystal classes...</span>
-                      </div>
-                    </TableCell>
+                    <TableHead className="w-12">ID</TableHead>
+                    <TableHead>Crystal System</TableHead>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead>Name</TableHead>
                   </TableRow>
-                ) : data?.results.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center py-10">
-                      No crystal classes found with the current filters.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  data?.results.map((crystalClass: CrystalClass) => (
-                    <TableRow key={crystalClass.id} className="hover:bg-muted/50 cursor-pointer" 
-                      onClick={() => {
-                        // Show crystal class details in dialog
-                        setSelectedClassId(crystalClass.id);
-                        setDialogOpen(true);
-                      }}
-                    >
-                      <TableCell>{crystalClass.id}</TableCell>
-                      <TableCell>{crystalClass.system}</TableCell>
-                      <TableCell className="font-mono">{crystalClass.symbol}</TableCell>
-                      <TableCell>{crystalClass.name}</TableCell>
+                </TableHeader>
+                <TableBody>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10">
+                        <div className="flex items-center justify-center space-x-2">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span>Loading crystal classes...</span>
+                        </div>
+                      </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  ) : data?.results.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-10">
+                        No crystal classes found with the current filters.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data?.results.map((crystalClass: CrystalClass) => (
+                      <TableRow key={crystalClass.id} className="hover:bg-muted/50 cursor-pointer" 
+                        onClick={() => {
+                          // Show crystal class details in dialog
+                          setSelectedClassId(crystalClass.id);
+                          setDialogOpen(true);
+                        }}
+                      >
+                        <TableCell>{crystalClass.id}</TableCell>
+                        <TableCell>{crystalClass.system}</TableCell>
+                        <TableCell className="font-mono">{crystalClass.symbol}</TableCell>
+                        <TableCell>{crystalClass.name}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </ScrollArea>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -477,19 +480,20 @@ function SpaceGroupsTab() {
         </CardHeader>
         <CardContent>
           <div className="rounded border">
-            <Table>
-              <TableCaption>Space groups from the Mindat API</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">ID</TableHead>
-                  <TableHead>Number</TableHead>
-                  <TableHead>System</TableHead>
-                  <TableHead>H-M Symbol</TableHead>
-                  <TableHead>Schoenflies</TableHead>
-                  <TableHead>Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <ScrollArea className="w-full overflow-auto">
+              <Table>
+                <TableCaption>Space groups from the Mindat API</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">ID</TableHead>
+                    <TableHead>Number</TableHead>
+                    <TableHead>System</TableHead>
+                    <TableHead>H-M Symbol</TableHead>
+                    <TableHead>Schoenflies</TableHead>
+                    <TableHead>Name</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-10">
@@ -525,6 +529,7 @@ function SpaceGroupsTab() {
                 )}
               </TableBody>
             </Table>
+            </ScrollArea>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -732,16 +737,17 @@ function DanaClassificationTab() {
         </CardHeader>
         <CardContent>
           <div className="rounded border">
-            <Table>
-              <TableCaption>Dana Classification from the Mindat API</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">ID</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <ScrollArea className="w-full overflow-auto">
+              <Table>
+                <TableCaption>Dana Classification from the Mindat API</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">ID</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Name</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-10">
@@ -774,6 +780,7 @@ function DanaClassificationTab() {
                 )}
               </TableBody>
             </Table>
+            </ScrollArea>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -961,16 +968,17 @@ function StrunzClassificationTab() {
         </CardHeader>
         <CardContent>
           <div className="rounded border">
-            <Table>
-              <TableCaption>Nickel-Strunz Classification from the Mindat API</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">ID</TableHead>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <ScrollArea className="w-full overflow-auto">
+              <Table>
+                <TableCaption>Nickel-Strunz Classification from the Mindat API</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">ID</TableHead>
+                    <TableHead>Code</TableHead>
+                    <TableHead>Name</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                 {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={3} className="text-center py-10">
@@ -1003,6 +1011,7 @@ function StrunzClassificationTab() {
                 )}
               </TableBody>
             </Table>
+            </ScrollArea>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
