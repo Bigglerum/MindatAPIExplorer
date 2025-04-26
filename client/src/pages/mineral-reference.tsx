@@ -46,6 +46,10 @@ import {
   getStrunzClassification,
   getMineralById,
   searchMineralSpecies,
+  searchMineralsByCrystalSystem,
+  searchMineralsBySpaceGroup,
+  searchMineralsByDanaClass,
+  searchMineralsByStrunzClass,
   type CrystalClass,
   type SpaceGroup,
   type DanaClass,
@@ -226,9 +230,22 @@ function CrystalClassesTab() {
   const [selectedClassId, setSelectedClassId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Mineral search and details state
+  // Mineral search by name state
+  const [mineralSearchName, setMineralSearchName] = useState("");
+  const [isSearchingMineral, setIsSearchingMineral] = useState(false);
   const [selectedMineral, setSelectedMineral] = useState<any>(null);
   const [mineralDialogOpen, setMineralDialogOpen] = useState(false);
+  
+  // Query to fetch minerals by crystal system/class
+  const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
+    queryKey: ['minerals-by-crystal', mineralSearchName, system],
+    queryFn: () => searchMineralsByCrystalSystem({
+      name: mineralSearchName,
+      crystal_system: system === 'all' ? undefined : system,
+      limit: 10
+    }),
+    enabled: isSearchingMineral && mineralSearchName.length > 2
+  });
   
   // Query to fetch details of a selected mineral
   const { data: mineralDetails, isLoading: isLoadingMineralDetails } = useQuery({
@@ -236,6 +253,13 @@ function CrystalClassesTab() {
     queryFn: () => selectedMineral?.id ? getMineralById(selectedMineral.id) : null,
     enabled: !!selectedMineral?.id && mineralDialogOpen,
   });
+  
+  // Function to handle mineral search
+  const handleMineralSearch = () => {
+    if (mineralSearchName.length > 2) {
+      setIsSearchingMineral(true);
+    }
+  };
 
   // Crystal system options
   const CrystalSystemOptions = [
