@@ -40,8 +40,16 @@ export async function proxyApiRequest(
       adjustedPath = '/crystalclasses';
     } else if (path.startsWith('/spacegroups')) {
       adjustedPath = '/spacegroups';
+    } 
+    // Handle Dana classification with various formats
+    else if (path.startsWith('/dana/')) {
+      adjustedPath = '/dana'; // Try simplified endpoint first
     } else if (path.startsWith('/dana-8')) {
       adjustedPath = '/dana8'; // API sometimes uses dana8 instead of dana-8
+    } 
+    // Handle Strunz classification with various formats
+    else if (path.startsWith('/strunz/')) {
+      adjustedPath = '/strunz'; // Try simplified endpoint first
     } else if (path.startsWith('/nickel-strunz-10')) {
       adjustedPath = '/nickelstrunz10'; // API sometimes uses nickelstrunz10 instead of nickel-strunz-10
     }
