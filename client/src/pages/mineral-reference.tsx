@@ -39,6 +39,10 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApiStatusIndicator } from "@/components/ui/api-status-indicator";
 import { MineralSpeciesSearch } from "@/components/mineral-species-search";
+import { CrystalSystemSearch } from "@/components/crystal-system-search";
+import { SpaceGroupSearch } from "@/components/space-group-search";
+import { DanaSearch } from "@/components/dana-search";
+import { StrunzSearch } from "@/components/strunz-search";
 import { 
   getCrystalClasses, 
   getSpaceGroups,
