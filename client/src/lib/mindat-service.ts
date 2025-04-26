@@ -317,6 +317,249 @@ export async function searchMineralSpecies(searchTerm: string) {
  * @param name The name of the locality or ID as a string
  * @returns The coordinates if found
  */
+/**
+ * Search for minerals by crystal system or class
+ * @param params Parameters for the search
+ * @returns Search results with minerals matching the crystal system
+ */
+export async function searchMineralsByCrystalSystem(params: {
+  name?: string;
+  crystal_system?: string;
+  crystal_class?: string;
+  limit?: number;
+  page?: number;
+}): Promise<any> {
+  try {
+    // Build search parameters for the mineral search
+    const searchParams: Record<string, any> = {
+      limit: params.limit || 10,
+      page: params.page || 1
+    };
+    
+    // Add the mineral name if provided
+    if (params.name) {
+      searchParams.q = params.name; // Use 'q' for general search
+    }
+    
+    // If crystal system or class specified, include as part of search
+    if (params.crystal_system) {
+      searchParams.crystal_system = params.crystal_system;
+    }
+    
+    if (params.crystal_class) {
+      searchParams.crystal_class = params.crystal_class;
+    }
+    
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: searchParams
+    });
+    
+    const data = await response.json();
+    
+    // Transform the response format to be consistent
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error searching minerals by crystal system:', error);
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+}
+
+/**
+ * Search for minerals by space group
+ * @param params Parameters for the search
+ * @returns Search results with minerals matching the space group
+ */
+export async function searchMineralsBySpaceGroup(params: {
+  name?: string;
+  space_group?: string;
+  crystal_system?: string;
+  limit?: number;
+  page?: number;
+}): Promise<any> {
+  try {
+    // Build search parameters for the mineral search
+    const searchParams: Record<string, any> = {
+      limit: params.limit || 10,
+      page: params.page || 1
+    };
+    
+    // Add the mineral name if provided
+    if (params.name) {
+      searchParams.q = params.name; // Use 'q' for general search
+    }
+    
+    // If space group specified, include as part of search
+    if (params.space_group) {
+      searchParams.space_group = params.space_group;
+    }
+    
+    // If crystal system specified, include as part of search
+    if (params.crystal_system) {
+      searchParams.crystal_system = params.crystal_system;
+    }
+    
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: searchParams
+    });
+    
+    const data = await response.json();
+    
+    // Transform the response format to be consistent
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error searching minerals by space group:', error);
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+}
+
+/**
+ * Search for minerals by Dana classification
+ * @param params Parameters for the search
+ * @returns Search results with minerals matching the Dana class
+ */
+export async function searchMineralsByDanaClass(params: {
+  name?: string;
+  dana_class?: string;
+  limit?: number;
+  page?: number;
+}): Promise<any> {
+  try {
+    // Build search parameters for the mineral search
+    const searchParams: Record<string, any> = {
+      limit: params.limit || 10,
+      page: params.page || 1
+    };
+    
+    // Add the mineral name if provided
+    if (params.name) {
+      searchParams.q = params.name; // Use 'q' for general search
+    }
+    
+    // If dana class specified, include as part of search
+    if (params.dana_class) {
+      searchParams.dana_class = params.dana_class;
+    }
+    
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: searchParams
+    });
+    
+    const data = await response.json();
+    
+    // Transform the response format to be consistent
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error searching minerals by Dana class:', error);
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+}
+
+/**
+ * Search for minerals by Strunz classification
+ * @param params Parameters for the search
+ * @returns Search results with minerals matching the Strunz class
+ */
+export async function searchMineralsByStrunzClass(params: {
+  name?: string;
+  strunz_class?: string;
+  limit?: number;
+  page?: number;
+}): Promise<any> {
+  try {
+    // Build search parameters for the mineral search
+    const searchParams: Record<string, any> = {
+      limit: params.limit || 10,
+      page: params.page || 1
+    };
+    
+    // Add the mineral name if provided
+    if (params.name) {
+      searchParams.q = params.name; // Use 'q' for general search
+    }
+    
+    // If strunz class specified, include as part of search
+    if (params.strunz_class) {
+      searchParams.strunz_class = params.strunz_class;
+    }
+    
+    const response = await apiRequest('POST', '/api/proxy', {
+      path: '/geomaterials/',
+      method: 'GET',
+      parameters: searchParams
+    });
+    
+    const data = await response.json();
+    
+    // Transform the response format to be consistent
+    if (data?.data) {
+      return {
+        count: data.data.count || 0,
+        next: data.data.next,
+        previous: data.data.previous,
+        results: data.data.results || []
+      };
+    }
+    
+    throw new Error('Invalid response format from Mindat API');
+  } catch (error) {
+    console.error('Error searching minerals by Strunz class:', error);
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
+  }
+}
+
 export async function getLocalityCoordinates(name: string): Promise<{ latitude: number; longitude: number } | null> {
   try {
     console.log(`Looking up coordinates for locality: ${name}`);
