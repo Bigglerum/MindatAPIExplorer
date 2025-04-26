@@ -549,12 +549,16 @@ async function generateRruffMineralResponse(message: string, mineral: any, spect
   // Create a system prompt for crafting mineral details
   const systemPrompt = {
     role: "system",
-    content: "You are a mineralogist specializing in spectroscopy and crystallography. " +
+    content: "You are a mineralogist specializing in spectroscopy and crystallography, with expertise in crystal classification systems. " +
     "Create a detailed, informative response about this mineral using the RRUFF database information provided. " +
     "Format the response nicely with proper headers, emphasis, and structure. " +
-    "Focus on crystallographic data and any spectroscopic information. " +
+    "Focus on crystallographic data (crystal system, crystal class, space group) and any spectroscopic information. " +
+    "Explain the significance of the crystal system and crystal class when appropriate. " +
     "If the mineral has spectral data available, highlight this fact. " +
-    "Be scientific but accessible in your explanation."
+    "For crystallographic data, note that 'cubic' and 'isometric' are equivalent terms for the same crystal system. " +
+    "Relate crystal systems to symmetry properties where possible. " +
+    "Mention Dana and Nickel-Strunz classification system codes when available. " +
+    "Be scientific but accessible in your explanation using the provided data only."
   };
   
   // Create a detailed description of the mineral and its spectra
@@ -569,6 +573,10 @@ async function generateRruffMineralResponse(message: string, mineral: any, spect
 **Density**: ${mineral.density || 'Not specified'}
 **Hardness**: ${mineral.hardness || 'Not specified'}
 **Year First Published**: ${mineral.yearFirstPublished || 'Not specified'}
+
+### Classification Systems
+**Dana Classification**: ${mineral.danaCode || mineral.danaClassification || 'Not specified'}
+**Nickel-Strunz Classification**: ${mineral.strunzCode || mineral.strunzClassification || 'Not specified'}
 
 ### Unit Cell Parameters
 ${mineral.unitCell ? JSON.stringify(mineral.unitCell, null, 2) : 'No unit cell data available'}
@@ -610,18 +618,21 @@ async function generateRruffSearchResponse(message: string, minerals: any[]): Pr
   // Create a system prompt for search results
   const systemPrompt = {
     role: "system",
-    content: "You are a mineralogist specializing in crystallography. " +
+    content: "You are a mineralogist specializing in crystallography and crystal classification systems. " +
     "Create a response summarizing the mineral search results from the RRUFF database. " +
     "Format the response as a well-structured summary with a table of the minerals found. " +
-    "Focus on explaining the crystal systems and properties that are common among the results. " +
-    "Be scientific but accessible."
+    "Focus on explaining the crystal systems, classes, and classification systems that are common among the results. " +
+    "Note that 'cubic' and 'isometric' refer to the same crystal system. " +
+    "Explain the significance of crystal systems and classes in terms of symmetry when appropriate. " +
+    "Refer to Dana and Nickel-Strunz classification codes when available. " +
+    "Be scientific but accessible in your explanation."
   };
   
   // Create a table of search results
-  let mineralTable = "| Mineral | Formula | Crystal System | Class |\n|---------|---------|---------------|-------|\n";
+  let mineralTable = "| Mineral | Formula | Crystal System | Crystal Class | Dana | Strunz |\n|---------|---------|---------------|--------------|------|--------|\n";
   
   minerals.forEach(m => {
-    mineralTable += `| ${m.mineralName} | ${m.chemicalFormula || 'N/A'} | ${m.crystalSystem || 'N/A'} | ${m.crystalClass || 'N/A'} |\n`;
+    mineralTable += `| ${m.mineralName} | ${m.chemicalFormula || 'N/A'} | ${m.crystalSystem || 'N/A'} | ${m.crystalClass || 'N/A'} | ${m.danaCode || m.danaClassification || 'N/A'} | ${m.strunzCode || m.strunzClassification || 'N/A'} |\n`;
   });
   
   try {
