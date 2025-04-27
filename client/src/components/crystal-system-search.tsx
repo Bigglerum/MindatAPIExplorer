@@ -256,29 +256,16 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                   
                   console.log("First mineral data:", {
                     name: firstMineral.name,
-                    cclass: cclass,
-                    crystal_system: firstMineral.crystal_system,
-                    crystal_class: firstMineral.crystal_class
+                    cclass: firstMineral.cclass,
+                    csystem: firstMineral.csystem
                   });
                   
-                  // First try to get system from crystal class if available
-                  let derivedSystem = 'Not specified';
-                  
-                  // If we have a crystal class number, derive the crystal system from it
-                  if (cclass) {
-                    const classInfo = getCrystalClassInfo(cclass);
-                    if (classInfo) {
-                      derivedSystem = classInfo.system;
-                      console.log(`Derived crystal system "${derivedSystem}" from crystal class number ${cclass}`);
-                    }
-                  }
-                  
-                  // If API provides crystal_system, normalize it
-                  const normalizedSystem = firstMineral.crystal_system 
-                    ? normalizeCrystalSystem(firstMineral.crystal_system)
-                    : derivedSystem;
+                  // Use the csystem field directly from the API
+                  const normalizedSystem = firstMineral.csystem 
+                    ? normalizeCrystalSystem(firstMineral.csystem)
+                    : 'Not specified';
                     
-                  console.log(`Original system: ${firstMineral.crystal_system}, Normalized: ${normalizedSystem}`);
+                  console.log(`Original system: ${firstMineral.csystem}, Normalized: ${normalizedSystem}`);
                   
                   if (cclass) {
                     const classInfo = getCrystalClassInfo(cclass);
@@ -290,13 +277,9 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                           <p><span className="font-medium">Crystal Class Name:</span> {classInfo.name}</p>
                           <p><span className="font-medium">Crystal System:</span> {classInfo.system}</p>
                           <p><span className="font-medium">Hermann-Mauguin Symbol:</span> {classInfo.symbol}</p>
-                          {firstMineral.crystal_system && normalizedSystem !== classInfo.system ? (
+                          {firstMineral.csystem && normalizedSystem !== classInfo.system && (
                             <p className="text-yellow-600">
-                              <span className="font-medium">Note:</span> API reports crystal system as "{firstMineral.crystal_system}" which is equivalent to {classInfo.system}.
-                            </p>
-                          ) : !firstMineral.crystal_system && (
-                            <p className="text-green-600">
-                              <span className="font-medium">Note:</span> Crystal system derived from class number {cclass}.
+                              <span className="font-medium">Note:</span> API reports crystal system as "{firstMineral.csystem}" which is equivalent to {classInfo.system}.
                             </p>
                           )}
                         </div>
@@ -318,7 +301,6 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                     return (
                       <div className="space-y-2">
                         <p><span className="font-medium">Crystal System:</span> {normalizedSystem}</p>
-                        <p><span className="font-medium">Crystal Class:</span> {firstMineral.crystal_class || 'Not specified'}</p>
                         <p className="text-amber-600">
                           <span className="font-medium">Note:</span> Crystal class number information not available for this mineral.
                           The table below shows all 32 crystal classes grouped by crystal system.
