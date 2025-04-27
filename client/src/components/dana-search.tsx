@@ -112,19 +112,84 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
     
     return `${danaCode} (${className})`;
   };
+  
+  // Function to get Dana class info from code
+  const getDanaClassInfo = (danaCode: string): DanaClass | undefined => {
+    // First look in the API data
+    if (apiDanaClasses.length > 0) {
+      const apiDanaInfo = apiDanaClasses.find(dc => 
+        dc.code === danaCode || 
+        (dc.code && danaCode.startsWith(dc.code.split('.')[0]))
+      );
+      
+      if (apiDanaInfo) {
+        console.log(`Found Dana class info in API for ${danaCode}:`, apiDanaInfo);
+        return apiDanaInfo;
+      }
+    }
+    
+    // Fall back to our hardcoded mapping if needed
+    const mainClass = danaCode.split('.')[0].padStart(2, '0');
+    if (danaClasses[mainClass]) {
+      console.log(`Found Dana class info in local map for ${danaCode} (main class ${mainClass}):`, danaClasses[mainClass]);
+      return {
+        id: parseInt(mainClass),
+        code: mainClass,
+        name: danaClasses[mainClass]
+      };
+    }
+    
+    // If we can't find anything, return undefined
+    console.log(`No Dana class info found for ${danaCode}`);
+    return undefined;
+  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Input
-          placeholder="Enter mineral name (e.g., Quartz)"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-        />
-        <Button onClick={handleSearch} disabled={searchTerm.length < 3}>
-          Search
-        </Button>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Mineral Name Search */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Search by Mineral Name</label>
+          <div className="flex items-center space-x-2">
+            <Input
+              placeholder="Enter mineral name (e.g., Quartz)"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            />
+            <Button onClick={handleSearch} disabled={searchTerm.length < 3}>
+              Search
+            </Button>
+          </div>
+        </div>
+
+        {/* Dana Classification Code Search */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Filter by Dana Classification</label>
+          {isLoadingDanaClasses ? (
+            <div className="flex items-center">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span className="text-sm">Loading Dana classes...</span>
+            </div>
+          ) : (
+            <Select
+              value={danaCode}
+              onValueChange={handleDanaClassSearch}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a Dana classification" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="any">Any Dana classification</SelectItem>
+                {apiDanaClasses.map(dc => (
+                  <SelectItem key={dc.id} value={dc.code}>
+                    {dc.code} - {dc.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </div>
 
       {isLoadingMineralSearch && (
@@ -134,8 +199,15 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
         </div>
       )}
 
-      {isSearching && !isLoadingMineralSearch && mineralSearchResults?.results?.length === 0 && (
-        <p className="text-center text-gray-500">No minerals found matching "{searchTerm}"</p>
+      {!isLoadingMineralSearch && mineralSearchResults?.results?.length === 0 && (
+        <p className="text-center text-gray-500">
+          {searchTerm 
+            ? `No minerals found matching "${searchTerm}"` 
+            : danaCode 
+              ? `No minerals found with Dana classification ${danaCode}` 
+              : ""
+          }
+        </p>
       )}
 
       {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
@@ -169,76 +241,88 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
           </div>
 
           {/* Dana Classification Mapping Results */}
-          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].dana_code && (
+          {mineralSearchResults.results.length > 0 && (mineralSearchResults.results[0].dana_code || mineralSearchResults.results[0].dana_classification) && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Dana Classification Information</h3>
               
-              <div className="mb-4">
-                <h4 className="text-md font-medium mb-2">Dana Code: {mineralSearchResults.results[0].dana_code || mineralSearchResults.results[0].dana_classification}</h4>
-                <div className="bg-muted/50 p-3 rounded-md">
-                  <p className="text-sm text-muted-foreground">
-                    {getDanaClassificationDisplay(mineralSearchResults.results[0])}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    The Dana classification system is a mineral classification system that categorizes minerals based on their chemical composition and crystal structure. The first number represents the main class.
-                  </p>
-                </div>
-              </div>
-              
-              {/* Dana Class Table */}
-              <div>
-                <h4 className="text-md font-medium mb-2">Dana Classification System</h4>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Class</TableHead>
-                      <TableHead>Description</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>1</TableCell>
-                      <TableCell>Elements</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>2</TableCell>
-                      <TableCell>Sulfides</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>3</TableCell>
-                      <TableCell>Halides</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>4</TableCell>
-                      <TableCell>Oxides</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>5</TableCell>
-                      <TableCell>Carbonates & Nitrates</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>6</TableCell>
-                      <TableCell>Borates</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>7</TableCell>
-                      <TableCell>Sulfates, Chromates, Molybdates, & Tungstates</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>8</TableCell>
-                      <TableCell>Phosphates, Arsenates, & Vanadates</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>9</TableCell>
-                      <TableCell>Silicates</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>10</TableCell>
-                      <TableCell>Organic Minerals</TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
+              {(() => {
+                const firstMineral = mineralSearchResults.results[0];
+                const danaCodeValue = firstMineral.dana_code || firstMineral.dana_classification;
+                
+                // Log Dana classification data for debugging
+                console.log("First mineral Dana class data:", {
+                  name: firstMineral.name,
+                  dana_code: firstMineral.dana_code,
+                  dana_classification: firstMineral.dana_classification
+                });
+                
+                // Get Dana class information using our mapper function
+                const danaClassInfo = danaCodeValue ? getDanaClassInfo(danaCodeValue) : null;
+                
+                // If we have a Dana classification in the mineral data
+                if (danaCodeValue) {
+                  return (
+                    <div className="space-y-4">
+                      <div className="mb-4">
+                        <h4 className="text-md font-medium mb-2">Dana Code: {danaCodeValue}</h4>
+                        <div className="bg-muted/30 p-4 rounded-md">
+                          <p className="text-sm text-muted-foreground">
+                            {getDanaClassificationDisplay(firstMineral)}
+                          </p>
+                          
+                          {/* Display Mapped Dana Class Information */}
+                          {danaClassInfo && (
+                            <div className="mt-3 pt-3 border-t border-muted">
+                              <p className="text-sm text-muted-foreground mb-2">Mapped Dana Class Information:</p>
+                              
+                              <p><span className="font-medium">Code:</span> {danaClassInfo.code}</p>
+                              <p><span className="font-medium">Name:</span> {danaClassInfo.name}</p>
+                              {danaClassInfo.description && (
+                                <p><span className="font-medium">Description:</span> {danaClassInfo.description}</p>
+                              )}
+                            </div>
+                          )}
+                          
+                          <p className="text-sm text-muted-foreground mt-3 pt-3 border-t border-muted">
+                            The Dana classification system categorizes minerals based on their chemical composition and crystal structure. 
+                            The first number represents the main class, followed by subclass and group numbers.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Dana Class Table - Show just the main classes */}
+                      <div>
+                        <h4 className="text-md font-medium mb-2">Dana Main Classes</h4>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Class</TableHead>
+                              <TableHead>Description</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {Object.entries(danaClasses).map(([code, desc]) => (
+                              <TableRow key={code}>
+                                <TableCell>{parseInt(code)}</TableCell>
+                                <TableCell>{desc}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  );
+                } else {
+                  // No Dana classification information available
+                  return (
+                    <div className="space-y-2">
+                      <p className="text-amber-600">
+                        <span className="font-medium">Note:</span> No Dana classification information available for this mineral.
+                      </p>
+                    </div>
+                  );
+                }
+              })()}
             </div>
           )}
         </>
