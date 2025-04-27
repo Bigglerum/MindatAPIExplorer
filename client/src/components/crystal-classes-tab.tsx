@@ -44,6 +44,42 @@ import {
   type CrystalClass
 } from "@/lib/mindat-service";
 
+// Crystal class number (cclass) to name mapping
+const crystalClassMap = [
+  { cclass: 1, name: "Pedial", system: "Triclinic", symbol: "1" },
+  { cclass: 2, name: "Pinacoidal", system: "Triclinic", symbol: "-1" },
+  { cclass: 3, name: "Sphenoidal", system: "Monoclinic", symbol: "2" },
+  { cclass: 4, name: "Domatic", system: "Monoclinic", symbol: "m" },
+  { cclass: 5, name: "Prismatic", system: "Monoclinic", symbol: "2/m" },
+  { cclass: 6, name: "Rhombic-disphenoidal", system: "Orthorhombic", symbol: "222" },
+  { cclass: 7, name: "Rhombic-pyramidal", system: "Orthorhombic", symbol: "mm2" },
+  { cclass: 8, name: "Rhombic-dipyramidal", system: "Orthorhombic", symbol: "mmm" },
+  { cclass: 9, name: "Tetragonal-pyramidal", system: "Tetragonal", symbol: "4" },
+  { cclass: 10, name: "Tetragonal-disphenoidal", system: "Tetragonal", symbol: "-4" },
+  { cclass: 11, name: "Tetragonal-dipyramidal", system: "Tetragonal", symbol: "4/m" },
+  { cclass: 12, name: "Tetragonal-scalenohedral", system: "Tetragonal", symbol: "422" },
+  { cclass: 13, name: "Ditetragonal-pyramidal", system: "Tetragonal", symbol: "4mm" },
+  { cclass: 14, name: "Tetragonal-trapezohedral", system: "Tetragonal", symbol: "-42m" },
+  { cclass: 15, name: "Ditetragonal-dipyramidal", system: "Tetragonal", symbol: "4/mmm" },
+  { cclass: 16, name: "Trigonal-pyramidal", system: "Trigonal", symbol: "3" },
+  { cclass: 17, name: "Rhombohedral", system: "Trigonal", symbol: "-3" },
+  { cclass: 18, name: "Trigonal-trapezohedral", system: "Trigonal", symbol: "32" },
+  { cclass: 19, name: "Ditrigonal-pyramidal", system: "Trigonal", symbol: "3m" },
+  { cclass: 20, name: "Ditrigonal-scalenohedral", system: "Trigonal", symbol: "-3m" },
+  { cclass: 21, name: "Hexagonal-pyramidal", system: "Hexagonal", symbol: "6" },
+  { cclass: 22, name: "Trigonal-dipyramidal", system: "Hexagonal", symbol: "-6" },
+  { cclass: 23, name: "Hexagonal-dipyramidal", system: "Hexagonal", symbol: "6/m" },
+  { cclass: 24, name: "Hexagonal-trapezohedral", system: "Hexagonal", symbol: "622" },
+  { cclass: 25, name: "Dihexagonal-pyramidal", system: "Hexagonal", symbol: "6mm" },
+  { cclass: 26, name: "Ditrigonal-dipyramidal", system: "Hexagonal", symbol: "-62m" },
+  { cclass: 27, name: "Dihexagonal-dipyramidal", system: "Hexagonal", symbol: "6/mmm" },
+  { cclass: 28, name: "Tetartoidal", system: "Cubic", symbol: "23" },
+  { cclass: 29, name: "Diploidal", system: "Cubic", symbol: "m-3" },
+  { cclass: 30, name: "Gyroidal", system: "Cubic", symbol: "432" },
+  { cclass: 31, name: "Hextetrahedral", system: "Cubic", symbol: "-43m" },
+  { cclass: 32, name: "Hexoctahedral", system: "Cubic", symbol: "m-3m" }
+];
+
 export function CrystalClassesTab() {
   const [system, setSystem] = useState("all");
   const [symbol, setSymbol] = useState("");
@@ -357,6 +393,19 @@ export function CrystalClassesTab() {
                   <p>{mineralDetails.crystal_class || 'Not specified'}</p>
                 </div>
               </div>
+              
+              {mineralDetails.cclass && (
+                <div className="p-3 bg-muted/30 rounded-md mt-2">
+                  <h4 className="text-sm font-medium text-muted-foreground">Crystal Class Number</h4>
+                  <p className="font-medium">{mineralDetails.cclass} 
+                    {(() => {
+                      const cclass = mineralDetails.cclass;
+                      const classInfo = crystalClassMap.find(cls => cls.cclass === cclass);
+                      return classInfo ? ` - ${classInfo.symbol} (${classInfo.name})` : '';
+                    })()}
+                  </p>
+                </div>
+              )}
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
