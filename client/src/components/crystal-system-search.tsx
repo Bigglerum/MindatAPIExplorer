@@ -34,7 +34,7 @@ const crystalClassMap = [
   { cclass: 5, name: "Prismatic", system: "Monoclinic", symbol: "2/m" },
   { cclass: 6, name: "Pyramidal", system: "Orthorhombic", symbol: "mm2" },
   { cclass: 7, name: "Disphenoidal", system: "Orthorhombic", symbol: "2 2 2" },
-  { cclass: 8, name: "Dipyramidal", system: "Orthorhombic", symbol: "mmm" },
+  { cclass: 8, name: "Dipyramidal", system: "Orthorhombic", symbol: "mmm (2/m 2/m 2/m)" },
   { cclass: 9, name: "Pyramidal", system: "Trigonal", symbol: "3" },
   { cclass: 10, name: "Rhombohedral", system: "Trigonal", symbol: "-3" },
   { cclass: 11, name: "Ditrigonal Pyramidal", system: "Trigonal", symbol: "3m" },
@@ -46,19 +46,19 @@ const crystalClassMap = [
   { cclass: 17, name: "Ditrigonal Dipyramidal", system: "Hexagonal", symbol: "-6m2" },
   { cclass: 18, name: "Dihexagonal Pyramidal", system: "Hexagonal", symbol: "6mm" },
   { cclass: 19, name: "Trapezohedral", system: "Hexagonal", symbol: "6 2 2" },
-  { cclass: 20, name: "Dihexagonal Dipyramidal", system: "Hexagonal", symbol: "6/mmm" },
+  { cclass: 20, name: "Dihexagonal Dipyramidal", system: "Hexagonal", symbol: "6/mmm (6/m 2/m 2/m)" },
   { cclass: 21, name: "Disphenoidal", system: "Tetragonal", symbol: "-4" },
   { cclass: 22, name: "Pyramidal", system: "Tetragonal", symbol: "4" },
   { cclass: 23, name: "Dipyramidal", system: "Tetragonal", symbol: "4/m" },
   { cclass: 24, name: "Scalenohedral", system: "Tetragonal", symbol: "-4 2m" },
   { cclass: 25, name: "Ditetragonal Pyramidal", system: "Tetragonal", symbol: "4mm" },
   { cclass: 26, name: "Trapezohedral", system: "Tetragonal", symbol: "4 2 2" },
-  { cclass: 27, name: "Ditetragonal Dipyramidal", system: "Tetragonal", symbol: "4/mmm" },
+  { cclass: 27, name: "Ditetragonal Dipyramidal", system: "Tetragonal", symbol: "4/mmm (4/m 2/m 2/m)" },
   { cclass: 28, name: "Tetartoidal", system: "Cubic", symbol: "2 3" },
-  { cclass: 29, name: "Diploidal", system: "Cubic", symbol: "m3" },
+  { cclass: 29, name: "Diploidal", system: "Cubic", symbol: "m3 (2/m -3)" },
   { cclass: 30, name: "Hextetrahedral", system: "Cubic", symbol: "-4 3m" },
   { cclass: 31, name: "Gyroidal", system: "Cubic", symbol: "4 3 2" },
-  { cclass: 32, name: "Hexoctahedral", system: "Cubic", symbol: "m3m" }
+  { cclass: 32, name: "Hexoctahedral", system: "Cubic", symbol: "m3m (4/m -3 2/m)" }
 ];
 
 export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemSearchProps) {
