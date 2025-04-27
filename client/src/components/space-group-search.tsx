@@ -79,13 +79,41 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
     setIsSearching(false); // Not needed for space group search as it's enabled by the value
   };
 
-  // Find the space group info for a given symbol
-  const getSpaceGroupInfo = (symbol: string) => {
-    // Remove any whitespace to ensure proper matching
-    const cleanSymbol = symbol?.trim();
+  // Find the space group info for a given symbol or ID
+  const getSpaceGroupInfo = (symbolOrId: string | number) => {
+    if (symbolOrId === null || symbolOrId === undefined) {
+      console.log("No space group symbol or ID provided");
+      return null;
+    }
+    
+    // Handle ID case (number)
+    if (typeof symbolOrId === 'number') {
+      console.log(`Looking up space group by ID: ${symbolOrId}`);
+      
+      // Find the corresponding number in our reference
+      const spaceGroupInfo = commonSpaceGroups.find(sg => 
+        sg.number === symbolOrId
+      );
+      
+      if (spaceGroupInfo) {
+        console.log(`Found space group info for ID ${symbolOrId}:`, spaceGroupInfo);
+        return spaceGroupInfo;
+      }
+      
+      console.log(`No space group info found for ID ${symbolOrId} in our mapping table`);
+      return {
+        number: symbolOrId,
+        symbol: `Space Group #${symbolOrId}`,
+        system: "Unknown",
+        description: "Space group information not in reference"
+      };
+    }
+    
+    // Handle symbol case (string)
+    const cleanSymbol = symbolOrId.toString().trim();
     
     if (!cleanSymbol) {
-      console.log("No space group symbol provided");
+      console.log("Empty space group symbol provided");
       return null;
     }
     
