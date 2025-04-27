@@ -100,7 +100,19 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
 
   // Find the crystal class info for a given cclass value
   const getCrystalClassInfo = (cclass: number) => {
-    return crystalClassMap.find(cls => cls.cclass === cclass) || null;
+    // Convert string to number if necessary
+    const cclassNum = typeof cclass === 'string' ? parseInt(cclass as string) : cclass;
+    
+    // Find the class in our mapping
+    const classInfo = crystalClassMap.find(cls => cls.cclass === cclassNum);
+    
+    if (classInfo) {
+      console.log(`Found crystal class info for cclass ${cclassNum}:`, classInfo);
+      return classInfo;
+    }
+    
+    console.log(`No crystal class info found for cclass ${cclassNum} in our mapping table`);
+    return null;
   };
 
   return (
@@ -190,14 +202,23 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
               <h3 className="text-lg font-semibold mb-2">Crystal Class Information</h3>
 
               {/* First mineral's crystal class information */}
-              {mineralSearchResults.results[0].cclass && (
-                <div className="mb-4 p-4 border rounded-md bg-muted/30">
-                  <h4 className="text-md font-medium mb-2">
-                    Crystal Class Information for {mineralSearchResults.results[0].name}
-                  </h4>
+              <div className="mb-4 p-4 border rounded-md bg-muted/30">
+                <h4 className="text-md font-medium mb-2">
+                  Crystal Class Information for {mineralSearchResults.results[0].name}
+                </h4>
+                
+                {(() => {
+                  const firstMineral = mineralSearchResults.results[0];
+                  const cclass = firstMineral.cclass;
                   
-                  {(() => {
-                    const cclass = mineralSearchResults.results[0].cclass;
+                  console.log("First mineral data:", {
+                    name: firstMineral.name,
+                    cclass: cclass,
+                    crystal_system: firstMineral.crystal_system,
+                    crystal_class: firstMineral.crystal_class
+                  });
+                  
+                  if (cclass) {
                     const classInfo = getCrystalClassInfo(cclass);
                     
                     if (classInfo) {
@@ -211,12 +232,30 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                       );
                     } else {
                       return (
-                        <p>Crystal class information not available for class number {cclass}.</p>
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Crystal Class Number:</span> {cclass}</p>
+                          <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                          <p className="text-amber-600">
+                            <span className="font-medium">Note:</span> Detailed information for class number {cclass} is not available in our reference.
+                            Highlighting the matching class in the table below.
+                          </p>
+                        </div>
                       );
                     }
-                  })()}
-                </div>
-              )}
+                  } else {
+                    // No cclass information, show what we have
+                    return (
+                      <div className="space-y-2">
+                        <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                        <p><span className="font-medium">Crystal Class:</span> {firstMineral.crystal_class || 'Not specified'}</p>
+                        <p className="text-amber-600">
+                          <span className="font-medium">Note:</span> Crystal class number information not available for this mineral.
+                        </p>
+                      </div>
+                    );
+                  }
+                })()}
+              </div>
 
               {/* Crystal Class Number Mapping Table */}
               <div>

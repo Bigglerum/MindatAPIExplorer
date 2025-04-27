@@ -81,7 +81,26 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
 
   // Find the space group info for a given symbol
   const getSpaceGroupInfo = (symbol: string) => {
-    return commonSpaceGroups.find(sg => sg.symbol === symbol) || null;
+    // Remove any whitespace to ensure proper matching
+    const cleanSymbol = symbol?.trim();
+    
+    if (!cleanSymbol) {
+      console.log("No space group symbol provided");
+      return null;
+    }
+    
+    // Look for an exact match in our mapping table
+    const spaceGroupInfo = commonSpaceGroups.find(sg => 
+      sg.symbol.trim() === cleanSymbol
+    );
+    
+    if (spaceGroupInfo) {
+      console.log(`Found space group info for symbol ${cleanSymbol}:`, spaceGroupInfo);
+      return spaceGroupInfo;
+    }
+    
+    console.log(`No space group info found for symbol ${cleanSymbol} in our mapping table`);
+    return null;
   };
 
   return (
@@ -166,7 +185,7 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
           </div>
 
           {/* Space Group Information for the first result */}
-          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].space_group && (
+          {mineralSearchResults.results.length > 0 && (
             <div className="mt-6">
               <h3 className="text-lg font-semibold mb-2">Space Group Information</h3>
 
@@ -177,25 +196,48 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
                 </h4>
                 
                 {(() => {
-                  const spaceGroup = mineralSearchResults.results[0].space_group;
-                  const spaceGroupInfo = getSpaceGroupInfo(spaceGroup);
+                  const firstMineral = mineralSearchResults.results[0];
+                  const spaceGroup = firstMineral.space_group;
                   
-                  if (spaceGroupInfo) {
+                  console.log("First mineral space group data:", {
+                    name: firstMineral.name,
+                    space_group: spaceGroup,
+                    crystal_system: firstMineral.crystal_system
+                  });
+                  
+                  if (spaceGroup) {
+                    const spaceGroupInfo = getSpaceGroupInfo(spaceGroup);
+                    
+                    if (spaceGroupInfo) {
+                      return (
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Space Group Symbol:</span> {spaceGroup}</p>
+                          <p><span className="font-medium">Space Group Number:</span> {spaceGroupInfo.number}</p>
+                          <p><span className="font-medium">Crystal System:</span> {spaceGroupInfo.system}</p>
+                          <p><span className="font-medium">Description:</span> {spaceGroupInfo.description}</p>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div className="space-y-2">
+                          <p><span className="font-medium">Space Group Symbol:</span> {spaceGroup}</p>
+                          <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                          <p className="text-amber-600">
+                            <span className="font-medium">Note:</span> Detailed information for space group symbol "{spaceGroup}" is not available in our reference.
+                            See the reference table below for common space groups.
+                          </p>
+                        </div>
+                      );
+                    }
+                  } else {
+                    // No space group information available
                     return (
                       <div className="space-y-2">
-                        <p><span className="font-medium">Space Group Symbol:</span> {spaceGroup}</p>
-                        <p><span className="font-medium">Space Group Number:</span> {spaceGroupInfo.number}</p>
-                        <p><span className="font-medium">Crystal System:</span> {spaceGroupInfo.system}</p>
-                        <p><span className="font-medium">Description:</span> {spaceGroupInfo.description}</p>
+                        <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                        <p className="text-amber-600">
+                          <span className="font-medium">Note:</span> Space group information not available for this mineral.
+                        </p>
                       </div>
-                    );
-                  } else {
-                    return (
-                      <p>
-                        <span className="font-medium">Space Group Symbol:</span> {spaceGroup}
-                        <br />
-                        <span className="text-sm text-muted-foreground">Detailed information not available for this space group in our reference table.</span>
-                      </p>
                     );
                   }
                 })()}
