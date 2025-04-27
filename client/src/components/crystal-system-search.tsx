@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
-import { searchMineralsByCrystalSystem, getCrystalClasses } from "@/lib/mindat-service";
+import { searchMineralsByCrystalSystem, getCrystalClasses, type CrystalClass } from "@/lib/mindat-service";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CrystalSystemSearchProps {
@@ -64,6 +64,25 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [classNumberSearch, setClassNumberSearch] = useState<string>("");
+  const [apiCrystalClasses, setApiCrystalClasses] = useState<CrystalClass[]>([]);
+  
+  // Query to fetch crystal classes from the API
+  const { data: crystalClassesData, isLoading: isLoadingClasses } = useQuery({
+    queryKey: ['crystal-classes'],
+    queryFn: async () => {
+      console.log("Fetching crystal classes from API...");
+      return await getCrystalClasses({ pageSize: 50 }); // Fetch all classes
+    },
+    staleTime: 1000 * 60 * 60, // Cache for 1 hour since this data rarely changes
+  });
+  
+  // Process crystal classes data when it arrives
+  useEffect(() => {
+    if (crystalClassesData?.results) {
+      console.log("Got crystal classes from API:", crystalClassesData.results);
+      setApiCrystalClasses(crystalClassesData.results);
+    }
+  }, [crystalClassesData]);
 
   // Query to fetch minerals by crystal system or class number
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
@@ -146,15 +165,30 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
     // Convert string to number if necessary
     const cclassNum = typeof cclass === 'string' ? parseInt(cclass as string) : cclass;
     
-    // Find the class in our mapping
+    // First check if we have this crystal class in the API data
+    if (apiCrystalClasses.length > 0) {
+      const apiClassInfo = apiCrystalClasses.find(cls => cls.id === cclassNum);
+      if (apiClassInfo) {
+        console.log(`Found crystal class info from API for cclass ${cclassNum}:`, apiClassInfo);
+        // Convert API data to local format for consistent usage
+        return {
+          cclass: apiClassInfo.id,
+          name: apiClassInfo.name || 'Unknown',
+          system: normalizeCrystalSystem(apiClassInfo.system || ''),
+          symbol: apiClassInfo.symbol || ''
+        };
+      }
+    }
+    
+    // If not found in API data, fall back to local mapping
     const classInfo = crystalClassMap.find(cls => cls.cclass === cclassNum);
     
     if (classInfo) {
-      console.log(`Found crystal class info for cclass ${cclassNum}:`, classInfo);
+      console.log(`Found crystal class info in local map for cclass ${cclassNum}:`, classInfo);
       return classInfo;
     }
     
-    console.log(`No crystal class info found for cclass ${cclassNum} in our mapping table`);
+    console.log(`No crystal class info found for cclass ${cclassNum} in API or local mapping tables`);
     return null;
   };
 
@@ -189,11 +223,23 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">Any crystal class</SelectItem>
-              {crystalClassMap.map(cls => (
-                <SelectItem key={cls.cclass} value={cls.cclass.toString()}>
-                  {cls.cclass} - {cls.symbol} - {cls.name}
-                </SelectItem>
-              ))}
+              {isLoadingClasses ? (
+                <SelectItem value="loading" disabled>Loading crystal classes...</SelectItem>
+              ) : apiCrystalClasses.length > 0 ? (
+                // Use API data if available
+                apiCrystalClasses.map(cls => (
+                  <SelectItem key={cls.id} value={cls.id.toString()}>
+                    {cls.id} - {cls.symbol} - {cls.name}
+                  </SelectItem>
+                ))
+              ) : (
+                // Fall back to local data if API fails
+                crystalClassMap.map(cls => (
+                  <SelectItem key={cls.cclass} value={cls.cclass.toString()}>
+                    {cls.cclass} - {cls.symbol} - {cls.name}
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
