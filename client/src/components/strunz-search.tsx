@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchMineralsByStrunzClass, getStrunzClassification } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,23 @@ interface StrunzSearchProps {
 export function StrunzSearch({ onSelect }: StrunzSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [strunzClassMap, setStrunzClassMap] = useState<Record<string, any>>({});
+
+  // Query to fetch Strunz classifications for mapping
+  const { data: strunzClasses } = useQuery({
+    queryKey: ['strunz-classifications-mapping'],
+    queryFn: () => getStrunzClassification({ pageSize: 100 }),
+    onSuccess: (data) => {
+      // Create a map of Strunz class codes to their info for easy lookup
+      const classMap: Record<string, any> = {};
+      if (data?.results) {
+        data.results.forEach(cls => {
+          classMap[cls.code] = cls;
+        });
+      }
+      setStrunzClassMap(classMap);
+    }
+  });
 
   // Query to fetch minerals by Strunz classification
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
@@ -25,12 +42,6 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
     enabled: isSearching && searchTerm.length > 2
   });
 
-  // Get Strunz classification data for mapping
-  const { data: strunzClasses } = useQuery({
-    queryKey: ['strunz-classifications-mapping'],
-    queryFn: () => getStrunzClassification({ pageSize: 100 })
-  });
-
   // Function to handle mineral search
   const handleSearch = () => {
     if (searchTerm.length > 2) {
@@ -38,85 +49,119 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
     }
   };
 
-  // Function to lookup Strunz class info by code
+  // Function to get Strunz class info by code
   const getStrunzClassInfo = (strunzCode: string) => {
-    if (!strunzClasses?.results || !strunzCode) return null;
-    
-    // Extract the main Strunz class (first part of the code)
-    const mainClass = strunzCode.split('.')[0];
-    return strunzClasses.results.find(cls => cls.code.startsWith(mainClass));
+    if (!strunzCode || !strunzClassMap[strunzCode]) {
+      // Try to find a matching prefix
+      const prefix = strunzCode?.split('.')[0];
+      if (prefix) {
+        for (const code in strunzClassMap) {
+          if (code.startsWith(prefix)) {
+            return strunzClassMap[code];
+          }
+        }
+      }
+      return null;
+    }
+    return strunzClassMap[strunzCode];
   };
-
-  if (isLoadingMineralSearch) {
-    return (
-      <div className="flex items-center space-x-2 py-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Searching minerals...</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex items-center space-x-2">
         <Input
-          placeholder="Enter mineral name (e.g., Quartz, Calcite)"
+          placeholder="Enter mineral name (e.g., Galena)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch();
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
-        <Button type="button" onClick={handleSearch}>
+        <Button onClick={handleSearch} disabled={searchTerm.length < 3}>
           Search
         </Button>
       </div>
 
-      {isSearching && mineralSearchResults && (
-        <div className="rounded border overflow-hidden">
+      {isLoadingMineralSearch && (
+        <div className="flex justify-center my-4">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span className="ml-2">Searching minerals...</span>
+        </div>
+      )}
+
+      {isSearching && !isLoadingMineralSearch && mineralSearchResults?.results?.length === 0 && (
+        <p className="text-center text-gray-500">No minerals found matching "{searchTerm}"</p>
+      )}
+
+      {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Search Results</h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Mineral Name</TableHead>
+                <TableHead>Formula</TableHead>
                 <TableHead>Strunz Code</TableHead>
                 <TableHead>Strunz Classification</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mineralSearchResults.results.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="text-center py-4">
-                    No minerals found matching "{searchTerm}"
-                  </TableCell>
-                </TableRow>
-              ) : (
-                mineralSearchResults.results.map((mineral: any) => {
-                  // Lookup Strunz class in the mapping table
-                  const strunzCode = mineral.strunz_code || mineral.strunz_classification;
-                  const classInfo = strunzCode ? getStrunzClassInfo(strunzCode) : null;
-                  
-                  return (
-                    <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer"
-                      onClick={() => onSelect(mineral)}
-                    >
-                      <TableCell>{mineral.name}</TableCell>
-                      <TableCell>{strunzCode || "-"}</TableCell>
-                      <TableCell>
-                        {classInfo ? (
-                          <div>
-                            <div><strong>{classInfo.name}</strong></div>
-                            <div>{classInfo.description || ""}</div>
-                          </div>
-                        ) : "-"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
+              {mineralSearchResults.results.map((mineral: any) => {
+                const strunzInfo = getStrunzClassInfo(mineral.strunz_code);
+                
+                return (
+                  <TableRow key={mineral.id}>
+                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                    <TableCell>{mineral.mindat_formula || mineral.ima_formula || 'N/A'}</TableCell>
+                    <TableCell>{mineral.strunz_code || 'N/A'}</TableCell>
+                    <TableCell>
+                      {strunzInfo ? `${strunzInfo.name}` : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
+
+          {/* Strunz Mapping Results */}
+          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].strunz_code && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Strunz Classification Mapping</h3>
+              <p className="mb-2">
+                Strunz Code: {mineralSearchResults.results[0].strunz_code}
+              </p>
+              
+              {getStrunzClassInfo(mineralSearchResults.results[0].strunz_code) && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Description</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(() => {
+                      const classInfo = getStrunzClassInfo(mineralSearchResults.results[0].strunz_code);
+                      if (!classInfo) return null;
+                      
+                      return (
+                        <TableRow key={classInfo.id}>
+                          <TableCell>{classInfo.code}</TableCell>
+                          <TableCell>{classInfo.name}</TableCell>
+                          <TableCell>{classInfo.description || 'N/A'}</TableCell>
+                        </TableRow>
+                      );
+                    })()}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

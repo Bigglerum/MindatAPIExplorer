@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchMineralsByCrystalSystem, getCrystalClasses, getCrystalClassById } from "@/lib/mindat-service";
+import { getMineralById, searchMineralsByCrystalSystem, getCrystalClasses } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,28 +9,42 @@ import { Loader2 } from "lucide-react";
 
 interface CrystalSystemSearchProps {
   onSelect: (mineral: any) => void;
-  selectedSystem?: string;
 }
 
-export function CrystalSystemSearch({ onSelect, selectedSystem = "" }: CrystalSystemSearchProps) {
+export function CrystalSystemSearch({ onSelect }: CrystalSystemSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [crystalClassMap, setCrystalClassMap] = useState<Record<string, any>>({});
 
-  // Query to fetch minerals by crystal system/class
-  const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
-    queryKey: ['minerals-by-crystal', searchTerm, selectedSystem],
-    queryFn: () => searchMineralsByCrystalSystem({
-      name: searchTerm,
-      crystal_system: selectedSystem === 'all' ? undefined : selectedSystem,
-      limit: 10
-    }),
-    enabled: isSearching && searchTerm.length > 2
-  });
-
-  // Get all available crystal classes for mapping
+  // Query to fetch crystal classes for mapping
   const { data: crystalClasses } = useQuery({
     queryKey: ['crystal-classes-mapping'],
-    queryFn: () => getCrystalClasses({ pageSize: 100 })
+    queryFn: () => getCrystalClasses({ pageSize: 100 }),
+    onSuccess: (data) => {
+      // Create a map of crystal class IDs to their info for easy lookup
+      const classMap: Record<string, any> = {};
+      if (data?.results) {
+        data.results.forEach(cls => {
+          classMap[cls.id.toString()] = cls;
+        });
+      }
+      setCrystalClassMap(classMap);
+    }
+  });
+
+  // Query to fetch specific mineral by name
+  const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
+    queryKey: ['minerals-by-crystal-system', searchTerm],
+    queryFn: async () => {
+      // First search for the mineral by name
+      const results = await searchMineralsByCrystalSystem({
+        name: searchTerm,
+        limit: 10
+      });
+      
+      return results;
+    },
+    enabled: isSearching && searchTerm.length > 2
   });
 
   // Function to handle mineral search
@@ -39,85 +54,110 @@ export function CrystalSystemSearch({ onSelect, selectedSystem = "" }: CrystalSy
     }
   };
 
-  // Function to lookup crystal class info by ID
-  const getCrystalClassInfo = (classId: number | string) => {
-    if (!crystalClasses?.results) return null;
-    return crystalClasses.results.find(cls => cls.id === Number(classId));
+  // Function to get the crystal class information
+  const getCrystalClassInfo = (cclassId: string | number) => {
+    if (!cclassId) return null;
+    return crystalClassMap[cclassId.toString()] || null;
   };
-
-  if (isLoadingMineralSearch) {
-    return (
-      <div className="flex items-center space-x-2 py-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Searching minerals...</span>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2">
+      <div className="flex items-center space-x-2">
         <Input
-          placeholder="Enter mineral name (e.g., Quartz, Calcite)"
+          placeholder="Enter mineral name (e.g., Liroconite)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch();
-            }
-          }}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
-        <Button type="button" onClick={handleSearch}>
+        <Button onClick={handleSearch} disabled={searchTerm.length < 3}>
           Search
         </Button>
       </div>
 
-      {isSearching && mineralSearchResults && (
-        <div className="rounded border overflow-hidden">
+      {isLoadingMineralSearch && (
+        <div className="flex justify-center my-4">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span className="ml-2">Searching minerals...</span>
+        </div>
+      )}
+
+      {isSearching && !isLoadingMineralSearch && mineralSearchResults?.results?.length === 0 && (
+        <p className="text-center text-gray-500">No minerals found matching "{searchTerm}"</p>
+      )}
+
+      {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-2">Search Results</h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
+                <TableHead>Mineral Name</TableHead>
+                <TableHead>Formula</TableHead>
                 <TableHead>Crystal System</TableHead>
                 <TableHead>Crystal Class</TableHead>
-                <TableHead>Class Info</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mineralSearchResults.results.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
-                    No minerals found matching "{searchTerm}"
-                  </TableCell>
-                </TableRow>
-              ) : (
-                mineralSearchResults.results.map((mineral: any) => {
-                  // Lookup crystal class in the mapping table
-                  const crystalClassId = mineral.crystal_class || null;
-                  const classInfo = crystalClassId ? getCrystalClassInfo(crystalClassId) : null;
-                  
-                  return (
-                    <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer"
-                      onClick={() => onSelect(mineral)}
-                    >
-                      <TableCell>{mineral.name}</TableCell>
-                      <TableCell>{mineral.crystal_system || "-"}</TableCell>
-                      <TableCell>{mineral.crystal_class || "-"}</TableCell>
-                      <TableCell>
-                        {classInfo ? (
-                          <div>
-                            <div><strong>System:</strong> {classInfo.system}</div>
-                            <div><strong>Symbol:</strong> {classInfo.symbol}</div>
-                            <div><strong>Name:</strong> {classInfo.name}</div>
-                          </div>
-                        ) : "-"}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
+              {mineralSearchResults.results.map((mineral: any) => {
+                const crystalClass = getCrystalClassInfo(mineral.cclass);
+                
+                return (
+                  <TableRow key={mineral.id}>
+                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                    <TableCell>{mineral.mindat_formula || mineral.ima_formula || 'N/A'}</TableCell>
+                    <TableCell>{mineral.csystem || 'N/A'}</TableCell>
+                    <TableCell>
+                      {crystalClass ? `${crystalClass.name} (${crystalClass.system})` : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
+
+          {/* Crystal Class Mapping Results */}
+          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].cclass && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Crystal Class Mapping</h3>
+              <p className="mb-2">
+                Crystal Class ID: {mineralSearchResults.results[0].cclass}
+              </p>
+              
+              {getCrystalClassInfo(mineralSearchResults.results[0].cclass) && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>System</TableHead>
+                      <TableHead>Symbol</TableHead>
+                      <TableHead>Name</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(() => {
+                      const classInfo = getCrystalClassInfo(mineralSearchResults.results[0].cclass);
+                      if (!classInfo) return null;
+                      
+                      return (
+                        <TableRow key={classInfo.id}>
+                          <TableCell>{classInfo.id}</TableCell>
+                          <TableCell>{classInfo.system}</TableCell>
+                          <TableCell>{classInfo.symbol}</TableCell>
+                          <TableCell>{classInfo.name}</TableCell>
+                        </TableRow>
+                      );
+                    })()}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
