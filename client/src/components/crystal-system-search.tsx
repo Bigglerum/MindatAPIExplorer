@@ -60,8 +60,9 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
       // If using the class number search
       if (classNumberSearch) {
         const cclassNum = parseInt(classNumberSearch);
+        console.log(`Searching for minerals with crystal class number: ${cclassNum}`);
         return await searchMineralsByCrystalSystem({
-          crystal_class_number: cclassNum,
+          crystal_class_number: cclassNum, // This is converted to 'cclass' in the API call
           crystal_system: selectedSystem === 'all' ? undefined : selectedSystem,
           limit: 10
         });

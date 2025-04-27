@@ -326,7 +326,7 @@ export async function searchMineralsByCrystalSystem(params: {
   name?: string;
   crystal_system?: string;
   crystal_class?: string;
-  crystal_class_number?: number; // Added parameter for crystal class number (1-7)
+  crystal_class_number?: number; // Parameter for crystal class number (1-32)
   limit?: number;
   page?: number;
 }): Promise<any> {
@@ -351,9 +351,10 @@ export async function searchMineralsByCrystalSystem(params: {
       searchParams.crystal_class = params.crystal_class;
     }
     
-    // Handle crystal class number (1-7) if provided
-    if (params.crystal_class_number !== undefined && params.crystal_class_number >= 1 && params.crystal_class_number <= 7) {
+    // Handle crystal class number (1-32) if provided
+    if (params.crystal_class_number !== undefined && params.crystal_class_number >= 1 && params.crystal_class_number <= 32) {
       searchParams.cclass = params.crystal_class_number;
+      console.log(`Adding cclass parameter: ${params.crystal_class_number}`);
     }
     
     const response = await apiRequest('POST', '/api/proxy', {
