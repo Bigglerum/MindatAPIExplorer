@@ -86,6 +86,12 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
 
   // Function to handle search by crystal class number
   const handleClassNumberSearch = (value: string) => {
+    // If "0" is selected, treat it as "Any crystal class" (empty string)
+    if (value === "0") {
+      setClassNumberSearch("");
+      return;
+    }
+    
     setClassNumberSearch(value);
     setSearchTerm(""); // Clear mineral name search when searching by class number
     setIsSearching(false); // Not needed for class number search as it's enabled by the value
@@ -126,7 +132,7 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
               <SelectValue placeholder="Select a crystal class number" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any crystal class</SelectItem>
+              <SelectItem value="0">Any crystal class</SelectItem>
               {crystalClassMap.map(cls => (
                 <SelectItem key={cls.cclass} value={cls.cclass.toString()}>
                   {cls.cclass} - {cls.symbol} - {cls.name}
