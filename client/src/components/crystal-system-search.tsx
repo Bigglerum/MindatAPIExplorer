@@ -177,6 +177,8 @@ export function CrystalSystemSearch({ onSelect }: CrystalSystemSearchProps) {
                       </TableBody>
                     </Table>
                   )}
+                </div>
+              )}
             </div>
           )}
         </div>
