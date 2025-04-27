@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchMineralsByDanaClass, getDanaClassification } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { searchMineralsByDanaClass } from "@/lib/mindat-service";
 
 interface DanaSearchProps {
   onSelect: (mineral: any) => void;
@@ -13,31 +14,18 @@ interface DanaSearchProps {
 export function DanaSearch({ onSelect }: DanaSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [danaClassMap, setDanaClassMap] = useState<Record<string, any>>({});
 
-  // Query to fetch Dana classifications for mapping
-  const { data: danaClasses } = useQuery({
-    queryKey: ['dana-classifications-mapping'],
-    queryFn: () => getDanaClassification({ pageSize: 100 }),
-    onSuccess: (data) => {
-      // Create a map of Dana class codes to their info for easy lookup
-      const classMap: Record<string, any> = {};
-      if (data?.results) {
-        data.results.forEach(cls => {
-          classMap[cls.code] = cls;
-        });
-      }
-      setDanaClassMap(classMap);
-    }
-  });
-
-  // Query to fetch minerals by Dana classification
+  // Query to fetch minerals by dana class
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
     queryKey: ['minerals-by-dana', searchTerm],
-    queryFn: () => searchMineralsByDanaClass({
-      name: searchTerm,
-      limit: 10
-    }),
+    queryFn: async () => {
+      const results = await searchMineralsByDanaClass({
+        name: searchTerm,
+        limit: 10
+      });
+      
+      return results;
+    },
     enabled: isSearching && searchTerm.length > 2
   });
 
@@ -48,21 +36,31 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
     }
   };
 
-  // Function to get Dana class info by code
-  const getDanaClassInfo = (danaCode: string) => {
-    if (!danaCode || !danaClassMap[danaCode]) {
-      // Try to find a matching prefix
-      const prefix = danaCode?.split('.')[0];
-      if (prefix) {
-        for (const code in danaClassMap) {
-          if (code.startsWith(prefix)) {
-            return danaClassMap[code];
-          }
-        }
-      }
-      return null;
-    }
-    return danaClassMap[danaCode];
+  // Function to extract and display the Dana classification information
+  const getDanaClassificationDisplay = (mineral: any) => {
+    const danaCode = mineral.dana_code || mineral.dana_classification;
+    
+    if (!danaCode) return 'N/A';
+    
+    // Define mapping for Dana classes (first number)
+    const danaClasses: Record<string, string> = {
+      "1": "Elements",
+      "2": "Sulfides",
+      "3": "Halides",
+      "4": "Oxides",
+      "5": "Carbonates & Nitrates",
+      "6": "Borates",
+      "7": "Sulfates, Chromates, Molybdates, & Tungstates",
+      "8": "Phosphates, Arsenates, & Vanadates",
+      "9": "Silicates",
+      "10": "Organic Minerals"
+    };
+
+    // Extract the main class (first number before period)
+    const mainClass = danaCode.split('.')[0];
+    const className = danaClasses[mainClass] || 'Unknown class';
+    
+    return `${danaCode} (${className})`;
   };
 
   return (
@@ -98,77 +96,97 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
               <TableRow>
                 <TableHead>Mineral Name</TableHead>
                 <TableHead>Formula</TableHead>
-                <TableHead>Dana Code</TableHead>
                 <TableHead>Dana Classification</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mineralSearchResults.results.map((mineral: any) => {
-                const danaInfo = getDanaClassInfo(mineral.dana_code);
-
-                return (
-                  <TableRow key={mineral.id}>
-                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
-                    <TableCell>{mineral.dana_code || 'N/A'}</TableCell>
-                    <TableCell>
-                      {danaInfo ? `${danaInfo.name}` : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
-                        View Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {mineralSearchResults.results.map((mineral: any) => (
+                <TableRow key={mineral.id}>
+                  <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                  <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
+                  <TableCell>{mineral.dana_code || mineral.dana_classification || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
 
           {/* Dana Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].dana_code && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Additional Mapping Information</h3>
-
-              {/* Dana Classification Information */}
+              <h3 className="text-lg font-semibold mb-2">Dana Classification Information</h3>
+              
               <div className="mb-4">
-                <h4 className="text-md font-medium mb-2">Dana Classification:</h4>
+                <h4 className="text-md font-medium mb-2">Dana Code: {mineralSearchResults.results[0].dana_code || mineralSearchResults.results[0].dana_classification}</h4>
                 <div className="bg-muted/50 p-3 rounded-md">
-                  <p className="font-medium">Dana Code: {mineralSearchResults.results[0].dana_code}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Full Dana Classification: {mineralSearchResults.results[0].dana_classification || mineralSearchResults.results[0].dana_code || 'N/A'}
+                  <p className="text-sm text-muted-foreground">
+                    {getDanaClassificationDisplay(mineralSearchResults.results[0])}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    The Dana classification system is a mineral classification system that categorizes minerals based on their chemical composition and crystal structure. The first number represents the main class.
                   </p>
                 </div>
               </div>
-
-              {getDanaClassInfo(mineralSearchResults.results[0].dana_code?.split('.')[0]) && (
-                <div>
-                  <h4 className="text-md font-medium mb-2">Dana Class Mapping:</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Class</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(() => {
-                        const danaMainClass = mineralSearchResults.results[0].dana_code?.split('.')[0];
-                        const classInfo = getDanaClassInfo(danaMainClass);
-                        if (!classInfo) return null;
-
-                        return (
-                          <TableRow key={danaMainClass}>
-                            <TableCell className="font-medium">{danaMainClass}</TableCell>
-                            <TableCell>{classInfo.name}</TableCell>
-                          </TableRow>
-                        );
-                      })()}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+              
+              {/* Dana Class Table */}
+              <div>
+                <h4 className="text-md font-medium mb-2">Dana Classification System</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Description</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>1</TableCell>
+                      <TableCell>Elements</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>2</TableCell>
+                      <TableCell>Sulfides</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>3</TableCell>
+                      <TableCell>Halides</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>4</TableCell>
+                      <TableCell>Oxides</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>5</TableCell>
+                      <TableCell>Carbonates & Nitrates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>6</TableCell>
+                      <TableCell>Borates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>7</TableCell>
+                      <TableCell>Sulfates, Chromates, Molybdates, & Tungstates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>8</TableCell>
+                      <TableCell>Phosphates, Arsenates, & Vanadates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>9</TableCell>
+                      <TableCell>Silicates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>10</TableCell>
+                      <TableCell>Organic Minerals</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </div>

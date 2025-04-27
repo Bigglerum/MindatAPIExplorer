@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { searchMineralsByStrunzClass, getStrunzClassification } from "@/lib/mindat-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
+import { searchMineralsByStrunzClass } from "@/lib/mindat-service";
 
 interface StrunzSearchProps {
   onSelect: (mineral: any) => void;
@@ -13,31 +14,18 @@ interface StrunzSearchProps {
 export function StrunzSearch({ onSelect }: StrunzSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [strunzClassMap, setStrunzClassMap] = useState<Record<string, any>>({});
 
-  // Query to fetch Strunz classifications for mapping
-  const { data: strunzClasses } = useQuery({
-    queryKey: ['strunz-classifications-mapping'],
-    queryFn: () => getStrunzClassification({ pageSize: 100 }),
-    onSuccess: (data) => {
-      // Create a map of Strunz class codes to their info for easy lookup
-      const classMap: Record<string, any> = {};
-      if (data?.results) {
-        data.results.forEach(cls => {
-          classMap[cls.code] = cls;
-        });
-      }
-      setStrunzClassMap(classMap);
-    }
-  });
-
-  // Query to fetch minerals by Strunz classification
+  // Query to fetch minerals by strunz class
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
     queryKey: ['minerals-by-strunz', searchTerm],
-    queryFn: () => searchMineralsByStrunzClass({
-      name: searchTerm,
-      limit: 10
-    }),
+    queryFn: async () => {
+      const results = await searchMineralsByStrunzClass({
+        name: searchTerm,
+        limit: 10
+      });
+      
+      return results;
+    },
     enabled: isSearching && searchTerm.length > 2
   });
 
@@ -48,28 +36,48 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
     }
   };
 
-  // Function to get Strunz class info by code
-  const getStrunzClassInfo = (strunzCode: string) => {
-    if (!strunzCode || !strunzClassMap[strunzCode]) {
-      // Try to find a matching prefix
-      const prefix = strunzCode?.split('.')[0];
-      if (prefix) {
-        for (const code in strunzClassMap) {
-          if (code.startsWith(prefix)) {
-            return strunzClassMap[code];
-          }
-        }
-      }
-      return null;
-    }
-    return strunzClassMap[strunzCode];
+  // Function to extract and display the Strunz classification information
+  const getStrunzClassificationDisplay = (mineral: any) => {
+    const strunzCode = mineral.strunz_code || mineral.strunz_classification;
+    
+    if (!strunzCode) return 'N/A';
+    
+    // Define mapping for Strunz classes (first letter)
+    const strunzClasses: Record<string, string> = {
+      "A": "Elements",
+      "B": "Sulfides and Sulfosalts",
+      "C": "Halides",
+      "D": "Oxides and Hydroxides",
+      "E": "Carbonates and Nitrates",
+      "F": "Borates",
+      "G": "Sulfates, Chromates, Molybdates, and Tungstates",
+      "H": "Phosphates, Arsenates, and Vanadates",
+      "I": "Silicates",
+      "J": "Organic Compounds",
+      "1": "Elements",
+      "2": "Sulfides",
+      "3": "Halides",
+      "4": "Oxides",
+      "5": "Carbonates and Nitrates",
+      "6": "Borates",
+      "7": "Sulfates",
+      "8": "Phosphates",
+      "9": "Silicates",
+      "10": "Organic Compounds"
+    };
+
+    // Extract the main class (first character)
+    const mainClass = strunzCode.charAt(0);
+    const className = strunzClasses[mainClass] || 'Unknown class';
+    
+    return `${strunzCode} (${className})`;
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
         <Input
-          placeholder="Enter mineral name (e.g., Galena)"
+          placeholder="Enter mineral name (e.g., Quartz)"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -98,80 +106,97 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
               <TableRow>
                 <TableHead>Mineral Name</TableHead>
                 <TableHead>Formula</TableHead>
-                <TableHead>Strunz Code</TableHead>
                 <TableHead>Strunz Classification</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mineralSearchResults.results.map((mineral: any) => {
-                const strunzInfo = getStrunzClassInfo(mineral.strunz_code);
-
-                return (
-                  <TableRow key={mineral.id}>
-                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
-                    <TableCell>{mineral.strunz_code || 'N/A'}</TableCell>
-                    <TableCell>
-                      {strunzInfo ? `${strunzInfo.name}` : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
-                        View Details
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {mineralSearchResults.results.map((mineral: any) => (
+                <TableRow key={mineral.id}>
+                  <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                  <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
+                  <TableCell>{mineral.strunz_code || mineral.strunz_classification || 'N/A'}</TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
+                      View Details
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
 
           {/* Strunz Classification Mapping Results */}
-          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].strunz_code && (
+          {mineralSearchResults.results.length > 0 && (mineralSearchResults.results[0].strunz_code || mineralSearchResults.results[0].strunz_classification) && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Additional Mapping Information</h3>
-
-              {/* Strunz Classification Information */}
+              <h3 className="text-lg font-semibold mb-2">Strunz Classification Information</h3>
+              
               <div className="mb-4">
-                <h4 className="text-md font-medium mb-2">Strunz Classification:</h4>
+                <h4 className="text-md font-medium mb-2">Strunz Code: {mineralSearchResults.results[0].strunz_code || mineralSearchResults.results[0].strunz_classification}</h4>
                 <div className="bg-muted/50 p-3 rounded-md">
-                  <p className="font-medium">Strunz Code: {mineralSearchResults.results[0].strunz_code}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Full Strunz Classification: {mineralSearchResults.results[0].strunz_classification || mineralSearchResults.results[0].strunz_code || 'N/A'}
+                  <p className="text-sm text-muted-foreground">
+                    {getStrunzClassificationDisplay(mineralSearchResults.results[0])}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    The Strunz classification is a mineral classification system based on chemical composition and crystal structure. The first letter/number represents the main class.
                   </p>
                 </div>
               </div>
-
-              {getStrunzClassInfo(mineralSearchResults.results[0].strunz_code) && (
-                <div>
-                  <h4 className="text-md font-medium mb-2">Strunz Class Mapping:</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Code</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {(() => {
-                        const classInfo = getStrunzClassInfo(mineralSearchResults.results[0].strunz_code);
-                        if (!classInfo) return null;
-
-                        return (
-                          <TableRow key={classInfo.code}>
-                            <TableCell className="font-medium">{classInfo.code}</TableCell>
-                            <TableCell>{classInfo.name}</TableCell>
-                            <TableCell className="text-sm text-muted-foreground">
-                              {classInfo.description || 'No additional description available'}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })()}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+              
+              {/* Strunz Class Table */}
+              <div>
+                <h4 className="text-md font-medium mb-2">Strunz Classification System</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Class</TableHead>
+                      <TableHead>Description</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell>1/A</TableCell>
+                      <TableCell>Elements</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>2/B</TableCell>
+                      <TableCell>Sulfides and Sulfosalts</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>3/C</TableCell>
+                      <TableCell>Halides</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>4/D</TableCell>
+                      <TableCell>Oxides and Hydroxides</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>5/E</TableCell>
+                      <TableCell>Carbonates and Nitrates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>6/F</TableCell>
+                      <TableCell>Borates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>7/G</TableCell>
+                      <TableCell>Sulfates, Chromates, Molybdates, and Tungstates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>8/H</TableCell>
+                      <TableCell>Phosphates, Arsenates, and Vanadates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>9/I</TableCell>
+                      <TableCell>Silicates</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>10/J</TableCell>
+                      <TableCell>Organic Compounds</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           )}
         </div>
