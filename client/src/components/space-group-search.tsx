@@ -280,16 +280,14 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
                 {(() => {
                   const firstMineral = mineralSearchResults.results[0];
                   
-                  // Log all the data for debugging
+                  // Log space group data for debugging
                   console.log("First mineral space group data:", {
                     name: firstMineral.name,
                     space_group: firstMineral.space_group,
                     spacegroup: firstMineral.spacegroup,
                     crystal_system: firstMineral.crystal_system || firstMineral.csystem,
                     crystal_class: firstMineral.crystal_class,
-                    crystal_class_id: firstMineral.crystal_class_id,
-                    // Log all properties to see what's available
-                    allProps: Object.keys(firstMineral)
+                    crystal_class_id: firstMineral.crystal_class_id
                   });
                   
                   // Get space group information using our mapper function
@@ -364,16 +362,6 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
                     );
                   }
                 })()}
-              </div>
-
-              {/* Raw API Response Details Section */}
-              <div>
-                <h4 className="text-md font-medium mb-2">API Response Details</h4>
-                <div className="p-4 border rounded-md bg-gray-50 overflow-auto max-h-64">
-                  <pre className="text-xs whitespace-pre-wrap">
-                    {JSON.stringify(mineralSearchResults.results[0], null, 2)}
-                  </pre>
-                </div>
               </div>
             </div>
           )}
