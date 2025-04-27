@@ -339,7 +339,8 @@ export async function searchMineralsByCrystalSystem(params: {
     
     // Add the mineral name if provided
     if (params.name) {
-      searchParams.q = params.name; // Use 'q' for general search
+      searchParams.name = params.name; // Use 'name' instead of 'q' parameter
+      searchParams.exact_match = true; // Use exact matching for keyword search
     }
     
     // If crystal system or class specified, include as part of search
@@ -408,7 +409,8 @@ export async function searchMineralsBySpaceGroup(params: {
     
     // Add the mineral name if provided
     if (params.name) {
-      searchParams.q = params.name; // Use 'q' for general search
+      searchParams.name = params.name; // Use 'name' instead of 'q' parameter
+      searchParams.exact_match = true; // Use exact matching for keyword search
     }
     
     // If space group specified, include as part of search
@@ -471,7 +473,8 @@ export async function searchMineralsByDanaClass(params: {
     
     // Add the mineral name if provided
     if (params.name) {
-      searchParams.q = params.name; // Use 'q' for general search
+      searchParams.name = params.name; // Use 'name' instead of 'q' parameter
+      searchParams.exact_match = true; // Use exact matching for keyword search
     }
     
     // If dana class specified, include as part of search
@@ -529,7 +532,8 @@ export async function searchMineralsByStrunzClass(params: {
     
     // Add the mineral name if provided
     if (params.name) {
-      searchParams.q = params.name; // Use 'q' for general search
+      searchParams.name = params.name; // Use 'name' instead of 'q' parameter
+      searchParams.exact_match = true; // Use exact matching for keyword search
     }
     
     // If strunz class specified, include as part of search
@@ -584,11 +588,14 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       };
     }
     
-    // Using txt parameter which works correctly with the localities API
+    // Using name parameter with exact matching for more precise results
     const response = await apiRequest('POST', '/api/proxy', {
       path: '/localities/',
       method: 'GET',
-      parameters: { txt: name } // Use the txt parameter for search
+      parameters: { 
+        name: name,
+        exact_match: true 
+      }
     });
     
     const data = await response.json();
