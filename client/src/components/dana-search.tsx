@@ -111,7 +111,7 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
                 return (
                   <TableRow key={mineral.id}>
                     <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                    <TableCell>{mineral.mindat_formula || mineral.ima_formula || 'N/A'}</TableCell>
+                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
                     <TableCell>{mineral.dana_code || 'N/A'}</TableCell>
                     <TableCell>
                       {danaInfo ? `${danaInfo.name}` : 'N/A'}
