@@ -120,6 +120,11 @@ export function CrystalSystemSearch({ onSelect }: CrystalSystemSearchProps) {
               })}
             </TableBody>
           </Table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
           {/* Crystal System and Class Mapping Results */}
           {mineralSearchResults.results.length > 0 && (

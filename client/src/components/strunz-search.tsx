@@ -125,6 +125,11 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
               ))}
             </TableBody>
           </Table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
           {/* Strunz Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && (mineralSearchResults.results[0].strunz_code || mineralSearchResults.results[0].strunz_classification) && (

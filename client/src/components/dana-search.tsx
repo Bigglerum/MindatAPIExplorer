@@ -115,6 +115,11 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
               ))}
             </TableBody>
           </Table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
           {/* Dana Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].dana_code && (
