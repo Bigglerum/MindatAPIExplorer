@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchMineralsByStrunzClass, getStrunzClassification } from "@/lib/mindat-service";
@@ -107,7 +106,7 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
             <TableBody>
               {mineralSearchResults.results.map((mineral: any) => {
                 const strunzInfo = getStrunzClassInfo(mineral.strunz_code);
-                
+
                 return (
                   <TableRow key={mineral.id}>
                     <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
@@ -127,38 +126,51 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
             </TableBody>
           </Table>
 
-          {/* Strunz Mapping Results */}
+          {/* Strunz Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].strunz_code && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Strunz Classification Mapping</h3>
-              <p className="mb-2">
-                Strunz Code: {mineralSearchResults.results[0].strunz_code}
-              </p>
-              
+              <h3 className="text-lg font-semibold mb-2">Additional Mapping Information</h3>
+
+              {/* Strunz Classification Information */}
+              <div className="mb-4">
+                <h4 className="text-md font-medium mb-2">Strunz Classification:</h4>
+                <div className="bg-muted/50 p-3 rounded-md">
+                  <p className="font-medium">Strunz Code: {mineralSearchResults.results[0].strunz_code}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Full Strunz Classification: {mineralSearchResults.results[0].strunz_classification || mineralSearchResults.results[0].strunz_code || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
               {getStrunzClassInfo(mineralSearchResults.results[0].strunz_code) && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(() => {
-                      const classInfo = getStrunzClassInfo(mineralSearchResults.results[0].strunz_code);
-                      if (!classInfo) return null;
-                      
-                      return (
-                        <TableRow key={classInfo.id}>
-                          <TableCell>{classInfo.code}</TableCell>
-                          <TableCell>{classInfo.name}</TableCell>
-                          <TableCell>{classInfo.description || 'N/A'}</TableCell>
-                        </TableRow>
-                      );
-                    })()}
-                  </TableBody>
-                </Table>
+                <div>
+                  <h4 className="text-md font-medium mb-2">Strunz Class Mapping:</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Code</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Description</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(() => {
+                        const classInfo = getStrunzClassInfo(mineralSearchResults.results[0].strunz_code);
+                        if (!classInfo) return null;
+
+                        return (
+                          <TableRow key={classInfo.code}>
+                            <TableCell className="font-medium">{classInfo.code}</TableCell>
+                            <TableCell>{classInfo.name}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {classInfo.description || 'No additional description available'}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           )}

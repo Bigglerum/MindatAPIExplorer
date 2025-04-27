@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { searchMineralsByDanaClass, getDanaClassification } from "@/lib/mindat-service";
@@ -107,7 +106,7 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
             <TableBody>
               {mineralSearchResults.results.map((mineral: any) => {
                 const danaInfo = getDanaClassInfo(mineral.dana_code);
-                
+
                 return (
                   <TableRow key={mineral.id}>
                     <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
@@ -127,38 +126,48 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
             </TableBody>
           </Table>
 
-          {/* Dana Mapping Results */}
+          {/* Dana Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].dana_code && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Dana Classification Mapping</h3>
-              <p className="mb-2">
-                Dana Code: {mineralSearchResults.results[0].dana_code}
-              </p>
-              
-              {getDanaClassInfo(mineralSearchResults.results[0].dana_code) && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Code</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Description</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(() => {
-                      const classInfo = getDanaClassInfo(mineralSearchResults.results[0].dana_code);
-                      if (!classInfo) return null;
-                      
-                      return (
-                        <TableRow key={classInfo.id}>
-                          <TableCell>{classInfo.code}</TableCell>
-                          <TableCell>{classInfo.name}</TableCell>
-                          <TableCell>{classInfo.description || 'N/A'}</TableCell>
-                        </TableRow>
-                      );
-                    })()}
-                  </TableBody>
-                </Table>
+              <h3 className="text-lg font-semibold mb-2">Additional Mapping Information</h3>
+
+              {/* Dana Classification Information */}
+              <div className="mb-4">
+                <h4 className="text-md font-medium mb-2">Dana Classification:</h4>
+                <div className="bg-muted/50 p-3 rounded-md">
+                  <p className="font-medium">Dana Code: {mineralSearchResults.results[0].dana_code}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Full Dana Classification: {mineralSearchResults.results[0].dana_classification || mineralSearchResults.results[0].dana_code || 'N/A'}
+                  </p>
+                </div>
+              </div>
+
+              {getDanaClassInfo(mineralSearchResults.results[0].dana_code?.split('.')[0]) && (
+                <div>
+                  <h4 className="text-md font-medium mb-2">Dana Class Mapping:</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Class</TableHead>
+                        <TableHead>Description</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {(() => {
+                        const danaMainClass = mineralSearchResults.results[0].dana_code?.split('.')[0];
+                        const classInfo = getDanaClassInfo(danaMainClass);
+                        if (!classInfo) return null;
+
+                        return (
+                          <TableRow key={danaMainClass}>
+                            <TableCell className="font-medium">{danaMainClass}</TableCell>
+                            <TableCell>{classInfo.name}</TableCell>
+                          </TableRow>
+                        );
+                      })()}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           )}

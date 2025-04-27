@@ -121,41 +121,62 @@ export function CrystalSystemSearch({ onSelect }: CrystalSystemSearchProps) {
             </TableBody>
           </Table>
 
-          {/* Crystal Class Mapping Results */}
-          {mineralSearchResults.results.length > 0 && mineralSearchResults.results[0].cclass && (
+          {/* Crystal System and Class Mapping Results */}
+          {mineralSearchResults.results.length > 0 && (
             <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Crystal Class Mapping</h3>
-              <p className="mb-2">
-                Crystal Class ID: {mineralSearchResults.results[0].cclass}
-              </p>
+              <h3 className="text-lg font-semibold mb-2">Additional Mapping Information</h3>
               
-              {getCrystalClassInfo(mineralSearchResults.results[0].cclass) && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>System</TableHead>
-                      <TableHead>Symbol</TableHead>
-                      <TableHead>Name</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {(() => {
-                      const classInfo = getCrystalClassInfo(mineralSearchResults.results[0].cclass);
-                      if (!classInfo) return null;
-                      
-                      return (
-                        <TableRow key={classInfo.id}>
-                          <TableCell>{classInfo.id}</TableCell>
-                          <TableCell>{classInfo.system}</TableCell>
-                          <TableCell>{classInfo.symbol}</TableCell>
-                          <TableCell>{classInfo.name}</TableCell>
+              {/* Crystal System Information */}
+              <div className="mb-4">
+                <h4 className="text-md font-medium mb-2">Crystal System:</h4>
+                <div className="bg-muted/50 p-3 rounded-md">
+                  <p className="font-medium">{mineralSearchResults.results[0].csystem || 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {mineralSearchResults.results[0].csystem === 'Amorphous' && 'No crystalline structure'}
+                    {mineralSearchResults.results[0].csystem === 'Hexagonal' && 'Six-fold symmetry with equal axes in the horizontal plane and a different vertical axis'}
+                    {mineralSearchResults.results[0].csystem === 'Icosahedral' && 'Twenty-fold symmetry, typically seen in quasicrystals'}
+                    {mineralSearchResults.results[0].csystem === 'Isometric' && 'Also known as cubic, with three equal axes at right angles'}
+                    {mineralSearchResults.results[0].csystem === 'Monoclinic' && 'Three unequal axes with one oblique intersection'}
+                    {mineralSearchResults.results[0].csystem === 'Orthorhombic' && 'Three unequal axes at right angles'}
+                    {mineralSearchResults.results[0].csystem === 'Tetragonal' && 'Three axes at right angles, two of equal length'}
+                    {mineralSearchResults.results[0].csystem === 'Triclinic' && 'Three unequal axes with oblique intersections'}
+                    {mineralSearchResults.results[0].csystem === 'Trigonal' && 'Three equal axes inclined at angles other than 90 degrees'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Crystal Class Information */}
+              {mineralSearchResults.results[0].cclass && (
+                <div>
+                  <h4 className="text-md font-medium mb-2">Crystal Class ID: {mineralSearchResults.results[0].cclass}</h4>
+                  
+                  {getCrystalClassInfo(mineralSearchResults.results[0].cclass) && (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>ID</TableHead>
+                          <TableHead>System</TableHead>
+                          <TableHead>Symbol</TableHead>
+                          <TableHead>Name</TableHead>
                         </TableRow>
-                      );
-                    })()}
-                  </TableBody>
-                </Table>
-              )}
+                      </TableHeader>
+                      <TableBody>
+                        {(() => {
+                          const classInfo = getCrystalClassInfo(mineralSearchResults.results[0].cclass);
+                          if (!classInfo) return null;
+                          
+                          return (
+                            <TableRow key={classInfo.id}>
+                              <TableCell>{classInfo.id}</TableCell>
+                              <TableCell>{classInfo.system}</TableCell>
+                              <TableCell>{classInfo.symbol}</TableCell>
+                              <TableCell>{classInfo.name}</TableCell>
+                            </TableRow>
+                          );
+                        })()}
+                      </TableBody>
+                    </Table>
+                  )}
             </div>
           )}
         </div>
