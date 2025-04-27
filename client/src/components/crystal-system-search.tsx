@@ -12,6 +12,18 @@ interface CrystalSystemSearchProps {
   selectedSystem?: string;
 }
 
+// Crystal system name mapping (handles different terminology)
+const crystalSystemMap: Record<string, string> = {
+  "isometric": "Cubic",
+  "cubic": "Cubic",
+  "hexagonal": "Hexagonal",
+  "trigonal": "Trigonal",
+  "tetragonal": "Tetragonal",
+  "orthorhombic": "Orthorhombic", 
+  "monoclinic": "Monoclinic",
+  "triclinic": "Triclinic"
+};
+
 // Crystal class number (cclass) to name mapping
 const crystalClassMap = [
   { cclass: 1, name: "Pedial", system: "Triclinic", symbol: "1" },
@@ -96,6 +108,37 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
     setClassNumberSearch(value);
     setSearchTerm(""); // Clear mineral name search when searching by class number
     setIsSearching(false); // Not needed for class number search as it's enabled by the value
+  };
+
+  // Helper function to normalize crystal system names
+  const normalizeCrystalSystem = (systemName: string): string => {
+    if (!systemName) return "";
+    
+    // Trim and convert to lowercase for case-insensitive comparison
+    const lowercaseSystem = systemName.trim().toLowerCase();
+    
+    // Direct mapping match first
+    if (crystalSystemMap[lowercaseSystem]) {
+      return crystalSystemMap[lowercaseSystem];
+    }
+    
+    // Try partial matches
+    for (const [key, value] of Object.entries(crystalSystemMap)) {
+      if (lowercaseSystem.includes(key)) {
+        console.log(`Mapped crystal system name from "${systemName}" to "${value}" based on partial match with "${key}"`);
+        return value;
+      }
+    }
+    
+    // Special case for common variants
+    if (lowercaseSystem.includes("cubic") || lowercaseSystem.includes("isometric")) {
+      return "Cubic";
+    }
+    
+    // If no mapping found, return the original with first letter capitalized
+    const normalizedName = systemName.charAt(0).toUpperCase() + systemName.slice(1).toLowerCase();
+    console.log(`No mapping found for crystal system name "${systemName}", using normalized format: "${normalizedName}"`);
+    return normalizedName;
   };
 
   // Find the crystal class info for a given cclass value
@@ -218,6 +261,13 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                     crystal_class: firstMineral.crystal_class
                   });
                   
+                  // Normalize crystal system name for display
+                  const normalizedSystem = firstMineral.crystal_system 
+                    ? normalizeCrystalSystem(firstMineral.crystal_system)
+                    : 'Not specified';
+                    
+                  console.log(`Original system: ${firstMineral.crystal_system}, Normalized: ${normalizedSystem}`);
+                  
                   if (cclass) {
                     const classInfo = getCrystalClassInfo(cclass);
                     
@@ -228,16 +278,21 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                           <p><span className="font-medium">Crystal Class Name:</span> {classInfo.name}</p>
                           <p><span className="font-medium">Crystal System:</span> {classInfo.system}</p>
                           <p><span className="font-medium">Hermann-Mauguin Symbol:</span> {classInfo.symbol}</p>
+                          {normalizedSystem !== classInfo.system && (
+                            <p className="text-yellow-600">
+                              <span className="font-medium">Note:</span> API reports crystal system as "{firstMineral.crystal_system}" which is equivalent to {classInfo.system}.
+                            </p>
+                          )}
                         </div>
                       );
                     } else {
                       return (
                         <div className="space-y-2">
                           <p><span className="font-medium">Crystal Class Number:</span> {cclass}</p>
-                          <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                          <p><span className="font-medium">Crystal System:</span> {normalizedSystem}</p>
                           <p className="text-amber-600">
-                            <span className="font-medium">Note:</span> Detailed information for class number {cclass} is not available in our reference.
-                            Highlighting the matching class in the table below.
+                            <span className="font-medium">Note:</span> Class number {cclass} corresponds to a {normalizedSystem} crystal system.
+                            See the reference table below for all crystal classes.
                           </p>
                         </div>
                       );
@@ -246,10 +301,11 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                     // No cclass information, show what we have
                     return (
                       <div className="space-y-2">
-                        <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || 'Not specified'}</p>
+                        <p><span className="font-medium">Crystal System:</span> {normalizedSystem}</p>
                         <p><span className="font-medium">Crystal Class:</span> {firstMineral.crystal_class || 'Not specified'}</p>
                         <p className="text-amber-600">
                           <span className="font-medium">Note:</span> Crystal class number information not available for this mineral.
+                          The table below shows all 32 crystal classes grouped by crystal system.
                         </p>
                       </div>
                     );
