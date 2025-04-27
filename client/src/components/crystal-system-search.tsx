@@ -261,10 +261,22 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                     crystal_class: firstMineral.crystal_class
                   });
                   
-                  // Normalize crystal system name for display
+                  // First try to get system from crystal class if available
+                  let derivedSystem = 'Not specified';
+                  
+                  // If we have a crystal class number, derive the crystal system from it
+                  if (cclass) {
+                    const classInfo = getCrystalClassInfo(cclass);
+                    if (classInfo) {
+                      derivedSystem = classInfo.system;
+                      console.log(`Derived crystal system "${derivedSystem}" from crystal class number ${cclass}`);
+                    }
+                  }
+                  
+                  // If API provides crystal_system, normalize it
                   const normalizedSystem = firstMineral.crystal_system 
                     ? normalizeCrystalSystem(firstMineral.crystal_system)
-                    : 'Not specified';
+                    : derivedSystem;
                     
                   console.log(`Original system: ${firstMineral.crystal_system}, Normalized: ${normalizedSystem}`);
                   
@@ -278,9 +290,13 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                           <p><span className="font-medium">Crystal Class Name:</span> {classInfo.name}</p>
                           <p><span className="font-medium">Crystal System:</span> {classInfo.system}</p>
                           <p><span className="font-medium">Hermann-Mauguin Symbol:</span> {classInfo.symbol}</p>
-                          {normalizedSystem !== classInfo.system && (
+                          {firstMineral.crystal_system && normalizedSystem !== classInfo.system ? (
                             <p className="text-yellow-600">
                               <span className="font-medium">Note:</span> API reports crystal system as "{firstMineral.crystal_system}" which is equivalent to {classInfo.system}.
+                            </p>
+                          ) : !firstMineral.crystal_system && (
+                            <p className="text-green-600">
+                              <span className="font-medium">Note:</span> Crystal system derived from class number {cclass}.
                             </p>
                           )}
                         </div>
