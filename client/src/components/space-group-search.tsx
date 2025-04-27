@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -22,16 +22,57 @@ interface SpaceGroupSearchProps {
   selectedSystem?: string;
 }
 
-// List of common space group symbols for search dropdown
-const spaceGroupSymbols = [
-  "P1", "P2₁/c", "C2/c", "P2₁2₁2₁", "Pnma", "R-3m", "P6₃/mmc", 
-  "Pa3", "Fm-3m", "Fd-3m", "Ia-3d"
+// Space group mapping for commonly used space groups in mineralogy
+// Based on International Tables for Crystallography
+const spaceGroupMap = [
+  { number: 1, symbol: "P1", system: "Triclinic", description: "Primitive triclinic" },
+  { number: 2, symbol: "P-1", system: "Triclinic", description: "Primitive triclinic with inversion" },
+  { number: 5, symbol: "C2", system: "Monoclinic", description: "C-centered monoclinic" },
+  { number: 14, symbol: "P2₁/c", system: "Monoclinic", description: "Primitive monoclinic with 2₁ screw axis and c glide" },
+  { number: 15, symbol: "C2/c", system: "Monoclinic", description: "C-centered monoclinic with 2-fold axis and c glide" },
+  { number: 19, symbol: "P2₁2₁2₁", system: "Orthorhombic", description: "Primitive orthorhombic with three 2₁ screw axes" },
+  { number: 62, symbol: "Pnma", system: "Orthorhombic", description: "Primitive orthorhombic with n, m, and a symmetry elements" },
+  { number: 88, symbol: "I4₁/a", system: "Tetragonal", description: "Body-centered tetragonal with 4₁ screw axis" },
+  { number: 166, symbol: "R-3m", system: "Trigonal", description: "Rhombohedral trigonal with inversion and mirror" },
+  { number: 186, symbol: "P6₃mc", system: "Hexagonal", description: "Primitive hexagonal with 6₃ screw axis" },
+  { number: 194, symbol: "P6₃/mmc", system: "Hexagonal", description: "Primitive hexagonal with 6₃ screw axis, mirrors and glides" },
+  { number: 204, symbol: "Pa3", system: "Cubic", description: "Primitive cubic with glide planes (common for pyrite)" },
+  { number: 216, symbol: "F-43m", system: "Cubic", description: "Face-centered cubic with 4₃ screw axis (common for sphalerite)" },
+  { number: 224, symbol: "Fm-3m", system: "Cubic", description: "Face-centered cubic with high symmetry (common for halite, fluorite)" },
+  { number: 227, symbol: "Fd-3m", system: "Cubic", description: "Face-centered cubic with diamond structure" },
+  { number: 230, symbol: "Ia-3d", system: "Cubic", description: "Body-centered cubic with highest symmetry (common for garnets)" },
 ];
 
 export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [spaceGroupSymbol, setSpaceGroupSymbol] = useState<string>("");
+  
+  // State for API-fetched space group data
+  const [apiSpaceGroups, setApiSpaceGroups] = useState<any[]>([]);
+
+  // Query to fetch space groups from the API
+  const { data: spaceGroupsData } = useQuery({
+    queryKey: ['space-groups'],
+    queryFn: async () => {
+      console.log("Fetching space groups from API...");
+      try {
+        // If getSpaceGroups doesn't exist yet in the API, we'll use our local map
+        return await getSpaceGroups({ pageSize: 100 });
+      } catch (error) {
+        console.error("Error fetching space groups:", error);
+        return { results: [] };
+      }
+    },
+  });
+
+  // Update state when space groups data is loaded
+  useEffect(() => {
+    if (spaceGroupsData?.results) {
+      console.log("Got space groups from API:", spaceGroupsData.results);
+      setApiSpaceGroups(spaceGroupsData.results);
+    }
+  }, [spaceGroupsData]);
 
   // Query to fetch minerals by space group
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
@@ -44,6 +85,88 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
     }),
     enabled: (isSearching && searchTerm.length > 2) || (spaceGroupSymbol !== "")
   });
+
+  // Function to normalize crystal system names
+  const normalizeCrystalSystem = (system: string): string => {
+    if (!system) return "Unknown";
+    
+    // Convert to lowercase for case-insensitive matching
+    const lowered = system.toLowerCase();
+    
+    // Map Isometric to Cubic
+    if (lowered === "isometric") return "Cubic";
+    
+    // Capitalize the first letter for other systems
+    return system.charAt(0).toUpperCase() + system.slice(1).toLowerCase();
+  };
+
+  // Function to get space group info from ID or symbol
+  const getSpaceGroupInfo = (spaceGroupIdOrSymbol: string | number) => {
+    // Handle null/undefined cases
+    if (spaceGroupIdOrSymbol === null || spaceGroupIdOrSymbol === undefined) {
+      return null;
+    }
+    
+    // Convert to number if it's numeric
+    const isNumeric = /^\d+$/.test(String(spaceGroupIdOrSymbol));
+    const spaceGroupId = isNumeric ? parseInt(String(spaceGroupIdOrSymbol)) : null;
+    const spaceGroupSymbolStr = !isNumeric ? String(spaceGroupIdOrSymbol) : null;
+    
+    // First check if we have it in API data
+    if (apiSpaceGroups.length > 0) {
+      let apiSpaceGroupInfo;
+      
+      if (spaceGroupId !== null) {
+        apiSpaceGroupInfo = apiSpaceGroups.find(sg => sg.id === spaceGroupId || sg.number === spaceGroupId);
+      } else if (spaceGroupSymbolStr) {
+        apiSpaceGroupInfo = apiSpaceGroups.find(sg => 
+          sg.symbol?.toLowerCase() === spaceGroupSymbolStr.toLowerCase() ||
+          sg.name?.toLowerCase() === spaceGroupSymbolStr.toLowerCase()
+        );
+      }
+      
+      if (apiSpaceGroupInfo) {
+        console.log(`Found space group info from API for ${spaceGroupIdOrSymbol}:`, apiSpaceGroupInfo);
+        // Convert API data to local format for consistent usage
+        return {
+          number: apiSpaceGroupInfo.id || apiSpaceGroupInfo.number,
+          symbol: apiSpaceGroupInfo.symbol || `Space Group #${apiSpaceGroupInfo.id || apiSpaceGroupInfo.number}`,
+          system: normalizeCrystalSystem(apiSpaceGroupInfo.system || apiSpaceGroupInfo.crystal_system || ''),
+          description: apiSpaceGroupInfo.description || apiSpaceGroupInfo.name || 'Space group from API'
+        };
+      }
+    }
+    
+    // If not found in API data, fall back to local mapping
+    let localSpaceGroupInfo;
+    
+    if (spaceGroupId !== null) {
+      localSpaceGroupInfo = spaceGroupMap.find(sg => sg.number === spaceGroupId);
+    } else if (spaceGroupSymbolStr) {
+      localSpaceGroupInfo = spaceGroupMap.find(sg => 
+        sg.symbol.toLowerCase() === spaceGroupSymbolStr.toLowerCase()
+      );
+    }
+    
+    if (localSpaceGroupInfo) {
+      console.log(`Found space group info in local map for ${spaceGroupIdOrSymbol}:`, localSpaceGroupInfo);
+      return localSpaceGroupInfo;
+    }
+    
+    // If spaceGroupId is a number but not found in our maps, return a basic info object
+    if (spaceGroupId !== null) {
+      return {
+        number: spaceGroupId,
+        symbol: `Space Group #${spaceGroupId}`,
+        system: "Unknown",
+        description: "Space group information not in reference"
+      };
+    }
+    
+    // If nothing matched, return null
+    console.log(`No space group info found for ${spaceGroupIdOrSymbol}`);
+    return null;
+  };
 
   // Function to handle mineral search by name
   const handleSearch = () => {
@@ -93,9 +216,9 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="any">Any space group</SelectItem>
-              {spaceGroupSymbols.map(symbol => (
-                <SelectItem key={symbol} value={symbol}>
-                  {symbol}
+              {spaceGroupMap.map(sg => (
+                <SelectItem key={sg.symbol} value={sg.symbol}>
+                  {sg.number} - {sg.symbol} ({sg.system})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -169,47 +292,77 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
                     allProps: Object.keys(firstMineral)
                   });
                   
-                  // Display all available space group and crystallographic data
-                  return (
-                    <div className="space-y-2">
-                      {/* Show all space group data */}
-                      {firstMineral.space_group && (
-                        <p><span className="font-medium">Space Group Symbol:</span> {firstMineral.space_group}</p>
-                      )}
-                      
-                      {firstMineral.spacegroup && (
-                        <p><span className="font-medium">Space Group ID:</span> {firstMineral.spacegroup}</p>
-                      )}
-                      
-                      {/* Show crystal system data */}
-                      {(firstMineral.crystal_system || firstMineral.csystem) && (
-                        <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || firstMineral.csystem}</p>
-                      )}
-                      
-                      {/* Show crystal class data if available */}
-                      {firstMineral.crystal_class && (
-                        <p><span className="font-medium">Crystal Class:</span> {firstMineral.crystal_class}</p>
-                      )}
-                      
-                      {firstMineral.crystal_class_id && (
-                        <p><span className="font-medium">Crystal Class ID:</span> {firstMineral.crystal_class_id}</p>
-                      )}
-                      
-                      {/* Show unit cell data if available */}
-                      {firstMineral.a && (
-                        <p><span className="font-medium">Unit Cell:</span> a={firstMineral.a}, 
-                        b={firstMineral.b}, c={firstMineral.c}, 
-                        α={firstMineral.alpha}°, β={firstMineral.beta}°, γ={firstMineral.gamma}°</p>
-                      )}
-                      
-                      {/* If no space group data is available */}
-                      {!firstMineral.space_group && !firstMineral.spacegroup && (
+                  // Get space group information using our mapper function
+                  const spaceGroupInfo = getSpaceGroupInfo(firstMineral.spacegroup || firstMineral.space_group);
+                  
+                  // If we have a space group ID or symbol in the mineral data
+                  if (firstMineral.space_group || firstMineral.spacegroup) {
+                    return (
+                      <div className="space-y-2">
+                        {/* Display Original API Data */}
+                        {firstMineral.spacegroup && (
+                          <p><span className="font-medium">Space Group ID (API):</span> {firstMineral.spacegroup}</p>
+                        )}
+                        
+                        {firstMineral.space_group && (
+                          <p><span className="font-medium">Space Group Symbol (API):</span> {firstMineral.space_group}</p>
+                        )}
+                        
+                        {/* Display Mapped Space Group Information */}
+                        {spaceGroupInfo && (
+                          <>
+                            <div className="mt-3 pt-3 border-t border-muted">
+                              <p className="text-sm text-muted-foreground mb-2">Mapped Space Group Information:</p>
+                              
+                              <p><span className="font-medium">Space Group Number:</span> {spaceGroupInfo.number}</p>
+                              <p><span className="font-medium">Space Group Symbol:</span> {spaceGroupInfo.symbol}</p>
+                              <p><span className="font-medium">Crystal System:</span> {spaceGroupInfo.system}</p>
+                              <p><span className="font-medium">Description:</span> {spaceGroupInfo.description}</p>
+                            </div>
+                          </>
+                        )}
+                        
+                        {/* Display Crystal System Data */}
+                        <div className="mt-3 pt-3 border-t border-muted">
+                          <p className="text-sm text-muted-foreground mb-2">Other Crystallographic Information:</p>
+                          
+                          {(firstMineral.crystal_system || firstMineral.csystem) && (
+                            <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || firstMineral.csystem}</p>
+                          )}
+                          
+                          {firstMineral.crystal_class && (
+                            <p><span className="font-medium">Crystal Class:</span> {firstMineral.crystal_class}</p>
+                          )}
+                          
+                          {firstMineral.crystal_class_id && (
+                            <p><span className="font-medium">Crystal Class ID:</span> {firstMineral.crystal_class_id}</p>
+                          )}
+                        </div>
+                        
+                        {/* Unit Cell Data */}
+                        {firstMineral.a && (
+                          <div className="mt-3 pt-3 border-t border-muted">
+                            <p className="text-sm text-muted-foreground mb-2">Unit Cell Parameters:</p>
+                            <p><span className="font-medium">a, b, c:</span> {firstMineral.a}, {firstMineral.b}, {firstMineral.c}</p>
+                            <p><span className="font-medium">α, β, γ:</span> {firstMineral.alpha}°, {firstMineral.beta}°, {firstMineral.gamma}°</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  } else {
+                    // No space group information available
+                    return (
+                      <div className="space-y-2">
                         <p className="text-amber-600">
                           <span className="font-medium">Note:</span> No space group information available for this mineral.
                         </p>
-                      )}
-                    </div>
-                  );
+                        
+                        {(firstMineral.crystal_system || firstMineral.csystem) && (
+                          <p><span className="font-medium">Crystal System:</span> {firstMineral.crystal_system || firstMineral.csystem}</p>
+                        )}
+                      </div>
+                    );
+                  }
                 })()}
               </div>
 
