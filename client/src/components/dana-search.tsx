@@ -1,11 +1,22 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2 } from "lucide-react";
-import { searchMineralsByDanaClass } from "@/lib/mindat-service";
+import { 
+  searchMineralsByDanaClass, 
+  getDanaClassification, 
+  type DanaClass 
+} from "@/lib/mindat-service";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface DanaSearchProps {
   onSelect: (mineral: any) => void;
@@ -14,26 +25,79 @@ interface DanaSearchProps {
 export function DanaSearch({ onSelect }: DanaSearchProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [danaCode, setDanaCode] = useState("");
+  const [apiDanaClasses, setApiDanaClasses] = useState<DanaClass[]>([]);
+  const [isLoadingDanaClasses, setIsLoadingDanaClasses] = useState(true);
+
+  // Fetch Dana classes from API on component mount
+  useEffect(() => {
+    const fetchDanaClasses = async () => {
+      try {
+        console.log("Fetching Dana classes from API...");
+        setIsLoadingDanaClasses(true);
+        const response = await getDanaClassification({ 
+          pageSize: 100 // Get a reasonable number of classes
+        });
+        
+        // Store Dana classes for later use
+        if (response && response.results) {
+          setApiDanaClasses(response.results);
+          console.log("Got Dana classes from API:", response.results);
+        }
+      } catch (error) {
+        console.error("Error fetching Dana classes:", error);
+      } finally {
+        setIsLoadingDanaClasses(false);
+      }
+    };
+
+    fetchDanaClasses();
+  }, []);
+
+  // Define Dana classes mapping
+  const danaClasses: Record<string, string> = {
+    "01": "Elements",
+    "02": "Sulfides",
+    "03": "Halides",
+    "04": "Oxides",
+    "05": "Carbonates & Nitrates",
+    "06": "Borates",
+    "07": "Sulfates, Chromates, Molybdates, & Tungstates",
+    "08": "Phosphates, Arsenates, & Vanadates",
+    "09": "Silicates",
+    "10": "Organic Minerals"
+  };
 
   // Query to fetch minerals by dana class
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
-    queryKey: ['minerals-by-dana', searchTerm],
+    queryKey: ['minerals-by-dana', searchTerm, danaCode],
     queryFn: async () => {
       const results = await searchMineralsByDanaClass({
         name: searchTerm,
+        dana_class: danaCode || undefined,
         limit: 10
       });
       
       return results;
     },
-    enabled: isSearching && searchTerm.length > 2
+    enabled: (isSearching && searchTerm.length > 2) || (danaCode !== "")
   });
 
-  // Function to handle mineral search
+  // Function to handle mineral search by name
   const handleSearch = () => {
     if (searchTerm.length > 2) {
+      setDanaCode(""); // Clear dana class filter when searching by name
       setIsSearching(true);
     }
+  };
+
+  // Function to handle search by Dana class
+  const handleDanaClassSearch = (value: string) => {
+    // Handle "any" value to represent empty Dana class filter
+    const danaValue = value === "any" ? "" : value;
+    setDanaCode(danaValue);
+    setSearchTerm(""); // Clear mineral name search when filtering by Dana class
+    setIsSearching(false); // Not needed for Dana class search as it's enabled by the value
   };
 
   // Function to extract and display the Dana classification information
@@ -42,22 +106,8 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
     
     if (!danaCode) return 'N/A';
     
-    // Define mapping for Dana classes (first number)
-    const danaClasses: Record<string, string> = {
-      "1": "Elements",
-      "2": "Sulfides",
-      "3": "Halides",
-      "4": "Oxides",
-      "5": "Carbonates & Nitrates",
-      "6": "Borates",
-      "7": "Sulfates, Chromates, Molybdates, & Tungstates",
-      "8": "Phosphates, Arsenates, & Vanadates",
-      "9": "Silicates",
-      "10": "Organic Minerals"
-    };
-
     // Extract the main class (first number before period)
-    const mainClass = danaCode.split('.')[0];
+    const mainClass = danaCode.split('.')[0].padStart(2, '0');
     const className = danaClasses[mainClass] || 'Unknown class';
     
     return `${danaCode} (${className})`;
