@@ -163,38 +163,24 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
 
       {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
         <>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Search Results</h3>
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mineral Name</TableHead>
-                    <TableHead>Formula</TableHead>
-                    <TableHead>Crystal System</TableHead>
-                    <TableHead>Crystal Class</TableHead>
-                    <TableHead>Class #</TableHead>
-                    <TableHead>Action</TableHead>
+          <h3 className="text-lg font-semibold mb-2">Search Results</h3>
+          <div className="rounded-md border overflow-x-auto mb-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mineral Name</TableHead>
+                  <TableHead>Formula</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mineralSearchResults.results.map((mineral: any) => (
+                  <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => onSelect(mineral)}>
+                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mineralSearchResults.results.map((mineral: any) => (
-                    <TableRow key={mineral.id}>
-                      <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                      <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
-                      <TableCell>{mineral.crystal_system || 'N/A'}</TableCell>
-                      <TableCell>{mineral.crystal_class || 'N/A'}</TableCell>
-                      <TableCell>{mineral.cclass || 'N/A'}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
           {/* Crystal Class Information for the first result */}

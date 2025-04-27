@@ -72,7 +72,9 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
 
   // Function to handle search by space group symbol
   const handleSpaceGroupSearch = (value: string) => {
-    setSpaceGroupSymbol(value);
+    // Handle "any" value to represent empty space group filter
+    const spaceGroupValue = value === "any" ? "" : value;
+    setSpaceGroupSymbol(spaceGroupValue);
     setSearchTerm(""); // Clear mineral name search when filtering by space group
     setIsSearching(false); // Not needed for space group search as it's enabled by the value
   };
@@ -112,7 +114,7 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
               <SelectValue placeholder="Select a space group" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Any space group</SelectItem>
+              <SelectItem value="any">Any space group</SelectItem>
               {commonSpaceGroups.map(sg => (
                 <SelectItem key={sg.symbol} value={sg.symbol}>
                   {sg.number} - {sg.symbol} ({sg.system})
@@ -143,36 +145,24 @@ export function SpaceGroupSearch({ onSelect, selectedSystem = "" }: SpaceGroupSe
       
       {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
         <>
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Search Results</h3>
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Mineral Name</TableHead>
-                    <TableHead>Formula</TableHead>
-                    <TableHead>Space Group</TableHead>
-                    <TableHead>Crystal System</TableHead>
-                    <TableHead>Action</TableHead>
+          <h3 className="text-lg font-semibold mb-2">Search Results</h3>
+          <div className="rounded-md border overflow-x-auto mb-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mineral Name</TableHead>
+                  <TableHead>Formula</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mineralSearchResults.results.map((mineral: any) => (
+                  <TableRow key={mineral.id} className="hover:bg-muted/50 cursor-pointer" onClick={() => onSelect(mineral)}>
+                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mineralSearchResults.results.map((mineral: any) => (
-                    <TableRow key={mineral.id}>
-                      <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                      <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
-                      <TableCell className="font-mono">{mineral.space_group || 'N/A'}</TableCell>
-                      <TableCell>{mineral.crystal_system || 'N/A'}</TableCell>
-                      <TableCell>
-                        <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
-                          View Details
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
           {/* Space Group Information for the first result */}
