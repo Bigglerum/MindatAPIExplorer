@@ -371,18 +371,42 @@ export function CrystalSystemSearch({ onSelect, selectedSystem }: CrystalSystemS
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {crystalClassMap.map((cls) => (
-                        <TableRow key={cls.cclass} className={
-                          mineralSearchResults.results[0]?.cclass === cls.cclass 
-                            ? "bg-primary/20 font-medium" 
-                            : ""
-                        }>
-                          <TableCell>{cls.cclass}</TableCell>
-                          <TableCell className="font-mono">{cls.symbol}</TableCell>
-                          <TableCell>{cls.name}</TableCell>
-                          <TableCell>{cls.system}</TableCell>
+                      {isLoadingClasses ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center py-4">
+                            <Loader2 className="h-5 w-5 animate-spin inline mr-2" />
+                            Loading crystal classes...
+                          </TableCell>
                         </TableRow>
-                      ))}
+                      ) : apiCrystalClasses.length > 0 ? (
+                        // Use API data if available
+                        apiCrystalClasses.map((cls) => (
+                          <TableRow key={cls.id} className={
+                            mineralSearchResults.results[0]?.cclass === cls.id 
+                              ? "bg-primary/20 font-medium" 
+                              : ""
+                          }>
+                            <TableCell>{cls.id}</TableCell>
+                            <TableCell className="font-mono">{cls.symbol || 'N/A'}</TableCell>
+                            <TableCell>{cls.name || 'N/A'}</TableCell>
+                            <TableCell>{normalizeCrystalSystem(cls.system || '')}</TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        // Fall back to local data if API fails
+                        crystalClassMap.map((cls) => (
+                          <TableRow key={cls.cclass} className={
+                            mineralSearchResults.results[0]?.cclass === cls.cclass 
+                              ? "bg-primary/20 font-medium" 
+                              : ""
+                          }>
+                            <TableCell>{cls.cclass}</TableCell>
+                            <TableCell className="font-mono">{cls.symbol}</TableCell>
+                            <TableCell>{cls.name}</TableCell>
+                            <TableCell>{cls.system}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
