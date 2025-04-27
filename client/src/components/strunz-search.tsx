@@ -99,37 +99,34 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
       )}
 
       {mineralSearchResults?.results && mineralSearchResults.results.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-2">Search Results</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mineral Name</TableHead>
-                <TableHead>Formula</TableHead>
-                <TableHead>Strunz Classification</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mineralSearchResults.results.map((mineral: any) => (
-                <TableRow key={mineral.id}>
-                  <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
-                  <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
-                  <TableCell>{mineral.strunz_code || mineral.strunz_classification || 'N/A'}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
-                      View Details
-                    </Button>
-                  </TableCell>
+        <>
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Search Results</h3>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Mineral Name</TableHead>
+                  <TableHead>Formula</TableHead>
+                  <TableHead>Strunz Classification</TableHead>
+                  <TableHead>Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-    </div>
-  );
-}
+              </TableHeader>
+              <TableBody>
+                {mineralSearchResults.results.map((mineral: any) => (
+                  <TableRow key={mineral.id}>
+                    <TableCell className="font-medium">{mineral.name || 'N/A'}</TableCell>
+                    <TableCell dangerouslySetInnerHTML={{ __html: mineral.mindat_formula || mineral.ima_formula || 'N/A' }} />
+                    <TableCell>{mineral.strunz_code || mineral.strunz_classification || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" onClick={() => onSelect(mineral)}>
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* Strunz Classification Mapping Results */}
           {mineralSearchResults.results.length > 0 && (mineralSearchResults.results[0].strunz_code || mineralSearchResults.results[0].strunz_classification) && (
@@ -204,7 +201,7 @@ export function StrunzSearch({ onSelect }: StrunzSearchProps) {
               </div>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );
