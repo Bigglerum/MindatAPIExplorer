@@ -40,12 +40,19 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
         });
         
         // Store Dana classes for later use
-        if (response && response.results) {
+        if (response && response.results && response.results.length > 0) {
           setApiDanaClasses(response.results);
           console.log("Got Dana classes from API:", response.results);
+        } else {
+          // If the API returned no results, use our static data instead
+          console.log("API returned no Dana classes. Using static data instead.");
+          setApiDanaClasses(staticDanaClasses);
         }
       } catch (error) {
         console.error("Error fetching Dana classes:", error);
+        // In case of error, fall back to static data
+        console.log("Error fetching from API. Using static Dana class data instead.");
+        setApiDanaClasses(staticDanaClasses);
       } finally {
         setIsLoadingDanaClasses(false);
       }
@@ -54,7 +61,21 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
     fetchDanaClasses();
   }, []);
 
-  // Define Dana classes mapping
+  // Define Dana classes mapping - comprehensive mapping with actual ID values for API alignment
+  const danaClassesData: Record<string, {id: number, name: string, description?: string}> = {
+    "01": { id: 1, name: "Elements" },
+    "02": { id: 2, name: "Sulfides" },
+    "03": { id: 3, name: "Halides" },
+    "04": { id: 4, name: "Oxides" },
+    "05": { id: 5, name: "Carbonates & Nitrates" },
+    "06": { id: 6, name: "Borates" },
+    "07": { id: 7, name: "Sulfates, Chromates, Molybdates, & Tungstates" },
+    "08": { id: 8, name: "Phosphates, Arsenates, & Vanadates" },
+    "09": { id: 9, name: "Silicates" },
+    "10": { id: 10, name: "Organic Minerals" }
+  };
+  
+  // Simple mapping for display purposes
   const danaClasses: Record<string, string> = {
     "01": "Elements",
     "02": "Sulfides",
@@ -67,6 +88,14 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
     "09": "Silicates",
     "10": "Organic Minerals"
   };
+  
+  // Create a static list of Dana classes to use when API doesn't return results
+  const staticDanaClasses: DanaClass[] = Object.entries(danaClasses).map(([code, details]) => ({
+    id: details.id,
+    code: code,
+    name: details.name,
+    description: details.description
+  }));
 
   // Query to fetch minerals by dana class
   const { data: mineralSearchResults, isLoading: isLoadingMineralSearch } = useQuery({
