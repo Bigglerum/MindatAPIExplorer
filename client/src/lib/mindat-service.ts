@@ -454,11 +454,6 @@ export async function searchMineralsBySpaceGroup(params: {
 }
 
 /**
- * Search for minerals by Dana classification
- * @param params Parameters for the search
- * @returns Search results with minerals matching the Dana class
- */
-/**
  * Search for minerals by Dana classification or name
  * Uses the geomaterials endpoint and filters by Dana class parameters
  * 
@@ -579,7 +574,7 @@ export async function searchMineralsByStrunzClass(params: {
     // Add the mineral name if provided
     if (params.name) {
       searchParams.name = params.name; // Use 'name' instead of 'q' parameter
-      searchParams.exact_match = true; // Use exact matching for keyword search
+      searchParams.exact_match = "true"; // Use exact matching as string, not boolean
     }
     
     // If strunz class specified, include as part of search
@@ -640,7 +635,7 @@ export async function getLocalityCoordinates(name: string): Promise<{ latitude: 
       method: 'GET',
       parameters: { 
         name: name,
-        exact_match: true 
+        exact_match: "true" 
       }
     });
     
