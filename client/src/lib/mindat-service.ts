@@ -812,9 +812,9 @@ export async function getSpaceGroupById(id: number): Promise<SpaceGroup> {
 
 // Interface for Dana Classification data
 export interface DanaClass {
-  id: number;
-  code: string;
-  name: string;
+  id: string; // Store as a concatenated string like "50.4.9.1"
+  code: string; // Same as id but formatted for display like "50.4.9.1"
+  name: string; // The name associated with this Dana classification
   description?: string;
 }
 
@@ -825,8 +825,34 @@ export interface DanaClassResponse {
   results: DanaClass[];
 }
 
+// Dana classification mapping - based on standard Dana classes
+const danaClassMapping: Record<string, string> = {
+  // Class 1: Native Elements
+  "1": "Native Elements",
+  // Class 2: Sulfides
+  "2": "Sulfides",
+  // Class 3: Halides
+  "3": "Halides",
+  // Class 4: Oxides
+  "4": "Oxides",
+  // Class 5: Carbonates and Nitrates
+  "5": "Carbonates and Nitrates",
+  // Class 6: Borates
+  "6": "Borates",
+  // Class 7: Sulfates, Chromates, Molybdates, Tungstates
+  "7": "Sulfates, Chromates, Molybdates, Tungstates",
+  // Class 8: Phosphates, Arsenates, Vanadates
+  "8": "Phosphates, Arsenates, Vanadates",
+  // Class 9: Silicates
+  "9": "Silicates",
+  // Class 10: Organic Minerals
+  "10": "Organic Minerals",
+  // Class 50: Organic Compounds (special case)
+  "50": "Organic Compounds"
+};
+
 /**
- * Get Dana Classification entries from the Mindat API
+ * Get Dana Classification entries by searching minerals with that classification
  * 
  * @param params Optional parameters for filtering 
  * @returns Dana Classification data
@@ -837,36 +863,109 @@ export async function getDanaClassification(params?: {
   page?: number;
   pageSize?: number;
 }): Promise<DanaClassResponse> {
-  const queryParams: Record<string, any> = {
-    limit: params?.pageSize || 25,
-    page: params?.page || 1
-  };
-
-  // Add optional filters
-  if (params?.code) queryParams.code = params.code;
-  if (params?.name) queryParams.name = params.name;
-
   try {
-    // Use the correct Dana endpoint
+    // Instead of using a dedicated Dana endpoint, we'll search for minerals
+    // using the geomaterials endpoint and extract Dana classification from each mineral
+    const queryParams: Record<string, any> = {
+      limit: params?.pageSize || 25,
+      page: params?.page || 1
+    };
+    
+    // If a name is provided, search for minerals with this name
+    if (params?.name) {
+      queryParams.name = params.name;
+      queryParams.exact_match = "true"; // Use string type for exact_match
+    }
+    
+    // Get mineral data from geomaterials endpoint
     const response = await apiRequest('POST', '/api/proxy', {
-      path: '/dana-8/', // Correct path for Dana classification
+      path: '/geomaterials/',
       method: 'GET',
       parameters: queryParams
     });
 
     const data = await response.json();
     
-    // Transform the response to match our interface
-    if (data?.data) {
+    // Extract Dana classifications from minerals
+    if (data?.data?.results) {
+      // Create a map to store unique Dana classifications
+      const danaMap = new Map<string, DanaClass>();
+      
+      // Process each mineral to extract Dana classification
+      data.data.results.forEach((mineral: any) => {
+        if (mineral.dana8ed1) {
+          // Construct Dana code components
+          const level1 = mineral.dana8ed1;
+          const level2 = mineral.dana8ed2 || "0";
+          const level3 = mineral.dana8ed3 || "0";
+          const level4 = mineral.dana8ed4 || "0";
+          
+          // Full Dana code (all levels)
+          const fullCode = `${level1}.${level2}.${level3}.${level4}`;
+          
+          // Store each level of Dana classification
+          // Level 1
+          const level1Key = `${level1}`;
+          if (!danaMap.has(level1Key) && danaClassMapping[level1]) {
+            danaMap.set(level1Key, {
+              id: level1Key,
+              code: level1Key,
+              name: danaClassMapping[level1] || `Dana Class ${level1}`,
+            });
+          }
+          
+          // Level 2
+          const level2Key = `${level1}.${level2}`;
+          if (!danaMap.has(level2Key)) {
+            danaMap.set(level2Key, {
+              id: level2Key,
+              code: level2Key,
+              name: `Subclass ${level2}`,
+            });
+          }
+          
+          // Level 3
+          const level3Key = `${level1}.${level2}.${level3}`;
+          if (!danaMap.has(level3Key)) {
+            danaMap.set(level3Key, {
+              id: level3Key,
+              code: level3Key,
+              name: `Group ${level3}`,
+            });
+          }
+          
+          // Level 4 (full code)
+          if (!danaMap.has(fullCode)) {
+            danaMap.set(fullCode, {
+              id: fullCode,
+              code: fullCode,
+              name: `Subgroup ${level4}`,
+              description: `Dana Classification for ${mineral.name}`,
+            });
+          }
+        }
+      });
+      
+      // Filter by code if provided
+      let results = Array.from(danaMap.values());
+      if (params?.code) {
+        results = results.filter(item => item.code.startsWith(params.code!));
+      }
+      
       return {
-        count: data.data.count || 0,
-        next: data.data.next,
-        previous: data.data.previous,
-        results: data.data.results || []
+        count: results.length,
+        next: null,
+        previous: null,
+        results: results
       };
     }
     
-    throw new Error('Invalid response format from Mindat API');
+    return {
+      count: 0,
+      next: null,
+      previous: null,
+      results: []
+    };
   } catch (error) {
     console.error('Error fetching Dana Classification:', error);
     
@@ -886,29 +985,84 @@ export async function getDanaClassification(params?: {
  * @param id The ID of the Dana entry to retrieve
  * @returns The Dana Classification data
  */
-export async function getDanaClassById(id: number): Promise<DanaClass> {
+export async function getDanaClassById(id: string): Promise<DanaClass> {
   try {
+    // For our implementation, id is the Dana code (e.g., "50.4.9.1")
+    // Extract components
+    const parts = id.split('.');
+    const level1 = parts[0] || "";
+    
+    // Fetch minerals with this Dana classification to get more information
     const response = await apiRequest('POST', '/api/proxy', {
-      path: `/dana-8/${id}/`,
+      path: '/geomaterials/',
       method: 'GET',
-      parameters: {}
+      parameters: {
+        limit: 10,
+        dana8ed1: level1,
+        // If we have more levels, add them
+        ...(parts.length > 1 && { dana8ed2: parts[1] }),
+        ...(parts.length > 2 && { dana8ed3: parts[2] }),
+        ...(parts.length > 3 && { dana8ed4: parts[3] })
+      }
     });
 
     const data = await response.json();
     
-    if (data?.data) {
-      return data.data;
+    // If we found minerals with this Dana classification
+    if (data?.data?.results?.length > 0) {
+      // Get the first mineral as a reference
+      const mineral = data.data.results[0];
+      
+      // Determine the level name based on how many parts we have
+      let levelName = "Class";
+      if (parts.length === 2) levelName = "Subclass";
+      if (parts.length === 3) levelName = "Group";
+      if (parts.length === 4) levelName = "Subgroup";
+      
+      // Get the class name if it's level 1
+      let name = parts.length === 1 && danaClassMapping[level1] 
+        ? danaClassMapping[level1] 
+        : `Dana ${levelName} ${id}`;
+        
+      // Add example minerals in the description
+      const mineralNames = data.data.results
+        .slice(0, 5)
+        .map((m: any) => m.name)
+        .join(", ");
+        
+      return {
+        id: id,
+        code: id,
+        name: name,
+        description: `Dana Classification ${id}. Example minerals: ${mineralNames}`
+      };
     }
     
-    throw new Error(`Dana Classification with ID ${id} not found`);
+    // If no minerals found but we have level 1, return basic info
+    if (parts.length === 1 && danaClassMapping[level1]) {
+      return {
+        id,
+        code: id,
+        name: danaClassMapping[level1],
+        description: `Dana Class ${level1}`
+      };
+    }
+    
+    // Default fallback
+    return {
+      id,
+      code: id,
+      name: `Dana Classification ${id}`,
+      description: "No minerals found with this classification"
+    };
   } catch (error) {
-    console.error(`Error fetching Dana Classification #${id}:`, error);
+    console.error(`Error fetching Dana Classification ${id}:`, error);
     
     // Return a basic object to prevent UI errors
     return {
-      id: id,
-      code: "Unknown",
-      name: "Not Found",
+      id,
+      code: id,
+      name: "Dana Classification",
       description: "Could not fetch details"
     };
   }

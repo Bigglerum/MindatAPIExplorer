@@ -126,7 +126,7 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
       const className = danaClasses[mainClass];
       console.log(`Found Dana class info in local map for ${danaCode} (main class ${mainClass}):`, className);
       return {
-        id: parseInt(mainClass),
+        id: mainClass, // Use mainClass as string since our DanaClass interface now uses string IDs
         code: mainClass,
         name: className
       };
