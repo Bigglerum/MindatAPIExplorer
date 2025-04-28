@@ -458,6 +458,13 @@ export async function searchMineralsBySpaceGroup(params: {
  * @param params Parameters for the search
  * @returns Search results with minerals matching the Dana class
  */
+/**
+ * Search for minerals by Dana classification or name
+ * Uses the geomaterials endpoint and filters by Dana class parameters
+ * 
+ * @param params Search parameters including Dana classification and mineral name
+ * @returns Mineral search results
+ */
 export async function searchMineralsByDanaClass(params: {
   name?: string;
   dana_class?: string;
@@ -474,12 +481,31 @@ export async function searchMineralsByDanaClass(params: {
     // Add the mineral name if provided
     if (params.name) {
       searchParams.name = params.name; // Use 'name' instead of 'q' parameter
-      searchParams.exact_match = true; // Use exact matching for keyword search
+      searchParams.exact_match = "true"; // Use exact matching as string, not boolean
     }
     
-    // If dana class specified, include as part of search
+    // If Dana class specified, parse it to extract components and add them as search parameters
     if (params.dana_class) {
-      searchParams.dana_class = params.dana_class;
+      console.log(`Searching for minerals with Dana class: ${params.dana_class}`);
+      
+      // Split the Dana code into components
+      const parts = params.dana_class.split('.');
+      
+      // Add each component as a separate parameter
+      if (parts.length > 0 && parts[0]) {
+        searchParams.dana8ed1 = parts[0];
+      }
+      if (parts.length > 1 && parts[1]) {
+        searchParams.dana8ed2 = parts[1];
+      }
+      if (parts.length > 2 && parts[2]) {
+        searchParams.dana8ed3 = parts[2];
+      }
+      if (parts.length > 3 && parts[3]) {
+        searchParams.dana8ed4 = parts[3];
+      }
+      
+      console.log("Dana search parameters:", searchParams);
     }
     
     const response = await apiRequest('POST', '/api/proxy', {
@@ -490,13 +516,33 @@ export async function searchMineralsByDanaClass(params: {
     
     const data = await response.json();
     
+    // Add a 'dana_code' property to each result for consistent access
+    const enhancedResults = data?.data?.results?.map((mineral: any) => {
+      // Construct Dana code from mineral data if available
+      if (mineral.dana8ed1) {
+        const danaCode = [
+          mineral.dana8ed1,
+          mineral.dana8ed2,
+          mineral.dana8ed3,
+          mineral.dana8ed4
+        ].filter(Boolean).join('.');
+        
+        // Add the Dana code for consistent access in components
+        return {
+          ...mineral,
+          dana_code: danaCode
+        };
+      }
+      return mineral;
+    }) || [];
+    
     // Transform the response format to be consistent
     if (data?.data) {
       return {
         count: data.data.count || 0,
         next: data.data.next,
         previous: data.data.previous,
-        results: data.data.results || []
+        results: enhancedResults
       };
     }
     

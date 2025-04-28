@@ -42,7 +42,21 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
   useEffect(() => {
     if (danaClassesData?.results) {
       console.log("Got Dana classes from API:", danaClassesData.results);
-      setApiDanaClasses(danaClassesData.results);
+      
+      // If we have results, set them as options
+      if (danaClassesData.results.length > 0) {
+        setApiDanaClasses(danaClassesData.results);
+      } else {
+        // If we have no results, add some placeholder options for the main Dana classes
+        console.log("No Dana classes returned from API, using fallback data");
+        // Use the built-in danaClasses mapping to populate the dropdown
+        const fallbackClasses = Object.entries(danaClasses).map(([code, name]) => ({
+          id: code,
+          code: code,
+          name: name
+        }));
+        setApiDanaClasses(fallbackClasses);
+      }
     }
   }, [danaClassesData]);
   
@@ -296,7 +310,7 @@ export function DanaSearch({ onSelect }: DanaSearchProps) {
                           <TableBody>
                             {Object.entries(danaClasses).map(([code, desc]) => (
                               <TableRow key={code}>
-                                <TableCell>{parseInt(code)}</TableCell>
+                                <TableCell>{code}</TableCell>
                                 <TableCell>{desc}</TableCell>
                               </TableRow>
                             ))}
