@@ -43,8 +43,7 @@ export async function proxyApiRequest(
     } 
     // Handle Dana classification - ensure API key is added
     else if (path.startsWith('/dana/') || path.startsWith('/dana-8')) {
-      adjustedPath = path; // Keep original path but we need to ensure API key is properly added
-      // We'll set needsApiKey flag later after it's declared
+      adjustedPath = path; // Keep original path but we'll ensure API key is properly added later
     } 
     // Handle Strunz classification - keep original paths as they should work
     else if (path.startsWith('/strunz/') || path.startsWith('/nickel-strunz-10')) {
@@ -64,8 +63,10 @@ export async function proxyApiRequest(
     
     // Variables to track if we need to add API key to URL
     let apiKeyParam = '';
-    let needsApiKey = false;
     let apiKey = '';
+    
+    // Flag to track if we need to add API key for specific endpoints
+    let forceDanaApiKey = path.startsWith('/dana/') || path.startsWith('/dana-8');
     
     // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
@@ -85,10 +86,12 @@ export async function proxyApiRequest(
       
       // For Mindat API, we also need to add the API key as a query parameter for some endpoints
       apiKeyParam = `api_key=${apiKey}`;
-      
-      // Check if we already have an api_key parameter
-      needsApiKey = Boolean(!url.includes('api_key=') && !parameters.api_key && apiKey);
     }
+    
+    // Determine if we need to add API key to URL
+    // Always force API key for Dana endpoints, otherwise check if it's missing
+    let needsApiKey = forceDanaApiKey || 
+      Boolean(!url.includes('api_key=') && !parameters.api_key && apiKey);
 
     // Prepare request options
     const options: RequestInit = {
