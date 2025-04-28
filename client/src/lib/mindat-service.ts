@@ -554,9 +554,11 @@ export async function searchMineralsByDanaClass(params: {
 }
 
 /**
- * Search for minerals by Strunz classification
- * @param params Parameters for the search
- * @returns Search results with minerals matching the Strunz class
+ * Search for minerals by Strunz classification or name
+ * Uses the geomaterials endpoint and filters by Strunz class parameters
+ * 
+ * @param params Search parameters including Strunz classification and mineral name
+ * @returns Mineral search results
  */
 export async function searchMineralsByStrunzClass(params: {
   name?: string;
@@ -577,9 +579,28 @@ export async function searchMineralsByStrunzClass(params: {
       searchParams.exact_match = "true"; // Use exact matching as string, not boolean
     }
     
-    // If strunz class specified, include as part of search
+    // If Strunz class specified, parse it to extract components and add them as search parameters
     if (params.strunz_class) {
-      searchParams.strunz_class = params.strunz_class;
+      console.log(`Searching for minerals with Strunz class: ${params.strunz_class}`);
+      
+      // Split the Strunz code into components
+      const parts = params.strunz_class.split('.');
+      
+      // Add each component as a separate parameter
+      if (parts.length > 0 && parts[0]) {
+        searchParams.strunz10ed1 = parts[0];
+      }
+      if (parts.length > 1 && parts[1]) {
+        searchParams.strunz10ed2 = parts[1];
+      }
+      if (parts.length > 2 && parts[2]) {
+        searchParams.strunz10ed3 = parts[2];
+      }
+      if (parts.length > 3 && parts[3]) {
+        searchParams.strunz10ed4 = parts[3];
+      }
+      
+      console.log("Strunz search parameters:", searchParams);
     }
     
     const response = await apiRequest('POST', '/api/proxy', {
@@ -590,13 +611,33 @@ export async function searchMineralsByStrunzClass(params: {
     
     const data = await response.json();
     
+    // Add a 'strunz_code' property to each result for consistent access
+    const enhancedResults = data?.data?.results?.map((mineral: any) => {
+      // Construct Strunz code from mineral data if available
+      if (mineral.strunz10ed1) {
+        const strunzCode = [
+          mineral.strunz10ed1,
+          mineral.strunz10ed2,
+          mineral.strunz10ed3,
+          mineral.strunz10ed4
+        ].filter(Boolean).join('.');
+        
+        // Add the Strunz code for consistent access in components
+        return {
+          ...mineral,
+          strunz_code: strunzCode
+        };
+      }
+      return mineral;
+    }) || [];
+    
     // Transform the response format to be consistent
     if (data?.data) {
       return {
         count: data.data.count || 0,
         next: data.data.next,
         previous: data.data.previous,
-        results: data.data.results || []
+        results: enhancedResults
       };
     }
     
@@ -770,10 +811,6 @@ export async function getCrystalClassById(id: number): Promise<CrystalClass> {
   }
 }
 
-/**
- * Check if the Mindat API is available
- * @returns True if the API is available, false otherwise
- */
 /**
  * Get space groups from the Mindat API
  * 
