@@ -161,11 +161,6 @@ export async function proxyApiRequest(
       // Construct URL with the current base URL
       url = `${baseUrl}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}${queryString}`;
 
-      // Add API key to URL if needed and if we're using token auth
-      if (needsApiKey && !useBasicAuth) {
-        url += url.includes('?') ? `&${apiKeyParam}` : `?${apiKeyParam}`;
-      }
-
       console.log(`Trying API URL: ${url}`);
 
       try {
