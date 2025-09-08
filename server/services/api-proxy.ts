@@ -68,7 +68,7 @@ export async function proxyApiRequest(
     // Flag to track if we need to add API key for specific endpoints
     let forceDanaApiKey = path.startsWith('/dana/') || path.startsWith('/dana-8');
 
-    // Set the appropriate authentication header based on the method
+    // Set the appropriate authentication method
     if (useBasicAuth) {
       // Basic Auth is used when we have username/password
       if (typeof credentials === 'object' && credentials.username && credentials.password) {
@@ -79,19 +79,16 @@ export async function proxyApiRequest(
         console.log('Missing username/password for Basic Authentication');
       }
     } else {
-      // Token authentication is used when we have an API key
+      // For Mindat API, use URL parameter authentication (not Authorization header)
       apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
-      headers['Authorization'] = `Token ${apiKey}`;
-      console.log(`Using Mindat API key for Token authentication (key length: ${apiKey.length})`);
-
-      // For Mindat API, we also need to add the API key as a query parameter for some endpoints
+      console.log(`Using Mindat API key as URL parameter (key length: ${apiKey.length})`);
+      
+      // Mindat API expects API key as URL parameter
       apiKeyParam = `api_key=${apiKey}`;
     }
 
-    // Determine if we need to add API key to URL
-    // Always force API key for Dana endpoints, otherwise check if it's missing
-    let needsApiKey = forceDanaApiKey || 
-      Boolean(!url.includes('api_key=') && !parameters.api_key && apiKey);
+    // Always add API key as URL parameter for Mindat API (not header-based auth)
+    let needsApiKey = Boolean(apiKey && !url.includes('api_key=') && !parameters.api_key);
 
     // Prepare request options
     const options: RequestInit = {
@@ -129,7 +126,16 @@ export async function proxyApiRequest(
           }
         }
 
-        url = `${url}?${queryParams.toString()}`;
+        const finalQueryString = queryParams.toString();
+        url = `${url}?${finalQueryString}`;
+        
+        // Add API key to URL if needed
+        if (needsApiKey) {
+          url += `&${apiKeyParam}`;
+        }
+      } else if (needsApiKey) {
+        // Add API key to URL even if no other query parameters
+        url += `?${apiKeyParam}`;
       }
     } else if (normalizedMethod !== 'GET' && Object.keys(parameters).length > 0) {
       // For non-GET requests, add body
@@ -148,6 +154,11 @@ export async function proxyApiRequest(
       if (Object.keys(parameters).length > 0) {
         options.body = JSON.stringify(parameters);
       }
+      
+      // Add API key to URL for non-GET requests too
+      if (needsApiKey) {
+        url += url.includes('?') ? `&${apiKeyParam}` : `?${apiKeyParam}`;
+      }
     }
 
     // Try each base URL until one works
@@ -160,7 +171,7 @@ export async function proxyApiRequest(
 
       // Construct URL with the current base URL
       url = `${baseUrl}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}${queryString}`;
-
+      
       console.log(`Trying API URL: ${url}`);
 
       try {
