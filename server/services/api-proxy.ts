@@ -22,10 +22,10 @@ export async function proxyApiRequest(
       'https://mindat.org/api',
       'https://147.135.28.115' // Alternate URL during migration (per documentation) - Try last as it may be offline
     ];
-    
+
     // Adjusting path if needed, mapping traditional paths to documented endpoints
     let adjustedPath = path;
-    
+
     // Map our standard paths to the actual API endpoints based on documentation
     if (path.startsWith('/minerals')) {
       adjustedPath = path.replace('/minerals', '/geomaterials');
@@ -34,7 +34,7 @@ export async function proxyApiRequest(
     } else if (path.startsWith('/localities') && !path.includes('list')) {
       adjustedPath = path.replace('/localities', '/localities');
     } 
-    
+
     // Handle special classification endpoints
     else if (path.startsWith('/crystalclasses')) {
       adjustedPath = '/crystalclasses';
@@ -49,7 +49,7 @@ export async function proxyApiRequest(
     else if (path.startsWith('/strunz/') || path.startsWith('/nickel-strunz-10')) {
       adjustedPath = path; // Keep original path, it should work properly
     }
-    
+
     // Build the URL with base Mindat API endpoint
     let url = `${baseUrls[0]}${adjustedPath.startsWith('/') ? adjustedPath : `/${adjustedPath}`}`;
     const normalizedMethod = method.toUpperCase();
@@ -60,14 +60,14 @@ export async function proxyApiRequest(
       'Accept': 'application/json',
       'User-Agent': 'MindatExplorer/1.0'
     };
-    
+
     // Variables to track if we need to add API key to URL
     let apiKeyParam = '';
     let apiKey = '';
-    
+
     // Flag to track if we need to add API key for specific endpoints
     let forceDanaApiKey = path.startsWith('/dana/') || path.startsWith('/dana-8');
-    
+
     // Set the appropriate authentication header based on the method
     if (useBasicAuth) {
       // Basic Auth is used when we have username/password
@@ -83,11 +83,11 @@ export async function proxyApiRequest(
       apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
       headers['Authorization'] = `Token ${apiKey}`;
       console.log(`Using Mindat API key for Token authentication (key length: ${apiKey.length})`);
-      
+
       // For Mindat API, we also need to add the API key as a query parameter for some endpoints
       apiKeyParam = `api_key=${apiKey}`;
     }
-    
+
     // Determine if we need to add API key to URL
     // Always force API key for Dana endpoints, otherwise check if it's missing
     let needsApiKey = forceDanaApiKey || 
@@ -99,7 +99,7 @@ export async function proxyApiRequest(
       headers,
       redirect: 'follow'
     };
-    
+
     // For GET requests, append query parameters to the URL
     if (normalizedMethod === 'GET' && Object.keys(parameters).length > 0) {
       // Replace path parameters first
@@ -111,11 +111,11 @@ export async function proxyApiRequest(
           }
         }
       }
-      
+
       // Add remaining parameters as query string
       if (Object.keys(parameters).length > 0) {
         const queryParams = new URLSearchParams();
-        
+
         for (const [key, value] of Object.entries(parameters)) {
           if (value !== undefined && value !== null) {
             if (Array.isArray(value)) {
@@ -128,12 +128,12 @@ export async function proxyApiRequest(
             }
           }
         }
-        
+
         url = `${url}?${queryParams.toString()}`;
       }
     } else if (normalizedMethod !== 'GET' && Object.keys(parameters).length > 0) {
       // For non-GET requests, add body
-      
+
       // Replace path parameters first if present
       if (url.includes('{') && url.includes('}')) {
         for (const [key, value] of Object.entries(parameters)) {
@@ -143,7 +143,7 @@ export async function proxyApiRequest(
           }
         }
       }
-      
+
       // Add remaining parameters as request body
       if (Object.keys(parameters).length > 0) {
         options.body = JSON.stringify(parameters);
@@ -152,29 +152,29 @@ export async function proxyApiRequest(
 
     // Try each base URL until one works
     let lastError: any = null;
-    
+
     for (const baseUrl of baseUrls) {
       // Update URL with current base URL, keeping any query parameters that were already added
       const pathWithoutQuery = path.split('?')[0];
       const queryString = url.includes('?') ? url.substring(url.indexOf('?')) : '';
-      
+
       // Construct URL with the current base URL
       url = `${baseUrl}${pathWithoutQuery.startsWith('/') ? pathWithoutQuery : `/${pathWithoutQuery}`}${queryString}`;
-      
+
       // Add API key to URL if needed and if we're using token auth
       if (needsApiKey && !useBasicAuth) {
         url += url.includes('?') ? `&${apiKeyParam}` : `?${apiKeyParam}`;
       }
-      
+
       console.log(`Trying API URL: ${url}`);
-      
+
       try {
         // Make the request
         const startTime = Date.now();
         const response = await fetch(url, options);
         const endTime = Date.now();
         const duration = endTime - startTime;
-        
+
         // Check for success
         if (!response.ok) {
           const errorText = await response.text();
@@ -182,20 +182,20 @@ export async function proxyApiRequest(
           lastError.status = response.status;
           lastError.statusText = response.statusText;
           lastError.url = url;
-          
+
           // If it's a 404, try the next URL
           if (response.status === 404) {
             console.log(`API endpoint not found at ${url}, trying next base URL...`);
             continue;
           }
-          
+
           // For other errors, throw immediately
           throw lastError;
         }
-        
+
         // If we got here, it worked! Parse and return the response
         const data = await response.json();
-        
+
         return {
           data,
           status: response.status,
@@ -206,36 +206,36 @@ export async function proxyApiRequest(
         };
       } catch (error: any) {
         console.log(`Error connecting to ${baseUrl}: ${error.message}`);
-        
+
         // Check if it's a network error (connection refused, etc)
         const isNetworkError = error.cause && (
           error.cause.code === 'ECONNREFUSED' || 
           error.cause.code === 'ETIMEDOUT' ||
           error.cause.code === 'ENOTFOUND'
         );
-        
+
         // Store this error but continue to the next URL
         if (isNetworkError || error.status === 404) {
           lastError = error;
           continue;
         }
-        
+
         // For other types of errors, throw them immediately
         throw error;
       }
     }
-    
+
     // If we get here, none of the URLs worked
     throw lastError || new Error('Failed to connect to any Mindat API endpoints');
   } catch (error: any) {
     console.error('API proxy error:', error);
-    
+
     // Enhance error with status information when possible
     if (!error.status) {
       error.status = 500;
       error.statusText = 'Internal Server Error';
     }
-    
+
     throw error;
   }
 }
