@@ -79,16 +79,16 @@ export async function proxyApiRequest(
         console.log('Missing username/password for Basic Authentication');
       }
     } else {
-      // For Mindat API, use URL parameter authentication (not Authorization header)
+      // For Mindat API, use Token header authentication
       apiKey = typeof credentials === 'object' && credentials.apiKey ? credentials.apiKey : credentials;
-      console.log(`Using Mindat API key as URL parameter (key length: ${apiKey.length})`);
+      console.log(`Using Mindat API key in Authorization header (key length: ${apiKey.length})`);
       
-      // Mindat API expects API key as URL parameter
-      apiKeyParam = `api_key=${apiKey}`;
+      // Set Authorization header for Token authentication
+      headers['Authorization'] = `Token ${apiKey}`;
     }
 
-    // Always add API key as URL parameter for Mindat API (not header-based auth)
-    let needsApiKey = Boolean(apiKey && !url.includes('api_key=') && !parameters.api_key);
+    // API key is handled via Authorization header, not URL parameter
+    let needsApiKey = false;
 
     // Prepare request options
     const options: RequestInit = {
@@ -128,14 +128,6 @@ export async function proxyApiRequest(
 
         const finalQueryString = queryParams.toString();
         url = `${url}?${finalQueryString}`;
-        
-        // Add API key to URL if needed
-        if (needsApiKey) {
-          url += `&${apiKeyParam}`;
-        }
-      } else if (needsApiKey) {
-        // Add API key to URL even if no other query parameters
-        url += `?${apiKeyParam}`;
       }
     } else if (normalizedMethod !== 'GET' && Object.keys(parameters).length > 0) {
       // For non-GET requests, add body
@@ -153,11 +145,6 @@ export async function proxyApiRequest(
       // Add remaining parameters as request body
       if (Object.keys(parameters).length > 0) {
         options.body = JSON.stringify(parameters);
-      }
-      
-      // Add API key to URL for non-GET requests too
-      if (needsApiKey) {
-        url += url.includes('?') ? `&${apiKeyParam}` : `?${apiKeyParam}`;
       }
     }
 
