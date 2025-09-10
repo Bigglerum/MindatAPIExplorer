@@ -56,22 +56,16 @@ export class MineralsApiService {
       let whereCondition;
       
       if (includeAll) {
-        // Mineral must contain ALL specified elements
+        // Mineral must contain ALL specified elements using Postgres array containment
         whereCondition = and(
           eq(minerals.isActive, true),
-          ...validElements.map(element => 
-            sql`JSON_ARRAY_CONTAINS(${minerals.elements}, ${element})`
-          )
+          sql`${minerals.elements} @> ${validElements}`
         );
       } else {
         // Mineral must contain ANY of the specified elements
         whereCondition = and(
           eq(minerals.isActive, true),
-          or(
-            ...validElements.map(element => 
-              sql`JSON_ARRAY_CONTAINS(${minerals.elements}, ${element})`
-            )
-          )
+          sql`${minerals.elements} && ${validElements}`
         );
       }
 
@@ -260,9 +254,9 @@ export class MineralsApiService {
 
       const allElements = new Set<string>();
       
-      results.forEach(result => {
+      results.forEach((result: any) => {
         if (result.elements && Array.isArray(result.elements)) {
-          result.elements.forEach(element => {
+          result.elements.forEach((element: any) => {
             if (typeof element === 'string' && element.trim()) {
               allElements.add(element.trim());
             }
@@ -313,7 +307,7 @@ export class MineralsApiService {
         .groupBy(minerals.csystem)
         .orderBy(desc(sql`COUNT(*)`));
 
-      const crystalSystems = crystalSystemsResult.map(row => ({
+      const crystalSystems = crystalSystemsResult.map((row: any) => ({
         system: row.system || 'Unknown',
         count: row.count
       }));

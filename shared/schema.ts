@@ -268,8 +268,8 @@ export const minerals = pgTable("minerals", {
   imaFormula: text("ima_formula"),
   imaStatus: jsonb("ima_status").default([]), // Array of status strings
   imaNotes: jsonb("ima_notes").default([]), // Array of note strings
-  elements: jsonb("elements").default([]), // Array of element symbols
-  sigelements: jsonb("sigelements").default([]), // Significant elements
+  elements: text("elements").array().default([]), // Array of element symbols
+  sigelements: text("sigelements").array().default([]), // Significant elements
   impurities: text("impurities"),
   
   // Classification
