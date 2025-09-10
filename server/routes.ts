@@ -3,14 +3,28 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { fetchSwaggerDocs, parseSwaggerDoc } from "./services/swagger-parser";
 import { generateCode } from "./services/code-generator";
-import { proxyApiRequest } from "./services/api-proxy";
+import secureApiProxy from "./services/secure-api-proxy";
 import { registerRruffRoutes } from "./routes/rruff-routes";
+import { 
+  configureSecurity, 
+  apiProxyRateLimit, 
+  authRateLimit, 
+  healthCheck, 
+  readinessCheck 
+} from "./middleware/security";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure security middleware
+  configureSecurity(app);
+  
+  // Health endpoints (bypass rate limiting)
+  app.get('/health', healthCheck);
+  app.get('/ready', readinessCheck);
+  
   // API Routes
   
-  // Validate credentials
-  app.post('/api/validate-key', async (req: Request, res: Response) => {
+  // Validate credentials (rate limited)
+  app.post('/api/validate-key', authRateLimit, async (req: Request, res: Response) => {
     try {
       // Check for Mindat API key
       if (!process.env.MINDAT_API_KEY) {
@@ -110,86 +124,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Proxy API request
-  app.post('/api/proxy', async (req: Request, res: Response) => {
+  // Secure proxy API request (rate limited)
+  app.post('/api/proxy', apiProxyRateLimit, async (req: Request, res: Response) => {
     try {
-      const { path, method, parameters, apiKey } = req.body;
+      // Never accept API key from request body - use server environment only
+      const { path, method, parameters } = req.body;
       
-      if (!path) {
-        return res.status(400).json({ error: 'Path is required' });
-      }
-      
-      let credentials: any; // Use 'any' type to support both string and object
-      let useBasicAuth: boolean = false;
-      
-      // Prioritize API key authentication as per Mindat documentation
-      if (process.env.MINDAT_API_KEY) {
-        // Use Token auth with API key
-        const apiKeyValue = process.env.MINDAT_API_KEY.trim();
-        console.log(`Using Mindat API key for Token authentication (length: ${apiKeyValue.length})`);
-        credentials = apiKeyValue;
-        useBasicAuth = false;
-      } else if (process.env.MINDAT_USERNAME && process.env.MINDAT_PASSWORD) {
-        // Fallback to Basic auth if API key not available
-        console.log('Using username/password with Basic Auth');
-        const username = process.env.MINDAT_USERNAME.trim();
-        const password = process.env.MINDAT_PASSWORD.trim();
-        credentials = { username, password };
-        useBasicAuth = true;
-      } else {
-        // If no credentials are available, return an error
+      if (!process.env.MINDAT_API_KEY) {
         return res.status(401).json({ 
-          error: 'Unauthorized: Missing credentials. The Mindat API requires valid authentication.' 
+          error: 'Unauthorized: Server API key not configured.' 
         });
       }
       
-      // Call the proxy with the selected authentication method
-      const response = await proxyApiRequest(
-        path, 
-        method || 'GET', 
-        parameters || {}, 
-        credentials,
-        useBasicAuth
+      // Use the secure proxy service
+      const response = await secureApiProxy.proxyRequest(
+        { path, method, parameters },
+        process.env.MINDAT_API_KEY
       );
       
-      return res.status(200).json(response);
-    } catch (error: any) {
-      console.error('Error proxying API request:', error);
-      
-      // Return a user-friendly error message
-      const errorMessage = error.message || 'Failed to execute API request';
-      const statusCode = error.status || 500;
-      
-      // For connection issues, provide a more helpful message
-      const isConnectionError = 
-        errorMessage.includes('ECONNREFUSED') || 
-        errorMessage.includes('ETIMEDOUT') ||
-        errorMessage.includes('not found') ||
-        statusCode === 404;
-      
-      if (isConnectionError) {
-        return res.status(statusCode).json({
-          error: 'Unable to connect to the Mindat API. The API might be temporarily unavailable or the URL structure may have changed.',
-          details: errorMessage,
-          status: statusCode
-        });
-      }
-      
-      // For authentication issues
-      const isAuthError = statusCode === 401 || statusCode === 403;
-      if (isAuthError) {
-        return res.status(statusCode).json({
-          error: 'Authentication failed. Please check your Mindat API credentials.',
-          details: errorMessage,
-          status: statusCode
-        });
-      }
-      
-      // For other errors
-      return res.status(statusCode).json({ 
-        error: errorMessage,
-        status: statusCode
+      return res.status(response.status).json({
+        data: response.data,
+        cached: response.cached
       });
+      
+    } catch (error: any) {
+      console.error('Secure proxy error:', {
+        requestId: req.id,
+        error: error.message,
+        path: req.body?.path
+      });
+      
+      // Return standardized error responses
+      if (error.message.includes('Invalid API path')) {
+        return res.status(400).json({ error: 'Invalid API endpoint' });
+      }
+      
+      if (error.message.includes('Request timeout')) {
+        return res.status(504).json({ error: 'API request timeout' });
+      }
+      
+      if (error.message.includes('API key not configured')) {
+        return res.status(500).json({ error: 'Server configuration error' });
+      }
+      
+      // Generic error for other cases
+      return res.status(502).json({ error: 'External API unavailable' });
     }
   });
 
