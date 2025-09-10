@@ -252,3 +252,238 @@ export type ApiEndpoint = typeof apiEndpoints.$inferSelect;
 
 export type InsertSavedRequest = z.infer<typeof insertSavedRequestSchema>;
 export type SavedRequest = typeof savedRequests.$inferSelect;
+
+// Minerals database table for storing comprehensive mineral data from Mindat API
+export const minerals = pgTable("minerals", {
+  // Core identification
+  id: integer("id").primaryKey(), // Mindat ID
+  longid: text("longid"),
+  guid: text("guid"),
+  name: text("name").notNull(),
+  updttime: timestamp("updttime"),
+  
+  // Chemical formulas and composition
+  mindatFormula: text("mindat_formula"),
+  mindatFormulaNOte: text("mindat_formula_note"),
+  imaFormula: text("ima_formula"),
+  imaStatus: jsonb("ima_status").default([]), // Array of status strings
+  imaNotes: jsonb("ima_notes").default([]), // Array of note strings
+  elements: jsonb("elements").default([]), // Array of element symbols
+  sigelements: jsonb("sigelements").default([]), // Significant elements
+  impurities: text("impurities"),
+  
+  // Classification
+  varietyof: integer("varietyof").default(0),
+  synid: integer("synid").default(0),
+  polytypeof: integer("polytypeof").default(0),
+  groupid: integer("groupid").default(0),
+  entrytype: integer("entrytype").default(0),
+  entrytypeText: text("entrytype_text"),
+  
+  // Physical properties
+  colour: text("colour"),
+  streak: text("streak"),
+  lustre: text("lustre"),
+  lustretype: text("lustretype"),
+  diapheny: text("diapheny"), // Transparency
+  hmin: integer("hmin"), // Minimum hardness
+  hmax: integer("hmax"), // Maximum hardness
+  hardtype: integer("hardtype").default(0),
+  vhnmin: text("vhnmin"), // Vickers hardness min
+  vhnmax: text("vhnmax"), // Vickers hardness max
+  vhnerror: integer("vhnerror").default(0),
+  vhng: integer("vhng").default(0),
+  vhns: integer("vhns").default(0),
+  
+  // Density
+  dmeas: text("dmeas"), // Measured density
+  dmeas2: text("dmeas2"), // Second measured density
+  dcalc: text("dcalc"), // Calculated density
+  dmeaserror: integer("dmeaserror").default(0),
+  dcalcerror: integer("dcalcerror").default(0),
+  
+  // Crystal structure
+  csystem: text("csystem"), // Crystal system
+  cclass: integer("cclass"),
+  spacegroup: integer("spacegroup"),
+  a: text("a"), // Unit cell parameter a
+  b: text("b"), // Unit cell parameter b
+  c: text("c"), // Unit cell parameter c
+  alpha: text("alpha"), // Unit cell angle alpha
+  beta: text("beta"), // Unit cell angle beta
+  gamma: text("gamma"), // Unit cell angle gamma
+  aerror: integer("aerror").default(0),
+  berror: integer("berror").default(0),
+  cerror: integer("cerror").default(0),
+  alphaerror: integer("alphaerror").default(0),
+  betaerror: integer("betaerror").default(0),
+  gammaerror: integer("gammaerror").default(0),
+  va3: integer("va3").default(0), // Volume
+  z: integer("z").default(0), // Atoms per unit cell
+  
+  // Cleavage and fracture
+  cleavage: text("cleavage"),
+  cleavagetype: text("cleavagetype"),
+  parting: text("parting"),
+  fracturetype: text("fracturetype"),
+  tenacity: text("tenacity"),
+  
+  // Optical properties
+  opticaltype: text("opticaltype"),
+  opticalsign: text("opticalsign"),
+  opticalextinction: text("opticalextinction"),
+  opticalalpha: text("opticalalpha"),
+  opticalbeta: text("opticalbeta"),
+  opticalgamma: text("opticalgamma"),
+  opticalomega: text("opticalomega"),
+  opticalepsilon: text("opticalepsilon"),
+  opticalalpha2: text("opticalalpha2"),
+  opticalbeta2: text("opticalbeta2"),
+  opticalgamma2: text("opticalgamma2"),
+  opticalepsilon2: text("opticalepsilon2"),
+  opticalomega2: text("opticalomega2"),
+  
+  // Morphology and twinning
+  morphology: text("morphology"),
+  twinning: text("twinning"),
+  epitaxidescription: text("epitaxidescription"),
+  tlform: text("tlform"), // Type locality form
+  
+  // Descriptions and occurrence
+  descriptionShort: text("description_short"),
+  occurrence: text("occurrence"),
+  otheroccurrence: text("otheroccurrence"),
+  industrial: text("industrial"),
+  
+  // Discovery and naming
+  discoveryYear: text("discovery_year"),
+  aboutname: text("aboutname"),
+  other: text("other"),
+  
+  // Special properties
+  luminescence: text("luminescence"),
+  csmetamict: integer("csmetamict").default(0),
+  cim: text("cim"), // Crystallographic index
+  
+  // Sync metadata
+  lastSyncAt: timestamp("last_sync_at").defaultNow(),
+  syncVersion: integer("sync_version").default(1),
+  isActive: boolean("is_active").default(true),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// API keys table for secure access to our minerals API
+export const apiKeys = pgTable("api_keys", {
+  id: serial("id").primaryKey(),
+  keyHash: text("key_hash").notNull().unique(), // Hashed API key
+  name: text("name").notNull(), // Human readable name
+  userId: integer("user_id").references(() => users.id),
+  isActive: boolean("is_active").default(true),
+  lastUsedAt: timestamp("last_used_at"),
+  expiresAt: timestamp("expires_at"),
+  permissions: jsonb("permissions").default(['read']), // ['read', 'write', 'admin']
+  rateLimit: integer("rate_limit").default(1000), // Requests per hour
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Sync logs to track mineral data updates
+export const syncLogs = pgTable("sync_logs", {
+  id: serial("id").primaryKey(),
+  syncType: text("sync_type").notNull(), // 'full', 'incremental', 'single'
+  status: text("status").notNull(), // 'running', 'completed', 'failed'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  mineralsProcessed: integer("minerals_processed").default(0),
+  mineralsAdded: integer("minerals_added").default(0),
+  mineralsUpdated: integer("minerals_updated").default(0),
+  mineralsErrors: integer("minerals_errors").default(0),
+  errorMessage: text("error_message"),
+  details: jsonb("details").default({}),
+});
+
+// Mineral search schemas
+export const insertMineralSchema = createInsertSchema(minerals).pick({
+  id: true,
+  longid: true,
+  guid: true,
+  name: true,
+  updttime: true,
+  mindatFormula: true,
+  mindatFormulaNOte: true,
+  imaFormula: true,
+  imaStatus: true,
+  imaNotes: true,
+  elements: true,
+  sigelements: true,
+  impurities: true,
+  varietyof: true,
+  synid: true,
+  polytypeof: true,
+  groupid: true,
+  entrytype: true,
+  entrytypeText: true,
+  colour: true,
+  streak: true,
+  lustre: true,
+  lustretype: true,
+  diapheny: true,
+  hmin: true,
+  hmax: true,
+  csystem: true,
+  a: true,
+  b: true,
+  c: true,
+  alpha: true,
+  beta: true,
+  gamma: true,
+  z: true,
+  occurrence: true,
+  discoveryYear: true,
+  descriptionShort: true,
+});
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).pick({
+  keyHash: true,
+  name: true,
+  userId: true,
+  permissions: true,
+  expiresAt: true,
+  rateLimit: true,
+});
+
+export const insertSyncLogSchema = createInsertSchema(syncLogs).pick({
+  syncType: true,
+  status: true,
+  mineralsProcessed: true,
+  mineralsAdded: true,
+  mineralsUpdated: true,
+  mineralsErrors: true,
+  errorMessage: true,
+  details: true,
+});
+
+// Relations
+export const mineralsRelations = relations(minerals, ({ many }) => ({
+  // Future: mineral localities, images, references
+}));
+
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+  user: one(users, {
+    fields: [apiKeys.userId],
+    references: [users.id]
+  }),
+}));
+
+// Types
+export type Mineral = typeof minerals.$inferSelect;
+export type InsertMineral = z.infer<typeof insertMineralSchema>;
+
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+
+export type SyncLog = typeof syncLogs.$inferSelect;
+export type InsertSyncLog = z.infer<typeof insertSyncLogSchema>;
