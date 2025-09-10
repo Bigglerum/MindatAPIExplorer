@@ -69,16 +69,8 @@ export async function validateMineralApiKey(req: Request, res: Response, next: N
     // Attach key info to request for logging and rate limiting
     req.mineralApiKey = keyInfo;
     
-    // Log API usage
-    await mineralsApiService.logApiUsage(
-      keyInfo.id,
-      req.path,
-      req.method,
-      200, // Will be updated later
-      undefined, // Response time will be calculated later
-      req.ip,
-      req.get('User-Agent')
-    );
+    // Store API key info for response logging middleware
+    // Note: Actual usage logging happens in response middleware with correct status/timing
 
     next();
   } catch (error) {
@@ -90,9 +82,28 @@ export async function validateMineralApiKey(req: Request, res: Response, next: N
 }
 
 /**
- * Create rate limiter for mineral API based on individual key limits
+ * Pre-auth IP-based rate limiter to prevent brute force attacks
  */
-export const createMineralApiRateLimit = () => {
+export const createPreAuthRateLimit = () => {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200, // Allow 200 requests per 15 minutes per IP
+    keyGenerator: (req: Request) => req.ip || 'unknown',
+    message: {
+      error: 'Too many requests from this IP. Please try again later.',
+      retryAfter: Math.ceil(15 * 60) // 15 minutes in seconds
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skipSuccessfulRequests: false,
+    skipFailedRequests: false, // Count all requests to prevent brute force
+  });
+};
+
+/**
+ * Post-auth API key-based rate limiter
+ */
+export const createPostAuthRateLimit = () => {
   return rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
     max: (req: Request) => {
@@ -101,7 +112,7 @@ export const createMineralApiRateLimit = () => {
     },
     keyGenerator: (req: Request) => {
       // Rate limit per API key
-      return req.mineralApiKey?.id?.toString() || req.ip || 'unknown';
+      return req.mineralApiKey?.id?.toString() || 'fallback';
     },
     message: (req: Request) => ({
       error: `Rate limit exceeded. Your API key allows ${req.mineralApiKey?.rateLimit || 100} requests per hour.`,
@@ -110,7 +121,7 @@ export const createMineralApiRateLimit = () => {
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: false,
-    skipFailedRequests: true,
+    skipFailedRequests: false, // Count all requests for accurate limiting
   });
 };
 

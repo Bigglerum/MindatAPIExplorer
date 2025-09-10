@@ -439,7 +439,7 @@ export class MineralsApiService {
    * Log API usage for rate limiting and analytics
    */
   async logApiUsage(
-    keyId: number,
+    keyId: number | null,
     endpoint: string,
     method: string,
     statusCode: number,

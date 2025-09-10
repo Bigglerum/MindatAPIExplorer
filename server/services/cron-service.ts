@@ -5,6 +5,7 @@ export class CronService {
   private static instance: CronService;
   private mineralSyncService: MineralSyncService;
   private isRunning = false;
+  private isStarted = false;
 
   private constructor() {
     this.mineralSyncService = MineralSyncService.getInstance();
@@ -21,6 +22,12 @@ export class CronService {
    * Start all scheduled cron jobs
    */
   start(): void {
+    // Check if already started to prevent duplicate jobs
+    if (this.isStarted) {
+      console.log('Cron service already started, skipping...');
+      return;
+    }
+
     console.log('Starting cron service...');
     
     // Daily mineral sync at 2:00 AM UTC
@@ -64,6 +71,8 @@ export class CronService {
     }, {
       timezone: 'UTC'
     });
+
+    this.isStarted = true;
 
     console.log('Cron jobs scheduled:');
     console.log('- Daily incremental sync: 2:00 AM UTC');

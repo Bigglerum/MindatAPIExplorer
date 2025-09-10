@@ -18,7 +18,8 @@ import { registerAuthRoutes } from "./routes/auth-routes";
 import { MineralsApiService } from './services/minerals-api-service.js';
 import { CronService } from './services/cron-service.js';
 import { MineralSyncService } from './services/mineral-sync-service.js';
-import { validateMineralApiKey, createMineralApiRateLimit, requireAdminPermissions } from './middleware/minerals-auth.js';
+import { validateMineralApiKey, createPreAuthRateLimit, createPostAuthRateLimit, requireAdminPermissions } from './middleware/minerals-auth.js';
+import { logApiUsage } from './middleware/api-usage-logger.js';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Trust proxy for proper IP detection in production environments
@@ -265,12 +266,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Minerals API middleware
-  const mineralApiRateLimit = createMineralApiRateLimit();
+  const preAuthRateLimit = createPreAuthRateLimit();
+  const postAuthRateLimit = createPostAuthRateLimit();
+  
+  // Apply usage logging to all mineral API routes (captures all responses including auth failures)
+  app.use('/api/minerals', logApiUsage);
   
   // Minerals API Routes - For integration with Periodic Table search app
   
   // Search minerals by elements (main endpoint for Periodic Table app)
-  app.get('/api/minerals/search/elements', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/search/elements', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const { elements, includeAll, limit, offset, sortBy, sortOrder } = req.query;
       
@@ -298,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search minerals by name or formula
-  app.get('/api/minerals/search', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/search', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const { q, limit, offset, includeFormula } = req.query;
       
@@ -320,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get mineral by ID
-  app.get('/api/minerals/:id', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/:id', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const mineral = await mineralsApiService.getMineralById(parseInt(id));
@@ -337,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get minerals by crystal system
-  app.get('/api/minerals/crystal-system/:system', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/crystal-system/:system', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const { system } = req.params;
       const { limit, offset } = req.query;
@@ -355,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all unique elements in the database
-  app.get('/api/minerals/elements', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/elements', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const elements = await mineralsApiService.getAllElements();
       return res.status(200).json({ elements });
@@ -366,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get database statistics
-  app.get('/api/minerals/stats', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/stats', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const stats = await mineralsApiService.getStats();
       return res.status(200).json(stats);
@@ -377,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Manual sync triggers (for administrative use)
-  app.post('/api/minerals/sync', validateMineralApiKey, requireAdminPermissions, async (req: Request, res: Response) => {
+  app.post('/api/minerals/sync', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, requireAdminPermissions, async (req: Request, res: Response) => {
     try {
       const { type = 'incremental' } = req.body;
       
@@ -397,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get sync status
-  app.get('/api/minerals/sync/status', validateMineralApiKey, mineralApiRateLimit, async (req: Request, res: Response) => {
+  app.get('/api/minerals/sync/status', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, async (req: Request, res: Response) => {
     try {
       const status = cronService.getSyncStatus();
       return res.status(200).json(status);
@@ -408,7 +413,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API key management for the minerals API
-  app.post('/api/minerals/api-keys', validateMineralApiKey, requireAdminPermissions, async (req: Request, res: Response) => {
+  app.post('/api/minerals/api-keys', preAuthRateLimit, validateMineralApiKey, postAuthRateLimit, requireAdminPermissions, async (req: Request, res: Response) => {
     try {
       const { name, permissions, rateLimit, expiresAt } = req.body;
       
