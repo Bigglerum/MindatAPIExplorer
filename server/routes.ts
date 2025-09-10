@@ -12,14 +12,26 @@ import {
   healthCheck, 
   readinessCheck 
 } from "./middleware/security";
+import { configureSession } from "./middleware/session";
+import { sessionMiddleware } from "./middleware/auth";
+import { registerAuthRoutes } from "./routes/auth-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure security middleware
   configureSecurity(app);
   
+  // Configure session middleware
+  configureSession(app);
+  
+  // Apply session validation middleware
+  app.use(sessionMiddleware);
+  
   // Health endpoints (bypass rate limiting)
   app.get('/health', healthCheck);
   app.get('/ready', readinessCheck);
+  
+  // Register authentication routes
+  registerAuthRoutes(app);
   
   // API Routes
   
