@@ -17,6 +17,9 @@ import { sessionMiddleware } from "./middleware/auth";
 import { registerAuthRoutes } from "./routes/auth-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Trust proxy for proper IP detection in production environments
+  app.set('trust proxy', 1);
+  
   // Configure security middleware
   configureSecurity(app);
   

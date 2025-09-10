@@ -4,11 +4,11 @@ import NodeCache from 'node-cache';
 // Cache for API responses (TTL: 5 minutes)
 const responseCache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
 
-// Allowlisted Mindat API paths
-const ALLOWED_PATHS = /^\/(?:geomaterials|localities|crystalclasses|spacegroups|nickel-strunz-10|dana-8)(?:\/|$)/;
+// Allowlisted Mindat API paths - includes both documented paths and actual API paths
+const ALLOWED_PATHS = /^\/(?:minerals|geomaterials|locations|localities|images|crystalclasses|spacegroups|nickel-strunz-10|dana-8)(?:\/|$)/;
 
-// Only allow the primary Mindat API base URL
-const MINDAT_BASE_URL = 'https://api.mindat.org';
+// Only allow the primary Mindat API base URL with v1 versioning
+const MINDAT_BASE_URL = 'https://api.mindat.org/v1';
 
 // Request validation schema
 const ProxyRequestSchema = z.object({
@@ -73,8 +73,18 @@ export class SecureApiProxy {
     // Sanitize path - remove any path traversal attempts
     const sanitizedPath = path.replace(/\.\./g, '').replace(/\/+/g, '/');
     
+    // Map documented API paths to actual Mindat API endpoints
+    let mappedPath = sanitizedPath;
+    if (sanitizedPath.startsWith('/minerals')) {
+      mappedPath = sanitizedPath.replace('/minerals', '/geomaterials');
+    } else if (sanitizedPath.startsWith('/locations')) {
+      mappedPath = sanitizedPath.replace('/locations', '/localities');
+    } else if (sanitizedPath.startsWith('/images')) {
+      mappedPath = sanitizedPath; // Keep as-is for now
+    }
+    
     // Build URL
-    let url = `${MINDAT_BASE_URL}${sanitizedPath.startsWith('/') ? sanitizedPath : `/${sanitizedPath}`}`;
+    let url = `${MINDAT_BASE_URL}${mappedPath.startsWith('/') ? mappedPath : `/${mappedPath}`}`;
 
     // Prepare headers with secure authentication
     const headers: Record<string, string> = {

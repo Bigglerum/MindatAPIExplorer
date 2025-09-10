@@ -15,10 +15,19 @@ declare global {
 // Rate limiting configurations
 export const globalRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for development
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for static assets and health checks
+    return req.path.startsWith('/src/') || 
+           req.path.startsWith('/@fs/') || 
+           req.path.startsWith('/@vite') ||
+           req.path.startsWith('/@react-refresh') ||
+           req.path === '/health' ||
+           req.path === '/ready';
+  }
 });
 
 export const apiProxyRateLimit = rateLimit({
@@ -50,8 +59,10 @@ export function configureSecurity(app: Express, allowedOrigins: string[] = []) {
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", "data:", "https:"],
-        scriptSrc: ["'self'"],
-        connectSrc: ["'self'", "https://api.mindat.org"],
+        scriptSrc: process.env.NODE_ENV === 'development' 
+          ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] // Allow inline scripts in development
+          : ["'self'"],
+        connectSrc: ["'self'", "https://api.mindat.org", "ws:", "wss:"], // Allow WebSocket for dev
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
         baseUri: ["'self'"],
